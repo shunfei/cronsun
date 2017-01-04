@@ -1,0 +1,4 @@
+{
+    "Log": "@extend:log.json",
+    "Etcd": "@extend:etcd.json"
+}

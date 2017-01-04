@@ -1,0 +1,15 @@
+{
+    "Appenders":{
+        "Node":{
+            "Type":"file",
+            "Target":"/data/logs/cronsun/node.log"
+        },
+        "stdout":{
+            "Type":"console"
+        }
+    },
+    "Root":{
+        "Level":"DEBUG",
+        "Appenders":["stdout", "Node"]
+    }
+}

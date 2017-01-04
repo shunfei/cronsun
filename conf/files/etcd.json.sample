@@ -1,0 +1,11 @@
+{
+    "Endpoints":[
+        "http://192.168.11.27:2379",
+        "http://192.168.11.28:2379",
+        "http://192.168.11.29:2379"
+    ],
+    "Username":"",
+    "Password":"",
+    "#DialTimeout":"单位秒",
+    "DialTimeout": 5
+}
