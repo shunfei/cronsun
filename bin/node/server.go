@@ -41,7 +41,7 @@ func main() {
 
 	go n.Run()
 
-	log.Noticef("cronsun node[%s] pid[%d] service started, Ctrl+C or send kill sign to exit", n.IP, n.PID)
+	log.Noticef("cronsun node[%s] pid[%s] service started, Ctrl+C or send kill sign to exit", n.Key, n.PID)
 	// 注册退出事件
 	event.On(event.EXIT, n.Stop)
 	// 监听退出信号
