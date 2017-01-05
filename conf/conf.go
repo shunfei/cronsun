@@ -35,6 +35,9 @@ func Init() error {
 type Conf struct {
 	Root string // 项目根目录
 
+	Proc string // proc 路径
+	Cmd  string // cmd 路径
+
 	Log  log.Config
 	Etcd client.Config
 }

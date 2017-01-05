@@ -1,4 +1,6 @@
 {
+    "Proc": "/cronsun/proc",
+    "Cmd": "cronsun/cmd",
     "Log": "@extend:log.json",
     "Etcd": "@extend:etcd.json"
 }

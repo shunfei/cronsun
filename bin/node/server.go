@@ -8,15 +8,14 @@ import (
 
 	"sunteng/commons/event"
 	"sunteng/commons/log"
-	"sunteng/commons/util"
 
 	"sunteng/cronsun/conf"
+	"sunteng/cronsun/node"
 )
 
 var (
 	gomax = flag.Int("gomax",
 		4, "GOMAXPROCS: the max number of operating system threads that can execute")
-	localIp = "cronsun_node"
 )
 
 func main() {
@@ -29,15 +28,22 @@ func main() {
 		return
 	}
 
-	if ip, err := util.GetLocalIP(); err != nil {
-		log.Errorf("local ip error, node init may be fail, error: %s", err.Error())
-	} else {
-		localIp = ip.String()
+	n, err := node.NewNode(conf.Config.Etcd)
+	if err != nil {
+		log.Error(err.Error())
+		return
 	}
 
-	log.Noticef("cronsun node[%s] service started, Ctrl+C or send kill sign to exit", localIp)
+	if err = n.Register(); err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	go n.Run()
+
+	log.Noticef("cronsun node[%s] pid[%d] service started, Ctrl+C or send kill sign to exit", n.IP, n.PID)
 	// 注册退出事件
-	event.On(event.EXIT)
+	event.On(event.EXIT, n.Stop)
 	// 监听退出信号
 	event.Wait()
 	// 处理退出事件
