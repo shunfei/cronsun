@@ -28,7 +28,7 @@ func main() {
 		return
 	}
 
-	n, err := node.NewNode(conf.Config.Etcd)
+	n, err := node.NewNode(conf.Config)
 	if err != nil {
 		log.Error(err.Error())
 		return
@@ -41,7 +41,7 @@ func main() {
 
 	go n.Run()
 
-	log.Noticef("cronsun node[%s] pid[%s] service started, Ctrl+C or send kill sign to exit", n.Key, n.PID)
+	log.Noticef("cronsun %s service started, Ctrl+C or send kill sign to exit", n.String())
 	// 注册退出事件
 	event.On(event.EXIT, n.Stop)
 	// 监听退出信号

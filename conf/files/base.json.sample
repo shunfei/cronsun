@@ -1,7 +1,8 @@
 {
     "Proc": "/cronsun/proc",
     "Cmd": "/cronsun/cmd",
-    "Timeout": 10,
+    "Sep": "/",
+    "Ttl": 10,
     "Log": "@extend:log.json",
     "Etcd": "@extend:etcd.json"
 }

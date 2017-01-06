@@ -37,6 +37,7 @@ type Conf struct {
 
 	Proc string // proc 路径
 	Cmd  string // cmd 路径
+	Sep  string // etcd key 的连接符
 
 	Ttl int64 // 节点超时时间，单位秒
 
