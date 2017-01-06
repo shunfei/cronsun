@@ -16,16 +16,13 @@ import (
 	"syscall"
 )
 
-const (
-	ReqTimeout = 2 * time.Second
-)
-
 // Node 执行 cron 命令服务的结构体
 type Node struct {
 	*client.Client
 
-	ttl    time.Duration
-	prefix string
+	ttl        int64
+	reqTimeout time.Duration
+	prefix     string
 
 	Key string
 	PID string
@@ -50,8 +47,9 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 	n = &Node{
 		Client: cli,
 
-		ttl:    time.Duration(cfg.Ttl) * time.Second,
-		prefix: cfg.Proc + cfg.Sep,
+		ttl:        cfg.Ttl,
+		reqTimeout: time.Duration(cfg.ReqTimeout) * time.Second,
+		prefix:     cfg.Proc + cfg.Sep,
 
 		Key: cfg.Proc + cfg.Sep + ip.String(),
 		PID: strconv.Itoa(os.Getpid()),
@@ -76,7 +74,7 @@ func (n *Node) Register() (err error) {
 		return fmt.Errorf("node[%s] pid[%d] exist", n.Key[len(n.prefix):], pid)
 	}
 
-	resp, err := n.Client.Grant(context.TODO(), conf.Config.Ttl)
+	resp, err := n.Client.Grant(context.TODO(), n.ttl)
 	if err != nil {
 		return
 	}
@@ -97,7 +95,7 @@ func (n *Node) Register() (err error) {
 // 判断 node 是否已注册到 etcd
 // 存在则返回进行 pid，不存在返回 -1
 func (n *Node) Exist() (pid int, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), ReqTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), n.reqTimeout)
 	resp, err := n.Client.Get(ctx, n.Key, client.WithFromKey())
 	defer cancel()
 	if err != nil {

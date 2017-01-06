@@ -3,6 +3,7 @@
     "Cmd": "/cronsun/cmd",
     "Sep": "/",
     "Ttl": 10,
+    "ReqTimeout": 2,
     "Log": "@extend:log.json",
     "Etcd": "@extend:etcd.json"
 }

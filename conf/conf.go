@@ -39,7 +39,8 @@ type Conf struct {
 	Cmd  string // cmd 路径
 	Sep  string // etcd key 的连接符
 
-	Ttl int64 // 节点超时时间，单位秒
+	Ttl        int64 // 节点超时时间，单位秒
+	ReqTimeout int   // 请求超时时间，单位秒
 
 	Log  log.Config
 	Etcd client.Config
