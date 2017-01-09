@@ -1,4 +1,4 @@
-package cronsun
+package models
 
 type Node struct {
 	Pid  int    `json:"pid"`

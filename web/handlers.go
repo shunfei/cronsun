@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"path"
 	"sort"
@@ -15,16 +16,28 @@ import (
 	"github.com/gorilla/mux"
 	"golang.org/x/net/context"
 
-	"fmt"
 	"sunteng/commons/log"
-	"sunteng/cronsun"
 	"sunteng/cronsun/conf"
+	"sunteng/cronsun/models"
 )
 
 var etcdClient *clientv3.Client
 
+func EtcdInstance() (*clientv3.Client, error) {
+	if etcdClient != nil {
+		return etcdClient, nil
+	}
+
+	if err := conf.Init(); err != nil {
+		return nil, err
+	}
+
+	etcdClient, err := clientv3.New(conf.Config.Etcd)
+	return etcdClient, err
+}
+
 func InitRouters() (s *http.Server, err error) {
-	etcdClient, err = cronsun.EtcdInstance()
+	etcdClient, err = EtcdInstance()
 	if err != nil {
 		return nil, err
 	}
@@ -91,9 +104,9 @@ func getJobsByGroupName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var jobList = make([]*cronsun.Job, 0, resp.Count)
+	var jobList = make([]*models.Job, 0, resp.Count)
 	for i := range resp.Kvs {
-		job := &cronsun.Job{}
+		job := &models.Job{}
 		err = json.Unmarshal(resp.Kvs[i].Value, &job)
 		if err != nil {
 			outJSONError(w, http.StatusInternalServerError, err.Error())
@@ -106,7 +119,7 @@ func getJobsByGroupName(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateJob(w http.ResponseWriter, r *http.Request) {
-	job := &cronsun.Job{}
+	job := &models.Job{}
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&job)
 	if err != nil {
@@ -174,9 +187,9 @@ func getNodeGroupByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var nodeList = make([]*cronsun.Node, 0, resp.Count)
+	var nodeList = make([]*models.Node, 0, resp.Count)
 	for i := range resp.Kvs {
-		node := &cronsun.Node{}
+		node := &models.Node{}
 		err = json.Unmarshal(resp.Kvs[i].Value, &node)
 		if err != nil {
 			outJSONError(w, http.StatusInternalServerError, err.Error())

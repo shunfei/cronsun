@@ -1,4 +1,4 @@
 {
-    BindAddr: ":7079",
-    UIDir: ""
+    "BindAddr": ":7079",
+    "UIDir": ""
 }

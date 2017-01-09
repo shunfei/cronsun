@@ -1,4 +1,4 @@
-package cronsun
+package models
 
 type Job struct {
 	Id      string   `json:"id"`

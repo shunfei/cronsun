@@ -7,7 +7,6 @@ import (
 
 	"sunteng/commons/event"
 	"sunteng/commons/log"
-	"sunteng/cronsun"
 	"sunteng/cronsun/conf"
 	"sunteng/cronsun/web"
 )
@@ -15,7 +14,8 @@ import (
 func main() {
 	l, err := net.Listen("tcp", conf.Config.Web.BindAddr)
 	if err != nil {
-		cronsun.Fatalln(err)
+		log.Error(err.Error())
+		return
 	}
 
 	// Create a cmux.
@@ -23,7 +23,8 @@ func main() {
 	httpL := m.Match(cmux.HTTP1Fast())
 	httpServer, err := web.InitRouters()
 	if err != nil {
-		cronsun.Fatalln(err)
+		log.Error(err.Error())
+		return
 	}
 
 	go httpServer.Serve(httpL)
