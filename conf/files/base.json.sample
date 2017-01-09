@@ -1,7 +1,8 @@
 {
-    "Proc": "/cronsun/proc",
-    "Cmd": "/cronsun/cmd",
-    "Sep": "/",
+    "Web": "@extend:web.json",
+    "Proc": "/cronsun/proc/",
+    "Cmd": "/cronsun/cmd/",
+    "NodeGroup": "/cronsun/nodeGroup/",
     "Ttl": 10,
     "ReqTimeout": 2,
     "Log": "@extend:log.json",
