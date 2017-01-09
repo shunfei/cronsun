@@ -1,47 +1,22 @@
 package web
 
 import (
-	"crypto/sha1"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"path"
 	"sort"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/gorilla/mux"
-	"golang.org/x/net/context"
 
 	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
 	"sunteng/cronsun/models"
 )
 
-var etcdClient *clientv3.Client
-
-func EtcdInstance() (*clientv3.Client, error) {
-	if etcdClient != nil {
-		return etcdClient, nil
-	}
-
-	if err := conf.Init(); err != nil {
-		return nil, err
-	}
-
-	etcdClient, err := clientv3.New(conf.Config.Etcd)
-	return etcdClient, err
-}
-
 func InitRouters() (s *http.Server, err error) {
-	etcdClient, err = EtcdInstance()
-	if err != nil {
-		return nil, err
-	}
-
 	r := mux.NewRouter()
 	subrouter := r.PathPrefix("/v1").Subrouter()
 
@@ -75,7 +50,7 @@ func InitRouters() (s *http.Server, err error) {
 var cmdKeyDeepLen = len(strings.Split(conf.Config.Cmd, "/"))
 
 func getJobGroups(w http.ResponseWriter, r *http.Request) {
-	resp, err := etcdClient.Get(context.TODO(), conf.Config.Cmd, clientv3.WithPrefix(), clientv3.WithKeysOnly())
+	resp, err := models.DefalutClient.Get(conf.Config.Cmd, clientv3.WithPrefix(), clientv3.WithKeysOnly())
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -98,7 +73,7 @@ func getJobGroups(w http.ResponseWriter, r *http.Request) {
 
 func getJobsByGroupName(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	resp, err := etcdClient.Get(context.TODO(), path.Join(conf.Config.Cmd, vars["name"]), clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
+	resp, err := models.DefalutClient.Get(path.Join(conf.Config.Cmd, vars["name"]), clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -129,11 +104,9 @@ func updateJob(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 
 	var creation bool
-	if len(job.Id) == 0 {
+	if len(job.ID) == 0 {
 		creation = true
-		now := time.Now()
-		h := sha1.Sum([]byte(strconv.FormatInt(now.Unix(), 10) + strconv.FormatInt(now.UnixNano(), 10)))
-		job.Id = hex.EncodeToString(h[:])
+		job.ID = models.NextID()
 	}
 
 	jobb, err := json.Marshal(job)
@@ -142,7 +115,7 @@ func updateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = etcdClient.Put(context.TODO(), path.Join(conf.Config.Cmd, job.Group, job.Id), string(jobb))
+	_, err = models.DefalutClient.Put(path.Join(conf.Config.Cmd, job.Group, job.ID), string(jobb))
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -155,10 +128,10 @@ func updateJob(w http.ResponseWriter, r *http.Request) {
 	outJSONWithCode(w, statusCode, nil)
 }
 
-var ngKeyDeepLen = len(conf.Config.NodeGroup)
+var ngKeyDeepLen = len(conf.Config.Group)
 
 func getNodeGroups(w http.ResponseWriter, r *http.Request) {
-	resp, err := etcdClient.Get(context.TODO(), conf.Config.NodeGroup, clientv3.WithPrefix(), clientv3.WithKeysOnly())
+	resp, err := models.DefalutClient.Get(conf.Config.Group, clientv3.WithPrefix(), clientv3.WithKeysOnly())
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -181,7 +154,7 @@ func getNodeGroups(w http.ResponseWriter, r *http.Request) {
 
 func getNodeGroupByName(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	resp, err := etcdClient.Get(context.TODO(), path.Join(conf.Config.NodeGroup, vars["name"]), clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
+	resp, err := models.DefalutClient.Get(path.Join(conf.Config.Group, vars["name"]), clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -214,7 +187,7 @@ func nodeJoinGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gresp, err := etcdClient.Get(context.TODO(), conf.Config.Proc, clientv3.WithPrefix(), clientv3.WithKeysOnly())
+	gresp, err := models.DefalutClient.Get(conf.Config.Proc, clientv3.WithPrefix(), clientv3.WithKeysOnly())
 	if err != nil {
 		log.Errorf("get nodes list failed: %s", err.Error())
 		outJSONError(w, http.StatusInternalServerError, err.Error())
@@ -251,7 +224,7 @@ NGLOOP:
 				break NGLOOP
 			}
 
-			_, err = etcdClient.Put(context.TODO(), path.Join(conf.Config.NodeGroup, g, n), "")
+			_, err = models.DefalutClient.Put(path.Join(conf.Config.Group, g, n), "")
 			if err != nil {
 				errMsg = "join failed: " + err.Error()
 				status = http.StatusInternalServerError

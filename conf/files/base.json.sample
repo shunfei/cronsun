@@ -2,7 +2,7 @@
     "Web": "@extend:web.json",
     "Proc": "/cronsun/proc/",
     "Cmd": "/cronsun/cmd/",
-    "NodeGroup": "/cronsun/nodeGroup/",
+    "Group": "/cronsun/group/",
     "Ttl": 10,
     "ReqTimeout": 2,
     "Log": "@extend:log.json",

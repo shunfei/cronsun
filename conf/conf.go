@@ -41,9 +41,9 @@ func Init() error {
 type Conf struct {
 	Root string // 项目根目录
 
-	Proc      string // proc 路径
-	Cmd       string // cmd 路径
-	NodeGroup string // 节点分组
+	Proc  string // proc 路径
+	Cmd   string // cmd 路径
+	Group string // 节点分组
 
 	Ttl        int64 // 节点超时时间，单位秒
 	ReqTimeout int   // 请求超时时间，单位秒

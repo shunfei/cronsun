@@ -1,7 +1,8 @@
 package models
 
+// 执行 cron cmd 的进程
+// 注册到 /cronsun/proc/<id>
 type Node struct {
-	Pid  int    `json:"pid"`
-	IP   string `json:"ip"`
-	Port int    `json:"port"`
+	ID  string `json:"-"`   // ip
+	PID string `json:"pid"` // 进程 pid
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"syscall"
 	"time"
 
 	"golang.org/x/net/context"
@@ -13,7 +14,6 @@ import (
 	"sunteng/commons/log"
 	"sunteng/commons/util"
 	"sunteng/cronsun/conf"
-	"syscall"
 )
 
 // Node 执行 cron 命令服务的结构体
@@ -49,9 +49,9 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 
 		ttl:        cfg.Ttl,
 		reqTimeout: time.Duration(cfg.ReqTimeout) * time.Second,
-		prefix:     cfg.Proc + cfg.Sep,
+		prefix:     cfg.Proc,
 
-		Key: cfg.Proc + cfg.Sep + ip.String(),
+		Key: cfg.Proc + ip.String(),
 		PID: strconv.Itoa(os.Getpid()),
 
 		done: make(chan struct{}),
