@@ -8,10 +8,16 @@ import (
 	"sunteng/commons/event"
 	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
+	"sunteng/cronsun/models"
 	"sunteng/cronsun/web"
 )
 
 func main() {
+	if err := models.Init(); err != nil {
+		log.Error(err.Error())
+		return
+	}
+
 	l, err := net.Listen("tcp", conf.Config.Web.BindAddr)
 	if err != nil {
 		log.Error(err.Error())

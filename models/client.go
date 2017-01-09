@@ -68,7 +68,7 @@ func (c *Client) Get(key string, opts ...client.OpOption) (*client.GetResponse, 
 	return c.Client.Get(ctx, key, opts...)
 }
 
-func (c *Client) Del(key string, opts ...client.OpOption) (*client.DeleteResponse, error) {
+func (c *Client) Delete(key string, opts ...client.OpOption) (*client.DeleteResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), c.reqTimeout)
 	defer cancel()
 	return c.Client.Delete(ctx, key, opts...)

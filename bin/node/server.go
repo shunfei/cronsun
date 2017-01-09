@@ -10,6 +10,7 @@ import (
 	"sunteng/commons/log"
 
 	"sunteng/cronsun/conf"
+	"sunteng/cronsun/models"
 	"sunteng/cronsun/node"
 )
 
@@ -23,7 +24,7 @@ func main() {
 	//set cpu usage
 	runtime.GOMAXPROCS(*gomax)
 
-	if err := conf.Init(); err != nil {
+	if err := models.Init(); err != nil {
 		log.Error(err.Error())
 		return
 	}
