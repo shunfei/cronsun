@@ -41,6 +41,8 @@ func InitRouters() (s *http.Server, err error) {
 	h = BaseHandler{Handle: nodeLeaveGroup}
 	subrouter.Handle("/node/group", h).Methods("DELETE")
 
+	subrouter.Handle("/ui", http.FileServer(http.Dir(conf.Config.Web.UIDir)))
+
 	s = &http.Server{
 		Handler: r,
 	}
