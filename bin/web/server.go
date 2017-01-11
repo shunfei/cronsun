@@ -33,7 +33,14 @@ func main() {
 		return
 	}
 
-	go httpServer.Serve(httpL)
+	go func() {
+		err := httpServer.Serve(httpL)
+		if err != nil {
+			panic(err.Error())
+		}
+	}()
+
+	go m.Serve()
 
 	log.Noticef("cronsun web server started on %s, Ctrl+C or send kill sign to exit", conf.Config.Web.BindAddr)
 	// 注册退出事件

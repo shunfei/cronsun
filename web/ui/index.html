@@ -1,12 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Cronsun</title>
-    <script src="/src/vendors/vue.js"></script>
-    <script src="/src/vendors/vue-router.js"></script>
+  <meta charset="UTF-8">
+  <title>Cronsun</title>
+  <link rel="stylesheet" href="./vendors/semantic/semantic.min.css">
 </head>
 <body>
-    
+  <div id="app">
+    <div class="ui purple inverted menu fixed">
+      <router-link class="active item" to="/">仪表盘</router-link>
+      <router-link class="item" to="/log">日志</router-link>
+      <router-link class="item" to="/job">任务</router-link>
+      <router-link class="item" to="/node">节点</router-link>
+    </div>
+    <div style="height: 55px;"></div>
+    <div class="ui container">
+      <router-view></router-view>
+    </div>
+  </div>
 </body>
 </html>
+<script data-main="./src/app.js" src="./vendors/require.min.js"></script>

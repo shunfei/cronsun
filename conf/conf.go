@@ -34,6 +34,8 @@ func Init() error {
 	}
 	log.InitConf(&Config.Log)
 
+	Config.Root = path.Join(Config.Root, "..")
+
 	initialized = true
 	return nil
 }
