@@ -14,12 +14,17 @@ import (
 	"sunteng/commons/util"
 	"sunteng/cronsun/conf"
 	"sunteng/cronsun/models"
+	"sunteng/cronsun/node/cron"
 )
 
 // Node 执行 cron 命令服务的结构体
 type Node struct {
 	*models.Client
 	*models.Node
+	*cron.Cron
+
+	jobs   Job
+	groups Group
 
 	ttl int64
 
@@ -41,6 +46,7 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 			ID:  ip.String(),
 			PID: strconv.Itoa(os.Getpid()),
 		},
+		Cron: cron.New(),
 
 		ttl:  cfg.Ttl,
 		done: make(chan struct{}),
@@ -77,9 +83,44 @@ func (n *Node) Register() (err error) {
 	return
 }
 
+func (n *Node) addJobs() {
+	for _, job := range n.jobs {
+		schs, ok := job.Schedule(n.ID)
+		if !ok {
+			log.Warnf("job[%s] has no schedules, will skip", job.ID)
+			continue
+		}
+
+		for _, sch := range schs {
+			if err := n.Cron.AddJob(sch, job); err != nil {
+				log.Warnf("job[%s] timer[%s] parse err: %s", job.ID, sch)
+				continue
+			}
+		}
+	}
+}
+
 // 启动服务
-func (n *Node) Run() {
+func (n *Node) Run() (err error) {
 	go n.keepAlive()
+
+	defer func() {
+		if err != nil {
+			n.Stop(nil)
+		}
+	}()
+
+	if n.groups, err = models.GetGroups(); err != nil {
+		return
+	}
+	if n.jobs, err = newJob(n.ID, n.groups); err != nil {
+		return
+	}
+
+	n.addJobs()
+	// TODO add&del job
+	n.Cron.Start()
+	return
 }
 
 // 断网掉线重新注册
@@ -109,4 +150,5 @@ func (n *Node) Stop(i interface{}) {
 	close(n.done)
 	n.Node.Del()
 	n.Client.Close()
+	n.Cron.Stop()
 }

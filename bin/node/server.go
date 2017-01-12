@@ -40,7 +40,10 @@ func main() {
 		return
 	}
 
-	go n.Run()
+	if err = n.Run(); err != nil {
+		log.Error(err.Error())
+		return
+	}
 
 	log.Noticef("cronsun %s service started, Ctrl+C or send kill sign to exit", n.String())
 	// 注册退出事件

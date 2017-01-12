@@ -3,8 +3,9 @@ package models
 import (
 	"time"
 
-	client "github.com/coreos/etcd/clientv3"
 	"golang.org/x/net/context"
+
+	client "github.com/coreos/etcd/clientv3"
 
 	"sunteng/cronsun/conf"
 )
