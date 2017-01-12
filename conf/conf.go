@@ -34,6 +34,10 @@ func Init() error {
 	}
 	log.InitConf(&Config.Log)
 
+	Config.Cmd = cleanKeyPrefix(Config.Cmd)
+	Config.Proc = cleanKeyPrefix(Config.Proc)
+	Config.Group = cleanKeyPrefix(Config.Group)
+
 	Config.Root = path.Join(Config.Root, "..")
 
 	initialized = true
@@ -58,4 +62,16 @@ type Conf struct {
 type webConfig struct {
 	BindAddr string
 	UIDir    string
+}
+
+// 返回前后包含斜杆的 /a/b/ 的前缀
+func cleanKeyPrefix(p string) string {
+	p = path.Clean(p)
+	if p[0] != '/' {
+		p = "/" + p
+	}
+
+	p += "/"
+
+	return p
 }

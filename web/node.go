@@ -2,13 +2,10 @@ package web
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"path"
-	"sort"
 	"strings"
 
-	"github.com/coreos/etcd/clientv3"
+	v3 "github.com/coreos/etcd/clientv3"
 	"github.com/gorilla/mux"
 
 	"sunteng/commons/log"
@@ -20,115 +17,76 @@ type Node struct{}
 
 var ngKeyDeepLen = len(conf.Config.Group)
 
-func (n *Node) GetGroups(w http.ResponseWriter, r *http.Request) {
-	resp, err := models.DefalutClient.Get(conf.Config.Group, clientv3.WithPrefix(), clientv3.WithKeysOnly())
-	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	var groupMap = make(map[string]bool, 8)
-	for i := range resp.Kvs {
-		ss := strings.Split(string(resp.Kvs[i].Key), "/")
-		groupMap[ss[ngKeyDeepLen]] = true
-	}
-
-	var groupList = make([]string, 0, len(groupMap))
-	for k := range groupMap {
-		groupList = append(groupList, k)
-	}
-
-	sort.Strings(groupList)
-	outJSON(w, groupList)
-}
-
-func (n *Node) GetGroupByGroupName(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	resp, err := models.DefalutClient.Get(path.Join(conf.Config.Group, vars["name"]), clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
-	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	var nodeList = make([]*models.Node, 0, resp.Count)
-	for i := range resp.Kvs {
-		node := &models.Node{}
-		err = json.Unmarshal(resp.Kvs[i].Value, &node)
-		if err != nil {
-			outJSONError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-		nodeList = append(nodeList)
-	}
-
-	outJSON(w, nodeList)
-}
-
-func (n *Node) JoinGroup(w http.ResponseWriter, r *http.Request) {
-	ng := []struct {
-		Nodes []string
-		Group string
-	}{}
-
+func (n *Node) UpdateGroup(w http.ResponseWriter, r *http.Request) {
+	g := models.Group{}
 	de := json.NewDecoder(r.Body)
-	err := de.Decode(&ng)
-	if err != nil {
+	var err error
+	if err = de.Decode(&g); err != nil {
+		outJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	defer r.Body.Close()
+
+	var successCode = http.StatusOK
+	g.ID = strings.TrimSpace(g.ID)
+	if len(g.ID) == 0 {
+		successCode = http.StatusCreated
+		g.ID = models.NextID()
+	} else {
+
+	}
+
+	if err = g.Check(); err != nil {
 		outJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	gresp, err := models.DefalutClient.Get(conf.Config.Proc, clientv3.WithPrefix(), clientv3.WithKeysOnly())
+	// @TODO rev
+	var rev int64 = 0
+	if _, err = g.Put(rev); err != nil {
+		outJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	outJSONWithCode(w, successCode, nil)
+}
+
+func (n *Node) GetGroups(w http.ResponseWriter, r *http.Request) {
+	resp, err := models.DefalutClient.Get(conf.Config.Group, v3.WithPrefix(), v3.WithSort(v3.SortByKey, v3.SortAscend))
 	if err != nil {
-		log.Errorf("get nodes list failed: %s", err.Error())
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	var nodes map[string]bool
-	for i := range gresp.Kvs {
-		ip := strings.TrimLeft(string(gresp.Kvs[i].Key), conf.Config.Proc)
-		nodes[ip] = true
+
+	var list = make([]*models.Group, 0, resp.Count)
+	for i := range resp.Kvs {
+		g := models.Group{}
+		err = json.Unmarshal(resp.Kvs[i].Value, &g)
+		if err != nil {
+			log.Errorf("node.GetGroups(key: %s) error: %s", string(resp.Kvs[i].Key), err.Error())
+			outJSONError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		list = append(list, &g)
 	}
 
-	var errMsg string
-	var status int
-NGLOOP:
-	for i := range ng {
-		g := strings.TrimSpace(ng[i].Group)
-		if len(g) == 0 {
-			errMsg = "group name is emtpy."
-			status = http.StatusBadRequest
-			break
-		}
+	outJSON(w, list)
+}
 
-		for _, n := range ng[i].Nodes {
-			n = strings.TrimSpace(n)
-			if len(n) == 0 {
-				errMsg = fmt.Sprintf("[%s] node ip is emtpy.", g)
-				status = http.StatusBadRequest
-				break NGLOOP
-			}
-
-			if _, ok := nodes[n]; !ok {
-				errMsg = fmt.Sprintf("node[%s] not found.", n)
-				status = http.StatusBadRequest
-				break NGLOOP
-			}
-
-			_, err = models.DefalutClient.Put(path.Join(conf.Config.Group, g, n), "")
-			if err != nil {
-				errMsg = "join failed: " + err.Error()
-				status = http.StatusInternalServerError
-				break NGLOOP
-			}
-		}
-	}
-
-	if len(errMsg) > 0 {
-		outJSONError(w, status, errMsg)
+func (n *Node) GetGroupByGroupId(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	g, err := models.GetGroupById(vars["id"])
+	if err != nil {
+		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	outJSON(w, nil)
+	if g == nil {
+		outJSONWithCode(w, http.StatusNotFound, nil)
+		return
+	}
+	outJSON(w, g)
 }
 
-func (n *Node) LeaveGroup(w http.ResponseWriter, r *http.Request) {}
+func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
+}

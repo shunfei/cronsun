@@ -26,30 +26,30 @@ func (j *Job) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	r.Body.Close()
 
-	var creation bool
+	if err = job.Check(); err != nil {
+		outJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var successCode = http.StatusOK
 	if len(job.ID) == 0 {
-		creation = true
+		successCode = http.StatusCreated
 		job.ID = models.NextID()
 	}
 
-	jobb, err := json.Marshal(job)
+	b, err := json.Marshal(job)
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	_, err = models.DefalutClient.Put(path.Join(conf.Config.Cmd, job.Group, job.ID), string(jobb))
+	_, err = models.DefalutClient.Put(path.Join(conf.Config.Cmd, job.Group, job.ID), string(b))
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	statusCode := http.StatusOK
-	if creation {
-		statusCode = http.StatusCreated
-	}
-	outJSONWithCode(w, statusCode, nil)
-
+	outJSONWithCode(w, successCode, nil)
 }
 
 var cmdKeyDeepLen = len(strings.Split(conf.Config.Cmd, "/"))

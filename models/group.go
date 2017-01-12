@@ -2,6 +2,8 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
+	"strings"
 
 	client "github.com/coreos/etcd/clientv3"
 
@@ -12,10 +14,23 @@ import (
 // 结点类型分组
 // 注册到 /cronsun/group/<id>
 type Group struct {
-	ID   string `json:"-"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 
 	NodeIDs []string `json:"nids"`
+}
+
+func GetGroupById(gid string) (g *Group, err error) {
+	if len(gid) == 0 {
+		return
+	}
+	resp, err := DefalutClient.Get(conf.Config.Group + gid)
+	if err != nil || resp.Count == 0 {
+		return
+	}
+
+	err = json.Unmarshal(resp.Kvs[0].Value, &g)
+	return
 }
 
 func GetGroups() (groups map[string]*Group, err error) {
@@ -39,4 +54,30 @@ func GetGroups() (groups map[string]*Group, err error) {
 		groups[group.ID] = group
 	}
 	return
+}
+
+var (
+	ErrEmptyNodeGroupName = errors.New("Name of node group is empty.")
+)
+
+func (g *Group) Key() string {
+	return conf.Config.Group + g.ID
+}
+
+func (g *Group) Put(rev int64) (*client.PutResponse, error) {
+	b, err := json.Marshal(g)
+	if err != nil {
+		return nil, err
+	}
+
+	return DefalutClient.PutWithRev(g.Key(), string(b), rev)
+}
+
+func (g *Group) Check() error {
+	g.Name = strings.TrimSpace(g.Name)
+	if len(g.Name) == 0 {
+		return ErrEmptyNodeGroupName
+	}
+
+	return nil
 }

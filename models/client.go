@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"golang.org/x/net/context"
@@ -61,6 +62,31 @@ func (c *Client) Put(key, val string, opts ...client.OpOption) (*client.PutRespo
 	ctx, cancel := context.WithTimeout(context.Background(), c.reqTimeout)
 	defer cancel()
 	return c.Client.Put(ctx, key, val, opts...)
+}
+
+var ErrValueMayChanged = errors.New("The value has been changed by others on this time.")
+
+func (c *Client) PutWithRev(key, val string, rev int64) (*client.PutResponse, error) {
+	if rev == 0 {
+		return c.Put(key, val)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), c.reqTimeout)
+	tresp, err := DefalutClient.Txn(ctx).
+		If(client.Compare(client.Version(key), "=", rev)).
+		Then(client.OpPut(key, val)).
+		Commit()
+	cancel()
+	if err != nil {
+		return nil, err
+	}
+
+	if !tresp.Succeeded {
+		return nil, ErrValueMayChanged
+	}
+
+	resp := client.PutResponse(*tresp.Responses[0].GetResponsePut())
+	return &resp, nil
 }
 
 func (c *Client) Get(key string, opts ...client.OpOption) (*client.GetResponse, error) {

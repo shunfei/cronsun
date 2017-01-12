@@ -2,6 +2,8 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
+	"strings"
 
 	client "github.com/coreos/etcd/clientv3"
 
@@ -9,10 +11,14 @@ import (
 	"sunteng/cronsun/conf"
 )
 
+const (
+	DefaultJobGroup = "Default"
+)
+
 // 需要执行的 cron cmd 命令
-// 注册到 /cronsun/cmd/<id>
+// 注册到 /cronsun/cmd/groupName/<id>
 type Job struct {
-	ID      string     `json:"-"`
+	ID      string     `json:"id"`
 	Name    string     `json:"name"`
 	Group   string     `json:"group"`
 	Command string     `json:"cmd"`
@@ -90,5 +96,32 @@ func (j *Job) Schedule(id string) ([]string, bool) {
 }
 
 func (j *Job) Run() {
+}
 
+var (
+	ErrEmptyJobName    = errors.New("Name of job is empty.")
+	ErrEmptyJobCommand = errors.New("Command of job is empty.")
+)
+
+func (j *Job) Key() string {
+	return conf.Config.Cmd + j.Group + "/" + j.ID
+}
+
+func (j *Job) Check() error {
+	j.Name = strings.TrimSpace(j.Name)
+	if len(j.Name) == 0 {
+		return ErrEmptyJobName
+	}
+
+	j.Group = strings.TrimSpace(j.Group)
+	if len(j.Group) == 0 {
+		j.Group = DefaultJobGroup
+	}
+
+	// 不修改 Command 的内容，简单判断是否为空
+	if len(strings.TrimSpace(j.Command)) == 0 {
+		return ErrEmptyJobCommand
+	}
+
+	return nil
 }
