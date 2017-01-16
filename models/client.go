@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"time"
 
 	"golang.org/x/net/context"
@@ -63,8 +62,6 @@ func (c *Client) Put(key, val string, opts ...client.OpOption) (*client.PutRespo
 	defer cancel()
 	return c.Client.Put(ctx, key, val, opts...)
 }
-
-var ErrValueMayChanged = errors.New("The value has been changed by others on this time.")
 
 func (c *Client) PutWithRev(key, val string, rev int64) (*client.PutResponse, error) {
 	if rev == 0 {

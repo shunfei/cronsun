@@ -16,7 +16,35 @@ import (
 
 type Job struct{}
 
-func (j *Job) Update(w http.ResponseWriter, r *http.Request) {
+func (j *Job) GetJob(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	job, err := models.GetJob(vars["group"], vars["id"])
+	var statusCode int
+	if err != nil {
+		if err == models.ErrNotFound {
+			statusCode = http.StatusNotFound
+		} else {
+			statusCode = http.StatusInternalServerError
+		}
+		outJSONError(w, statusCode, err.Error())
+		return
+	}
+
+	outJSON(w, job)
+}
+
+func (j *Job) DeleteJob(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	_, err := models.DeleteJob(vars["group"], vars["id"])
+	if err != nil {
+		outJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	outJSONWithCode(w, http.StatusNoContent, nil)
+}
+
+func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 	job := &models.Job{}
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&job)

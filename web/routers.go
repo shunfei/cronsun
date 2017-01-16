@@ -16,14 +16,21 @@ func InitRouters() (s *http.Server, err error) {
 	r := mux.NewRouter()
 	subrouter := r.PathPrefix("/v1").Subrouter()
 
+	// get a job group list
 	h := BaseHandler{Handle: jobHandler.GetGroups}
 	subrouter.Handle("/job/groups", h).Methods("GET")
-
+	// get a job group by group name
 	h = BaseHandler{Handle: jobHandler.GetListByGroupName}
 	subrouter.Handle("/job/group/{name}", h).Methods("GET")
-
-	h = BaseHandler{Handle: jobHandler.Update}
+	// create/update a job
+	h = BaseHandler{Handle: jobHandler.UpdateJob}
 	subrouter.Handle("/job", h).Methods("PUT")
+	// get a job
+	h = BaseHandler{Handle: jobHandler.GetJob}
+	subrouter.Handle("/job/{group}-{id}", h).Methods("GET")
+	// remove a job
+	h = BaseHandler{Handle: jobHandler.DeleteJob}
+	subrouter.Handle("/job/{group}-{id}", h).Methods("DELETE")
 
 	// get node group list
 	h = BaseHandler{Handle: nodeHandler.GetGroups}

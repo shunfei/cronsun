@@ -89,4 +89,12 @@ func (n *Node) GetGroupByGroupId(w http.ResponseWriter, r *http.Request) {
 }
 
 func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	_, err := models.DeleteGroupById(vars["id"])
+	if err != nil {
+		outJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	outJSONWithCode(w, http.StatusNoContent, nil)
 }

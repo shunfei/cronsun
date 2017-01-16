@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"errors"
 	"strings"
 
 	client "github.com/coreos/etcd/clientv3"
@@ -23,7 +22,7 @@ type Job struct {
 	Group   string     `json:"group"`
 	Command string     `json:"cmd"`
 	Rule    []*JobRule `json:"rule"`
-	Pause   bool       `json:"Pause"` // 可手工控制的状态，运行中/暂停
+	Pause   bool       `json:"pause"` // 可手工控制的状态
 
 	Schedules map[string][]string `json:"-"` // map[ip][]timer node 服务使用
 }
@@ -33,6 +32,25 @@ type JobRule struct {
 	GroupIDs       []string `json:"gids"`
 	NodeIDs        []string `json:"nids"`
 	ExcludeNodeIDs []string `json:"exclude_nids"`
+}
+
+func GetJob(group, id string) (job *Job, err error) {
+	resp, err := DefalutClient.Get(JobKey(group, id))
+	if err != nil {
+		return
+	}
+
+	if resp.Count == 0 {
+		err = ErrNotFound
+		return
+	}
+
+	err = json.Unmarshal(resp.Kvs[0].Value, &job)
+	return
+}
+
+func DeleteJob(group, id string) (resp *client.DeleteResponse, err error) {
+	return DefalutClient.Delete(JobKey(group, id))
 }
 
 func GetJobs() (jobs map[string]*Job, err error) {
@@ -98,13 +116,12 @@ func (j *Job) Schedule(id string) ([]string, bool) {
 func (j *Job) Run() {
 }
 
-var (
-	ErrEmptyJobName    = errors.New("Name of job is empty.")
-	ErrEmptyJobCommand = errors.New("Command of job is empty.")
-)
+func JobKey(group, id string) string {
+	return conf.Config.Cmd + group + "/" + id
+}
 
 func (j *Job) Key() string {
-	return conf.Config.Cmd + j.Group + "/" + j.ID
+	return JobKey(j.Group, j.ID)
 }
 
 func (j *Job) Check() error {

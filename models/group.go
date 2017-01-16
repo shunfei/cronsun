@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"errors"
 	"strings"
 
 	client "github.com/coreos/etcd/clientv3"
@@ -56,12 +55,16 @@ func GetGroups() (groups map[string]*Group, err error) {
 	return
 }
 
-var (
-	ErrEmptyNodeGroupName = errors.New("Name of node group is empty.")
-)
+func DeleteGroupById(id string) (*client.DeleteResponse, error) {
+	return DefalutClient.Delete(GroupKey(id))
+}
+
+func GroupKey(id string) string {
+	return conf.Config.Group + id
+}
 
 func (g *Group) Key() string {
-	return conf.Config.Group + g.ID
+	return GroupKey(g.ID)
 }
 
 func (g *Group) Put(rev int64) (*client.PutResponse, error) {
