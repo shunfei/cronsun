@@ -119,6 +119,10 @@ func (j *Job) Schedule(id string) (string, bool) {
 	return s, ok
 }
 
+func (j *Job) GetID() string {
+	return j.ID
+}
+
 func (j *Job) Run() {
 }
 

@@ -3,7 +3,9 @@
 package cron
 
 import (
+	"fmt"
 	"log"
+	"reflect"
 	"runtime"
 	"sort"
 	"time"
@@ -24,6 +26,7 @@ type Cron struct {
 
 // Job is an interface for submitted cron jobs.
 type Job interface {
+	GetID() string
 	Run()
 }
 
@@ -36,6 +39,9 @@ type Schedule interface {
 
 // Entry consists of a schedule and the func to execute on that schedule.
 type Entry struct {
+	// The ID is unique for Entry
+	ID string
+
 	// The schedule on which this job should be run.
 	Schedule Schedule
 
@@ -91,6 +97,9 @@ func NewWithLocation(location *time.Location) *Cron {
 // A wrapper that turns a func() into a cron.Job
 type FuncJob func()
 
+func (f FuncJob) GetID() string {
+	return fmt.Sprintf("pointer[%v]", reflect.ValueOf(f).Pointer())
+}
 func (f FuncJob) Run() { f() }
 
 // AddFunc adds a func to the Cron to be run on the given schedule.
@@ -111,6 +120,7 @@ func (c *Cron) AddJob(spec string, cmd Job) error {
 // Schedule adds a Job to the Cron to be run on the given schedule.
 func (c *Cron) Schedule(schedule Schedule, cmd Job) {
 	entry := &Entry{
+		ID:       cmd.GetID(),
 		Schedule: schedule,
 		Job:      cmd,
 	}
@@ -167,6 +177,7 @@ func (c *Cron) run() {
 		entry.Next = entry.Schedule.Next(now)
 	}
 
+	timer := time.NewTimer(time.Minute)
 	for {
 		// Determine the next entry to run.
 		sort.Sort(byTime(c.entries))
@@ -180,7 +191,7 @@ func (c *Cron) run() {
 			effective = c.entries[0].Next
 		}
 
-		timer := time.NewTimer(effective.Sub(now))
+		timer.Reset(effective.Sub(now))
 		select {
 		case now = <-timer.C:
 			now = now.In(c.location)
@@ -209,7 +220,6 @@ func (c *Cron) run() {
 
 		// 'now' should be updated after newEntry and snapshot cases.
 		now = time.Now().In(c.location)
-		timer.Stop()
 	}
 }
 
