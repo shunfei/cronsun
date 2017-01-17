@@ -24,7 +24,10 @@ type Job struct {
 	Rule    []*JobRule `json:"rule"`
 	Pause   bool       `json:"pause"` // 可手工控制的状态
 
-	Schedules map[string][]string `json:"-"` // map[ip][]timer node 服务使用
+	// map[ip]timer node 服务使用
+	// 每个任务在单个结点上只支持一个时间规则
+	// 如果需要多个时间规则，需建新的任务
+	Schedules map[string]string `json:"-"`
 }
 
 type JobRule struct {
@@ -77,36 +80,39 @@ func GetJobs() (jobs map[string]*Job, err error) {
 }
 
 func (j *Job) BuildSchedules(gs map[string]*Group) {
-	j.Schedules = make(map[string][]string)
+	j.Schedules = make(map[string]string)
 	for _, r := range j.Rule {
-		sch := make(map[string]string)
 		for _, gid := range r.GroupIDs {
 			g, ok := gs[gid]
 			if !ok {
 				continue
 			}
 			for _, id := range g.NodeIDs {
-				sch[id] = r.Timer
+				if t, ok := j.Schedules[id]; ok {
+					log.Warnf("job[%s] already exists timer[%s], timer[%s] will skip", j.ID, t, r.Timer)
+					continue
+				}
+				j.Schedules[id] = r.Timer
 			}
 		}
 
 		for _, id := range r.NodeIDs {
-			sch[id] = r.Timer
+			if t, ok := j.Schedules[id]; ok {
+				log.Warnf("job[%s] already exists timer[%s], timer[%s] will skip", j.ID, t, r.Timer)
+				continue
+			}
+			j.Schedules[id] = r.Timer
 		}
 
 		for _, id := range r.ExcludeNodeIDs {
-			delete(sch, id)
-		}
-
-		for id, t := range sch {
-			j.Schedules[id] = append(j.Schedules[id], t)
+			delete(j.Schedules, id)
 		}
 	}
 }
 
-func (j *Job) Schedule(id string) ([]string, bool) {
+func (j *Job) Schedule(id string) (string, bool) {
 	if len(j.Schedules) == 0 {
-		return nil, false
+		return "", false
 	}
 
 	s, ok := j.Schedules[id]

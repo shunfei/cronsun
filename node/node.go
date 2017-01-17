@@ -85,17 +85,12 @@ func (n *Node) Register() (err error) {
 
 func (n *Node) addJobs() {
 	for _, job := range n.jobs {
-		schs, ok := job.Schedule(n.ID)
+		sch, ok := job.Schedule(n.ID)
 		if !ok {
-			log.Warnf("job[%s] has no schedules, will skip", job.ID)
 			continue
 		}
-
-		for _, sch := range schs {
-			if err := n.Cron.AddJob(sch, job); err != nil {
-				log.Warnf("job[%s] timer[%s] parse err: %s", job.ID, sch)
-				continue
-			}
+		if err := n.Cron.AddJob(sch, job); err != nil {
+			log.Warnf("job[%s] timer[%s] parse err: %s", job.ID, sch)
 		}
 	}
 }
