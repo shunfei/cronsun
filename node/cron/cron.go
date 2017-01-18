@@ -19,6 +19,7 @@ type Cron struct {
 	indexes  map[string]int
 	stop     chan struct{}
 	add      chan *Entry
+	del      chan string
 	snapshot chan []*Entry
 	running  bool
 	ErrorLog *log.Logger
@@ -88,6 +89,7 @@ func NewWithLocation(location *time.Location) *Cron {
 		entries:  nil,
 		indexes:  make(map[string]int),
 		add:      make(chan *Entry),
+		del:      make(chan string),
 		stop:     make(chan struct{}),
 		snapshot: make(chan []*Entry),
 		running:  false,
@@ -104,12 +106,12 @@ func (f FuncJob) GetID() string {
 }
 func (f FuncJob) Run() { f() }
 
-// AddFunc adds a func to the Cron to be run on the given schedule.
+// AddFunc adds or updates a func to the Cron to be run on the given schedule.
 func (c *Cron) AddFunc(spec string, cmd func()) error {
 	return c.AddJob(spec, FuncJob(cmd))
 }
 
-// AddJob adds a Job to the Cron to be run on the given schedule.
+// AddJob adds or updates a Job to the Cron to be run on the given schedule.
 func (c *Cron) AddJob(spec string, cmd Job) error {
 	schedule, err := Parse(spec)
 	if err != nil {
@@ -119,7 +121,7 @@ func (c *Cron) AddJob(spec string, cmd Job) error {
 	return nil
 }
 
-// Schedule adds a Job to the Cron to be run on the given schedule.
+// Schedule adds or updates a Job to the Cron to be run on the given schedule.
 func (c *Cron) Schedule(schedule Schedule, cmd Job) {
 	entry := &Entry{
 		ID:       cmd.GetID(),
@@ -136,6 +138,28 @@ func (c *Cron) Schedule(schedule Schedule, cmd Job) {
 	}
 
 	c.add <- entry
+}
+
+// DelFunc deletes a Job from the Cron.
+func (c *Cron) DelFunc(cmd func()) {
+	c.DelJob(FuncJob(cmd))
+}
+
+// DelJob deletes a Job from the Cron.
+func (c *Cron) DelJob(cmd Job) {
+	index, ok := c.indexes[cmd.GetID()]
+	if !ok {
+		return
+	}
+
+	if c.running {
+		c.del <- cmd.GetID()
+		return
+	}
+
+	c.entries = append(c.entries[:index], c.entries[index+1:]...)
+	delete(c.indexes, cmd.GetID())
+	return
 }
 
 // Entries returns a snapshot of the cron entries.
@@ -227,6 +251,15 @@ func (c *Cron) run() {
 				c.entries, c.indexes[newEntry.ID] = append(c.entries, newEntry), len(c.entries)
 			}
 			newEntry.Next = newEntry.Schedule.Next(time.Now().In(c.location))
+
+		case id := <-c.del:
+			index, ok := c.indexes[id]
+			if !ok {
+				continue
+			}
+
+			c.entries = append(c.entries[:index], c.entries[index+1:]...)
+			delete(c.indexes, id)
 
 		case <-c.snapshot:
 			c.snapshot <- c.entrySnapshot()
