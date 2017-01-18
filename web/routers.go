@@ -32,6 +32,8 @@ func InitRouters() (s *http.Server, err error) {
 	h = BaseHandler{Handle: jobHandler.DeleteJob}
 	subrouter.Handle("/job/{group}-{id}", h).Methods("DELETE")
 
+	h = BaseHandler{Handle: nodeHandler.GetActivityNodeList}
+	subrouter.Handle("/node/activitys", h).Methods("GET")
 	// get node group list
 	h = BaseHandler{Handle: nodeHandler.GetGroups}
 	subrouter.Handle("/node/groups", h).Methods("GET")

@@ -7,6 +7,7 @@ import (
 
 	client "github.com/coreos/etcd/clientv3"
 
+	"strings"
 	"sunteng/cronsun/conf"
 )
 
@@ -102,4 +103,8 @@ func (c *Client) Watch(key string, opts ...client.OpOption) client.WatchChan {
 	ctx, cancel := context.WithTimeout(context.Background(), c.reqTimeout)
 	defer cancel()
 	return c.Client.Watch(ctx, key, opts...)
+}
+
+func IsValidAsKeyPath(s string) bool {
+	return strings.IndexByte(s, '/') == -1
 }

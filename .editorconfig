@@ -1,6 +1,6 @@
 # for vscode extension[editorconfig]
 root = true
 
-[*.{js,json,html}]
+[*.{js,json,html,vue}]
 indent_style = space
 indent_size = 2

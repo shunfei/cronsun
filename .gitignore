@@ -3,3 +3,4 @@ conf/files/*.json
 .tags_sorted_by_file
 bin/*/*server
 .DS_Store
+web/ui/node_modules

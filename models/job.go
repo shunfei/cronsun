@@ -135,6 +135,11 @@ func (j *Job) Key() string {
 }
 
 func (j *Job) Check() error {
+	j.ID = strings.TrimSpace(j.ID)
+	if !IsValidAsKeyPath(j.ID) {
+		return ErrIllegalJobId
+	}
+
 	j.Name = strings.TrimSpace(j.Name)
 	if len(j.Name) == 0 {
 		return ErrEmptyJobName
@@ -143,6 +148,10 @@ func (j *Job) Check() error {
 	j.Group = strings.TrimSpace(j.Group)
 	if len(j.Group) == 0 {
 		j.Group = DefaultJobGroup
+	}
+
+	if !IsValidAsKeyPath(j.Group) {
+		return ErrIllegalJobGroupName
 	}
 
 	// 不修改 Command 的内容，简单判断是否为空

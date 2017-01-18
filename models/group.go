@@ -77,6 +77,11 @@ func (g *Group) Put(rev int64) (*client.PutResponse, error) {
 }
 
 func (g *Group) Check() error {
+	g.ID = strings.TrimSpace(g.ID)
+	if !IsValidAsKeyPath(g.ID) {
+		return ErrIllegalNodeGroupId
+	}
+
 	g.Name = strings.TrimSpace(g.Name)
 	if len(g.Name) == 0 {
 		return ErrEmptyNodeGroupName

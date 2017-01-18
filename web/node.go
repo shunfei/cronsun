@@ -32,8 +32,6 @@ func (n *Node) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	if len(g.ID) == 0 {
 		successCode = http.StatusCreated
 		g.ID = models.NextID()
-	} else {
-
 	}
 
 	if err = g.Check(); err != nil {
@@ -97,4 +95,13 @@ func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	outJSONWithCode(w, http.StatusNoContent, nil)
+}
+
+func (n *Node) GetActivityNodeList(w http.ResponseWriter, r *http.Request) {
+	ids, err := models.GetActivityNodeList()
+	if err != nil {
+		outJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	outJSONWithCode(w, http.StatusOK, ids)
 }
