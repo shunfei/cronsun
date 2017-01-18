@@ -140,7 +140,7 @@ func (n *Node) keepAlive() {
 	}
 }
 
-// 启动服务
+// 停止服务
 func (n *Node) Stop(i interface{}) {
 	close(n.done)
 	n.Node.Del()
