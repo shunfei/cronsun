@@ -85,15 +85,85 @@ func (n *Node) Register() (err error) {
 
 func (n *Node) addJobs() {
 	for _, job := range n.jobs {
-		sch, ok := job.Schedule(n.ID)
-		if !ok {
-			continue
-		}
-		if err := n.Cron.AddJob(sch, job); err != nil {
-			log.Warnf("job[%s] timer[%s] parse err: %s", job.ID, sch)
+		n.addJob(job)
+	}
+}
+
+func (n *Node) addJob(job *models.Job) bool {
+	sch, ok := job.Schedule(n.ID)
+	if !ok {
+		return false
+	}
+	if err := n.Cron.AddJob(sch, job); err != nil {
+		log.Warnf("job[%s] timer[%s] parse err: %s", job.ID, sch)
+		return false
+	}
+	return true
+}
+
+func (n *Node) delJob(job *models.Job) {
+	n.Cron.DelJob(job)
+}
+
+func (n *Node) watchJobs() {
+	rch := models.WatchJobs()
+	for wresp := range rch {
+		for _, ev := range wresp.Events {
+			switch {
+			case ev.IsCreate():
+				job, err := models.GetJobsFromKv(ev.Kv)
+				if err != nil {
+					log.Warnf(err.Error())
+					continue
+				}
+
+				job.BuildSchedules(n.groups)
+				n.addJob(job)
+
+			case ev.IsModify():
+				job, err := models.GetJobsFromKv(ev.Kv)
+				if err != nil {
+					log.Warnf(err.Error())
+					continue
+				}
+				prevJob, err := models.GetJobsFromKv(ev.PrevKv)
+				if err != nil {
+					log.Warnf(err.Error())
+					continue
+				}
+
+				job.BuildSchedules(n.groups)
+				prevJob.BuildSchedules(n.groups)
+
+				if n.addJob(job) {
+					continue
+				}
+				// 此结点不再执行此 job
+				if _, ok := prevJob.Schedule(n.ID); ok {
+					n.delJob(prevJob)
+				}
+
+			case ev.Type == client.EventTypeDelete:
+				prevJob, err := models.GetJobsFromKv(ev.PrevKv)
+				if err != nil {
+					log.Warnf(err.Error())
+					continue
+				}
+
+				prevJob.BuildSchedules(n.groups)
+				if _, ok := prevJob.Schedule(n.ID); ok {
+					n.delJob(prevJob)
+				}
+
+			default:
+				log.Warnf("unknown event type[%v] from job[%s]", ev.Type, string(ev.Kv.Key))
+			}
 		}
 	}
 }
+
+// TODO
+func (n *Node) watchGroups() {}
 
 // 启动服务
 func (n *Node) Run() (err error) {
@@ -113,8 +183,9 @@ func (n *Node) Run() (err error) {
 	}
 
 	n.addJobs()
-	// TODO add&del job
 	n.Cron.Start()
+	go n.watchJobs()
+	go n.watchGroups()
 	return
 }
 

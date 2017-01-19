@@ -2,9 +2,11 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	client "github.com/coreos/etcd/clientv3"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 
 	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
@@ -75,6 +77,18 @@ func GetJobs() (jobs map[string]*Job, err error) {
 			continue
 		}
 		jobs[job.ID] = job
+	}
+	return
+}
+
+func WatchJobs() client.WatchChan {
+	return DefalutClient.Watch(conf.Config.Cmd, client.WithPrefix())
+}
+
+func GetJobsFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
+	job = new(Job)
+	if err = json.Unmarshal(kv.Value, job); err != nil {
+		err = fmt.Errorf("job[%s] umarshal err: %s", string(kv.Key), err.Error())
 	}
 	return
 }

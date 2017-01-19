@@ -1,13 +1,13 @@
 package models
 
 import (
+	"strings"
 	"time"
 
 	"golang.org/x/net/context"
 
 	client "github.com/coreos/etcd/clientv3"
 
-	"strings"
 	"sunteng/cronsun/conf"
 )
 
