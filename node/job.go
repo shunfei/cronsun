@@ -14,11 +14,7 @@ func newJob(id string, g Group) (j Job, err error) {
 
 	j = make(Job, len(jobs))
 	for _, job := range jobs {
-		if job.Pause {
-			continue
-		}
-
-		if len(job.Schedule(id, g)) > 0 {
+		if sch, _ := job.Schedule(id, g, false); len(sch) > 0 {
 			j[job.GetID()] = job
 		}
 	}

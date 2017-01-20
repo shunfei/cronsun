@@ -165,15 +165,28 @@ func (n *Node) delJob(job *models.Job) {
 	n.Cron.DelJob(job)
 }
 
-func (n *Node) addGroup(g *models.Group) {
+func (n *Node) addGroup(g *models.Group) bool {
 	if !g.Included(n.ID) {
-		return
+		return false
 	}
-	return
+
+	if og, ok := n.groups[g.ID]; ok {
+		*og = *g
+		// TODO 处理相应的 jobs
+		return true
+	}
+
+	n.groups[g.ID] = g
+	return true
 }
 
 func (n *Node) delGroup(g *models.Group) {
+	if !g.Included(n.ID) {
+		return
+	}
+
 	delete(n.groups, g.ID)
+	// TODO 处理相应的 jobs
 }
 
 func (n *Node) watchJobs() {
@@ -189,7 +202,6 @@ func (n *Node) watchJobs() {
 				}
 
 				n.addJob(job)
-
 			case ev.IsModify():
 				job, err := models.GetJobFromKv(ev.Kv)
 				if err != nil {
@@ -208,7 +220,6 @@ func (n *Node) watchJobs() {
 
 				// 此结点暂停或不再执行此 job
 				n.delJob(prevJob)
-
 			case ev.Type == client.EventTypeDelete:
 				prevJob, err := models.GetJobFromKv(ev.PrevKv)
 				if err != nil {
@@ -217,7 +228,6 @@ func (n *Node) watchJobs() {
 				}
 
 				n.delJob(prevJob)
-
 			default:
 				log.Warnf("unknown event type[%v] from job[%s]", ev.Type, string(ev.Kv.Key))
 			}
@@ -239,9 +249,32 @@ func (n *Node) watchGroups() {
 				}
 
 				n.addGroup(g)
-
 			case ev.IsModify():
+				g, err := models.GetGroupFromKv(ev.Kv)
+				if err != nil {
+					log.Warnf(err.Error())
+					continue
+				}
+				prevG, err := models.GetGroupFromKv(ev.PrevKv)
+				if err != nil {
+					log.Warnf(err.Error())
+					continue
+				}
+
+				if n.addGroup(g) {
+					continue
+				}
+
+				// 此 group 已移除当前结点
+				n.delGroup(prevG)
 			case ev.Type == client.EventTypeDelete:
+				prevG, err := models.GetGroupFromKv(ev.PrevKv)
+				if err != nil {
+					log.Warnf(err.Error())
+					continue
+				}
+
+				n.delGroup(prevG)
 			default:
 				log.Warnf("unknown event type[%v] from group[%s]", ev.Type, string(ev.Kv.Key))
 			}

@@ -111,9 +111,10 @@ func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
 	return
 }
 
-func (j *Job) Schedule(nid string, gs map[string]*Group, rebuild bool) (string, string) {
+// Schedule return schedule and group id
+func (j *Job) Schedule(nid string, gs map[string]*Group, rebuild bool) (sch string, gid string) {
 	if j.Pause {
-		return "", ""
+		return
 	}
 
 	if j.build && !rebuild {
