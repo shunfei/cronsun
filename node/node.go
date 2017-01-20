@@ -25,6 +25,9 @@ type Node struct {
 
 	jobs   Job
 	groups Group
+	// map[group id]map[job id]bool
+	// 用于 group 发生变化的时候修改相应的 job
+	link map[string]map[string]bool
 
 	ttl int64
 
@@ -83,14 +86,50 @@ func (n *Node) Register() (err error) {
 	return
 }
 
-func (n *Node) addJobs() {
+func (n *Node) addJobs() (err error) {
+	if n.groups, err = models.GetGroups(n.ID); err != nil {
+		return
+	}
+	if n.jobs, err = newJob(n.ID, n.groups); err != nil {
+		return
+	}
+
+	n.link = make(map[string]map[string]bool, len(n.groups))
 	for _, job := range n.jobs {
 		n.addJob(job)
 	}
+	return
+}
+
+func (n *Node) addLink(gid, jid string) {
+	if len(gid) == 0 {
+		return
+	}
+
+	js, ok := n.link[gid]
+	if !ok {
+		js = make(map[string]bool, 4)
+		n.link[gid] = js
+	}
+
+	js[jid] = true
+}
+
+func (n *Node) delLink(gid, jid string) {
+	if len(gid) == 0 {
+		return
+	}
+
+	js, ok := n.link[gid]
+	if !ok {
+		return
+	}
+
+	delete(js, jid)
 }
 
 func (n *Node) addJob(job *models.Job) bool {
-	sch := job.Schedule(n.ID, n.groups)
+	sch, gid := job.Schedule(n.ID, n.groups, false)
 	if len(sch) == 0 {
 		return false
 	}
@@ -111,12 +150,30 @@ func (n *Node) addJob(job *models.Job) bool {
 		return false
 	}
 
+	n.addLink(gid, j.GetID())
 	return true
 }
 
 func (n *Node) delJob(job *models.Job) {
+	sch, gid := job.Schedule(n.ID, n.groups, false)
+	if len(sch) == 0 {
+		return
+	}
+
+	n.delLink(gid, job.GetID())
 	delete(n.jobs, job.GetID())
 	n.Cron.DelJob(job)
+}
+
+func (n *Node) addGroup(g *models.Group) {
+	if !g.Included(n.ID) {
+		return
+	}
+	return
+}
+
+func (n *Node) delGroup(g *models.Group) {
+	delete(n.groups, g.ID)
 }
 
 func (n *Node) watchJobs() {
@@ -125,7 +182,7 @@ func (n *Node) watchJobs() {
 		for _, ev := range wresp.Events {
 			switch {
 			case ev.IsCreate():
-				job, err := models.GetJobsFromKv(ev.Kv)
+				job, err := models.GetJobFromKv(ev.Kv)
 				if err != nil {
 					log.Warnf(err.Error())
 					continue
@@ -134,12 +191,12 @@ func (n *Node) watchJobs() {
 				n.addJob(job)
 
 			case ev.IsModify():
-				job, err := models.GetJobsFromKv(ev.Kv)
+				job, err := models.GetJobFromKv(ev.Kv)
 				if err != nil {
 					log.Warnf(err.Error())
 					continue
 				}
-				prevJob, err := models.GetJobsFromKv(ev.PrevKv)
+				prevJob, err := models.GetJobFromKv(ev.PrevKv)
 				if err != nil {
 					log.Warnf(err.Error())
 					continue
@@ -150,20 +207,16 @@ func (n *Node) watchJobs() {
 				}
 
 				// 此结点暂停或不再执行此 job
-				if len(prevJob.Schedule(n.ID, n.groups)) > 0 {
-					n.delJob(prevJob)
-				}
+				n.delJob(prevJob)
 
 			case ev.Type == client.EventTypeDelete:
-				prevJob, err := models.GetJobsFromKv(ev.PrevKv)
+				prevJob, err := models.GetJobFromKv(ev.PrevKv)
 				if err != nil {
 					log.Warnf(err.Error())
 					continue
 				}
 
-				if len(prevJob.Schedule(n.ID, n.groups)) > 0 {
-					n.delJob(prevJob)
-				}
+				n.delJob(prevJob)
 
 			default:
 				log.Warnf("unknown event type[%v] from job[%s]", ev.Type, string(ev.Kv.Key))
@@ -177,7 +230,21 @@ func (n *Node) watchGroups() {
 	rch := models.WatchJobs()
 	for wresp := range rch {
 		for _, ev := range wresp.Events {
-			_ = ev
+			switch {
+			case ev.IsCreate():
+				g, err := models.GetGroupFromKv(ev.Kv)
+				if err != nil {
+					log.Warnf(err.Error())
+					continue
+				}
+
+				n.addGroup(g)
+
+			case ev.IsModify():
+			case ev.Type == client.EventTypeDelete:
+			default:
+				log.Warnf("unknown event type[%v] from group[%s]", ev.Type, string(ev.Kv.Key))
+			}
 		}
 	}
 }
@@ -192,14 +259,10 @@ func (n *Node) Run() (err error) {
 		}
 	}()
 
-	if n.groups, err = models.GetGroups(n.ID); err != nil {
-		return
-	}
-	if n.jobs, err = newJob(n.ID, n.groups); err != nil {
+	if err = n.addJobs(); err != nil {
 		return
 	}
 
-	n.addJobs()
 	n.Cron.Start()
 	go n.watchJobs()
 	go n.watchGroups()

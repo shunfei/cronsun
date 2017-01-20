@@ -2,9 +2,11 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	client "github.com/coreos/etcd/clientv3"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 
 	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
@@ -61,6 +63,14 @@ func GetGroups(nid string) (groups map[string]*Group, err error) {
 
 func WatchGroups() client.WatchChan {
 	return DefalutClient.Watch(conf.Config.Group, client.WithPrefix())
+}
+
+func GetGroupFromKv(kv *mvccpb.KeyValue) (g *Group, err error) {
+	g = new(Group)
+	if err = json.Unmarshal(kv.Value, g); err != nil {
+		err = fmt.Errorf("group[%s] umarshal err: %s", string(kv.Key), err.Error())
+	}
+	return
 }
 
 func DeleteGroupById(id string) (*client.DeleteResponse, error) {

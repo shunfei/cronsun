@@ -30,6 +30,7 @@ type Job struct {
 	// 每个任务在单个结点上只支持一个时间规则
 	// 如果需要多个时间规则，需建新的任务
 	schedule string
+	gid      string
 	build    bool
 }
 
@@ -40,20 +41,20 @@ type JobRule struct {
 	ExcludeNodeIDs []string `json:"exclude_nids"`
 }
 
-func (j *JobRule) included(nid string, gs map[string]*Group) bool {
+func (j *JobRule) included(nid string, gs map[string]*Group) (string, bool) {
 	for _, gid := range j.GroupIDs {
 		if _, ok := gs[gid]; ok {
-			return true
+			return gid, true
 		}
 	}
 
 	for i, count := 0, len(j.NodeIDs); i < count; i++ {
 		if nid == j.NodeIDs[i] {
-			return true
+			return "", true
 		}
 	}
 
-	return false
+	return "", false
 }
 
 func GetJob(group, id string) (job *Job, err error) {
@@ -102,7 +103,7 @@ func WatchJobs() client.WatchChan {
 	return DefalutClient.Watch(conf.Config.Cmd, client.WithPrefix())
 }
 
-func GetJobsFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
+func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
 	job = new(Job)
 	if err = json.Unmarshal(kv.Value, job); err != nil {
 		err = fmt.Errorf("job[%s] umarshal err: %s", string(kv.Key), err.Error())
@@ -110,20 +111,21 @@ func GetJobsFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
 	return
 }
 
-func (j *Job) Schedule(nid string, gs map[string]*Group) string {
+func (j *Job) Schedule(nid string, gs map[string]*Group, rebuild bool) (string, string) {
 	if j.Pause {
-		return ""
+		return "", ""
 	}
 
-	if j.build {
-		return j.schedule
+	if j.build && !rebuild {
+		return j.schedule, j.gid
 	}
 
 	j.buildSchedule(nid, gs)
-	return j.schedule
+	return j.schedule, j.gid
 }
 
 func (j *Job) buildSchedule(nid string, gs map[string]*Group) {
+	j.build = true
 	for _, r := range j.Rule {
 		for _, id := range r.ExcludeNodeIDs {
 			if nid == id {
@@ -131,8 +133,8 @@ func (j *Job) buildSchedule(nid string, gs map[string]*Group) {
 			}
 		}
 
-		if r.included(nid, gs) {
-			j.schedule = r.Timer
+		if gid, ok := r.included(nid, gs); ok {
+			j.schedule, j.gid = r.Timer, gid
 			return
 		}
 	}
