@@ -18,9 +18,8 @@ func newJob(id string, g Group) (j Job, err error) {
 			continue
 		}
 
-		job.BuildSchedules(g)
-		if _, ok := job.Schedule(id); ok {
-			j[job.ID] = job
+		if len(job.Schedule(id, g)) > 0 {
+			j[job.GetID()] = job
 		}
 	}
 	return

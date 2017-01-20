@@ -32,7 +32,9 @@ func GetGroupById(gid string) (g *Group, err error) {
 	return
 }
 
-func GetGroups() (groups map[string]*Group, err error) {
+// GetGroups 获取包含 nid 的 group
+// 如果 nid 为空，则获取所有的 group
+func GetGroups(nid string) (groups map[string]*Group, err error) {
 	resp, err := DefalutClient.Get(conf.Config.Group, client.WithPrefix())
 	if err != nil {
 		return
@@ -50,9 +52,15 @@ func GetGroups() (groups map[string]*Group, err error) {
 			log.Warnf("group[%s] umarshal err: %s", string(g.Key), e.Error())
 			continue
 		}
-		groups[group.ID] = group
+		if len(nid) == 0 || group.Included(nid) {
+			groups[group.ID] = group
+		}
 	}
 	return
+}
+
+func WatchGroups() client.WatchChan {
+	return DefalutClient.Watch(conf.Config.Group, client.WithPrefix())
 }
 
 func DeleteGroupById(id string) (*client.DeleteResponse, error) {
@@ -88,4 +96,14 @@ func (g *Group) Check() error {
 	}
 
 	return nil
+}
+
+func (g *Group) Included(nid string) bool {
+	for i, count := 0, len(g.NodeIDs); i < count; i++ {
+		if nid == g.NodeIDs[i] {
+			return true
+		}
+	}
+
+	return false
 }

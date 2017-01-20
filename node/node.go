@@ -90,18 +90,32 @@ func (n *Node) addJobs() {
 }
 
 func (n *Node) addJob(job *models.Job) bool {
-	sch, ok := job.Schedule(n.ID)
-	if !ok {
+	sch := job.Schedule(n.ID, n.groups)
+	if len(sch) == 0 {
 		return false
 	}
-	if err := n.Cron.AddJob(sch, job); err != nil {
-		log.Warnf("job[%s] timer[%s] parse err: %s", job.ID, sch)
+
+	j, ok := n.jobs[job.GetID()]
+	if ok {
+		if j != job {
+			*j = *job
+		}
+	} else {
+		j = job
+		n.jobs[j.GetID()] = j
+	}
+
+	if err := n.Cron.AddJob(sch, j); err != nil {
+		log.Warnf("job[%s] timer[%s] parse err: %s", j.GetID(), sch)
+		delete(n.jobs, j.GetID())
 		return false
 	}
+
 	return true
 }
 
 func (n *Node) delJob(job *models.Job) {
+	delete(n.jobs, job.GetID())
 	n.Cron.DelJob(job)
 }
 
@@ -117,7 +131,6 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
-				job.BuildSchedules(n.groups)
 				n.addJob(job)
 
 			case ev.IsModify():
@@ -132,14 +145,12 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
-				job.BuildSchedules(n.groups)
-				prevJob.BuildSchedules(n.groups)
-
 				if n.addJob(job) {
 					continue
 				}
-				// 此结点不再执行此 job
-				if _, ok := prevJob.Schedule(n.ID); ok {
+
+				// 此结点暂停或不再执行此 job
+				if len(prevJob.Schedule(n.ID, n.groups)) > 0 {
 					n.delJob(prevJob)
 				}
 
@@ -150,8 +161,7 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
-				prevJob.BuildSchedules(n.groups)
-				if _, ok := prevJob.Schedule(n.ID); ok {
+				if len(prevJob.Schedule(n.ID, n.groups)) > 0 {
 					n.delJob(prevJob)
 				}
 
@@ -163,7 +173,14 @@ func (n *Node) watchJobs() {
 }
 
 // TODO
-func (n *Node) watchGroups() {}
+func (n *Node) watchGroups() {
+	rch := models.WatchJobs()
+	for wresp := range rch {
+		for _, ev := range wresp.Events {
+			_ = ev
+		}
+	}
+}
 
 // 启动服务
 func (n *Node) Run() (err error) {
@@ -175,7 +192,7 @@ func (n *Node) Run() (err error) {
 		}
 	}()
 
-	if n.groups, err = models.GetGroups(); err != nil {
+	if n.groups, err = models.GetGroups(n.ID); err != nil {
 		return
 	}
 	if n.jobs, err = newJob(n.ID, n.groups); err != nil {

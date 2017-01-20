@@ -26,10 +26,11 @@ type Job struct {
 	Rule    []*JobRule `json:"rule"`
 	Pause   bool       `json:"pause"` // 可手工控制的状态
 
-	// map[ip]timer node 服务使用
+	// node 服务使用
 	// 每个任务在单个结点上只支持一个时间规则
 	// 如果需要多个时间规则，需建新的任务
-	Schedules map[string]string `json:"-"`
+	schedule string
+	build    bool
 }
 
 type JobRule struct {
@@ -37,6 +38,22 @@ type JobRule struct {
 	GroupIDs       []string `json:"gids"`
 	NodeIDs        []string `json:"nids"`
 	ExcludeNodeIDs []string `json:"exclude_nids"`
+}
+
+func (j *JobRule) included(nid string, gs map[string]*Group) bool {
+	for _, gid := range j.GroupIDs {
+		if _, ok := gs[gid]; ok {
+			return true
+		}
+	}
+
+	for i, count := 0, len(j.NodeIDs); i < count; i++ {
+		if nid == j.NodeIDs[i] {
+			return true
+		}
+	}
+
+	return false
 }
 
 func GetJob(group, id string) (job *Job, err error) {
@@ -93,44 +110,32 @@ func GetJobsFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
 	return
 }
 
-func (j *Job) BuildSchedules(gs map[string]*Group) {
-	j.Schedules = make(map[string]string)
-	for _, r := range j.Rule {
-		for _, gid := range r.GroupIDs {
-			g, ok := gs[gid]
-			if !ok {
-				continue
-			}
-			for _, id := range g.NodeIDs {
-				if t, ok := j.Schedules[id]; ok {
-					log.Warnf("job[%s] already exists timer[%s], timer[%s] will skip", j.ID, t, r.Timer)
-					continue
-				}
-				j.Schedules[id] = r.Timer
-			}
-		}
-
-		for _, id := range r.NodeIDs {
-			if t, ok := j.Schedules[id]; ok {
-				log.Warnf("job[%s] already exists timer[%s], timer[%s] will skip", j.ID, t, r.Timer)
-				continue
-			}
-			j.Schedules[id] = r.Timer
-		}
-
-		for _, id := range r.ExcludeNodeIDs {
-			delete(j.Schedules, id)
-		}
+func (j *Job) Schedule(nid string, gs map[string]*Group) string {
+	if j.Pause {
+		return ""
 	}
+
+	if j.build {
+		return j.schedule
+	}
+
+	j.buildSchedule(nid, gs)
+	return j.schedule
 }
 
-func (j *Job) Schedule(id string) (string, bool) {
-	if len(j.Schedules) == 0 {
-		return "", false
-	}
+func (j *Job) buildSchedule(nid string, gs map[string]*Group) {
+	for _, r := range j.Rule {
+		for _, id := range r.ExcludeNodeIDs {
+			if nid == id {
+				return
+			}
+		}
 
-	s, ok := j.Schedules[id]
-	return s, ok
+		if r.included(nid, gs) {
+			j.schedule = r.Timer
+			return
+		}
+	}
 }
 
 func (j *Job) GetID() string {
