@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	DefaultJobGroup = "Default"
+	DefaultJobGroup = "default"
 )
 
 // 需要执行的 cron cmd 命令

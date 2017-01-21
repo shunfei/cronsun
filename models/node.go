@@ -61,16 +61,15 @@ func (n *Node) Exist() (pid int, err error) {
 	return -1, nil
 }
 
-var procKeyLen = len(conf.Config.Proc)
-
-func GetActivityNodeList() (ids []string, err error) {
+func GetActivityNodeList() (nodes []string, err error) {
 	resp, err := DefalutClient.Get(conf.Config.Proc, client.WithPrefix(), client.WithKeysOnly())
 	if err != nil {
 		return
 	}
 
+	procKeyLen := len(conf.Config.Proc)
 	for _, n := range resp.Kvs {
-		ids = append(ids, string(n.Key[procKeyLen:]))
+		nodes = append(nodes, string(n.Key[procKeyLen:]))
 	}
 
 	return

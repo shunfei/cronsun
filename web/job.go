@@ -80,8 +80,6 @@ func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 	outJSONWithCode(w, successCode, nil)
 }
 
-var cmdKeyDeepLen = len(strings.Split(conf.Config.Cmd, "/"))
-
 func (j *Job) GetGroups(w http.ResponseWriter, r *http.Request) {
 	resp, err := models.DefalutClient.Get(conf.Config.Cmd, clientv3.WithPrefix(), clientv3.WithKeysOnly())
 	if err != nil {
@@ -89,10 +87,12 @@ func (j *Job) GetGroups(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var cmdKeyLen = len(conf.Config.Cmd)
 	var groupMap = make(map[string]bool, 8)
+
 	for i := range resp.Kvs {
-		ss := strings.Split(string(resp.Kvs[i].Key), "/")
-		groupMap[ss[cmdKeyDeepLen]] = true
+		ss := strings.Split(string(resp.Kvs[i].Key)[cmdKeyLen:], "/")
+		groupMap[ss[0]] = true
 	}
 
 	var groupList = make([]string, 0, len(groupMap))
