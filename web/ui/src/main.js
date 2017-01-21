@@ -5,6 +5,18 @@ require('semantic-ui/dist/semantic.min.css');
 import Vue from 'vue';
 Vue.config.debug = true;
 
+// global restful client
+import Rest from './libraries/rest-client.js';
+const RestApi =(Vue, options)=>{
+  Vue.prototype.$rest = new Rest('/v1/');
+};
+Vue.use(RestApi);
+
+// global event bus
+Vue.use((Vue)=>{
+  Vue.prototype.$bus = new Vue();
+});
+
 import VueRouter from 'vue-router';
 Vue.use(VueRouter);
 

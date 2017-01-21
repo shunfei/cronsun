@@ -1,10 +1,11 @@
 <template>
   <div id="app">
-    <div class="ui purple inverted menu fixed">
-      <router-link class="active item" to="/">仪表盘</router-link>
-      <router-link class="item" to="/log">日志</router-link>
-      <router-link class="item" to="/job">任务</router-link>
-      <router-link class="item" to="/node">节点</router-link>
+    <div class="ui blue inverted menu fixed">
+      <div class="item">CRONSUN</div>
+      <router-link class="item" to="/" v-bind:class="{active: this.$route.path == '/'}"><i class="dashboard icon"></i> 仪表盘</router-link>
+      <router-link class="item" to="/log" v-bind:class="{active: this.$route.path.indexOf('/log') === 0}"><i class="file text icon"></i> 日志</router-link>
+      <router-link class="item" to="/job" v-bind:class="{active: this.$route.path.indexOf('/job') === 0}"><i class="calendar icon"></i> 任务</router-link>
+      <router-link class="item" to="/node" v-bind:class="{active: this.$route.path.indexOf('/node') === 0}"><i class="tasks icon"></i> 节点</router-link>
     </div>
     <div style="height: 55px;"></div>
     <div class="ui container">

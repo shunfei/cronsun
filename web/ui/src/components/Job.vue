@@ -5,8 +5,8 @@
 </template>
 
 <script>
-import Vue from 'vue';
 import JobToolbar from './JobToolbar.vue';
+
 export default {
   name: 'job',
   components: {

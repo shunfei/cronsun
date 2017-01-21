@@ -1,65 +1,123 @@
 <template>
-  <form class="ui form segment" v-on:submit.preven>
-    <h3 class="ui header">新建任务</h3>
+  <form class="ui form segment" v-bind:class="{loading:loading}" v-on:submit.prevent>
+    <h3 class="ui header">{{action == 'CREATE' ? '添加' : '更新'}}任务&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <div class="ui toggle checkbox">
+      <input type="checkbox" class="hidden" v-bind:checked="!job.pause">
+      <label v-bind:style="{color: (job.pause?'red':'green')+' !important'}">{{job.pause ? '任务已暂停' : '开启'}}</label>
+    </div>
+    </h3>
     <div class="two fields">
       <div class="field">
         <label>任务名称</label>
-        <input type="text" v-model="name" placeholder="任务名称">
+        <input type="text" ref="name" v-bind:value="job.name" v-on:input="updateValue($event.target.value)" placeholder="任务名称">
       </div>
        <div class="field">
         <label>任务分组</label>
-        <div class="ui dropdown selection">
-          <input type="hidden">
-          <div class="default text">选择分组</div>
-          <i class="dropdown icon"></i>
-          <div class="menu">
-            <div class="item" data-value="default">Default</div>
-            <div class="item" data-value="ssp">SSP</div>
-            <div class="item" data-value="dc">数据中心</div>
-          </div>
-        </div>
+        <Dropdown title="选择分组" allowAdditions=true v-bind:items="groups" v-bind:selected="job.group" v-on:change="changeGroup"/>
       </div>
     </div>
     <div class="field">
       <label>任务脚本</label>
-      <input type="text" v-model="cmd" placeholder="任务脚本">
+      <input type="text" v-model="job.cmd" placeholder="任务脚本">
     </div>
     <div class="field">
-      <div class="ui toggle checkbox">
-        <input type="checkbox" class="hidden" v-bind:checked="!pause">
-        <label>{{pause ? '暂停' : '开启'}}</label>
+      <span v-if="job.rules.length == 0"><i class="warning circle icon"></i>当前任务没有定时器，点击下面按钮来添加定时器</span>
+    </div>
+    <JobEditRule v-for="(rule, index) in job.rules" :rule="rule" :index="index" v-on:remove="removeRule" v-on:change="changeRule"/>
+    <div class="two fields">
+      <div class="field">
+        <button class="fluid ui button" v-on:click="addNewTimer" type="button"><i class="history icon"></i> 添加定时器</button>
+      </div>
+       <div class="field">
+        <button class="fluid blue ui button" type="button" v-on:click="submit"><i class="upload icon"></i> 保存任务</button>
       </div>
     </div>
-    <button class="fluid blue ui button" type="submit">创建</button>
   </form>
 </template>
 
 <script>
+import JobEditRule from './JobEditRule.vue';
+import Dropdown from './basic/Dropdown.vue';
+
 export default {
   name: 'job-edit',
   data: function(){
       return {
-        name: '',
-        group: 'default',
-        cmd: '',
-        pause: false
+        action: 'CREATE',
+        groups: [],
+        loading: false,
+        job: {
+          id: '',
+          name:  '',
+          group: 'default',
+          cmd: '',
+          pause: false,
+          rules: []
+        }
       }
   },
 
+  methods: {
+    updateValue: function(v){
+      var tv = v.replace(/[\*\/]/g, '');
+      this.job.name = tv;
+      if (tv !== v) {
+        this.$refs.name.value = tv;
+      }
+    },
+
+    addNewTimer: function(){
+      this.job.rules.push({});
+    },
+
+    changeGroup: function(val, text){
+      this.job.group = val;
+    },
+
+    removeRule: function(index){
+      this.job.rules.splice(index, 1);
+    },
+    changeRule: function(index, key, val){
+      this.job.rules[index][key] = val;
+    },
+    submit: function(){
+      var exceptCode = this.action == 'CREATE' ? 201 : 200;
+      this.loading = true;
+      var vm = this;
+      this.$rest.PUT('job', JSON.stringify(this.job))
+        .onsucceed(exceptCode, ()=>{vm.$router.push('/job')})
+        .onfailed((resp)=>{console.log(resp)})
+        .onend(()=>{vm.loading=false})
+        .do();
+    }
+  },
+
   mounted: function(){
+    this.action = this.$route.path.indexOf('/job/create') === 0 ? 'CREATE' : 'UPDATE';
+
     var vm = this;
+    this.$rest.GET('job/groups').onsucceed(200, (resp)=>{
+        !resp.includes('default') && resp.unshift('default');
+        vm.groups = resp;
+      }).do();
+
     $(this.$el).find('.checkbox').checkbox({
       onChange: function(){
-        vm.pause = !vm.pause;
+        vm.job.pause = !vm.job.pause;
       }
     });
 
     $(this.$el).find('.dropdown').dropdown({
       allowAdditions: true,
       onChange: function(value, text, $choice){
-        vm.group = value;
+        vm.job.group = value;
       }
-    }).dropdown('set selected', this.group);
+    }).dropdown('set selected', this.job.group);
+  },
+
+  components: {
+    JobEditRule,
+    Dropdown
   }
 }
 </script>
