@@ -64,14 +64,14 @@ func (c *Client) Put(key, val string, opts ...client.OpOption) (*client.PutRespo
 	return c.Client.Put(ctx, key, val, opts...)
 }
 
-func (c *Client) PutWithRev(key, val string, rev int64) (*client.PutResponse, error) {
+func (c *Client) PutWithModRev(key, val string, rev int64) (*client.PutResponse, error) {
 	if rev == 0 {
 		return c.Put(key, val)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), c.reqTimeout)
 	tresp, err := DefalutClient.Txn(ctx).
-		If(client.Compare(client.Version(key), "=", rev)).
+		If(client.Compare(client.ModRevision(key), "=", rev)).
 		Then(client.OpPut(key, val)).
 		Commit()
 	cancel()

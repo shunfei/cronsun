@@ -32,6 +32,7 @@ var routes = [
   {path: '/log', component: Log},
   {path: '/job', component: Job},
   {path: '/job/create', component: JobEdit},
+  {path: '/job/edit/:group/:id', component: JobEdit},
   {path: '/node', component: Node}
 ];
 

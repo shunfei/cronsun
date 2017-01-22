@@ -39,9 +39,9 @@ func (n *Node) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// @TODO rev
-	var rev int64 = 0
-	if _, err = g.Put(rev); err != nil {
+	// @TODO modRev
+	var modRev int64 = 0
+	if _, err = g.Put(modRev); err != nil {
 		outJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}

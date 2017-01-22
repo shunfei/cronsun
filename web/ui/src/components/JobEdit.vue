@@ -21,7 +21,7 @@
       <input type="text" v-model="job.cmd" placeholder="任务脚本">
     </div>
     <div class="field">
-      <span v-if="job.rules.length == 0"><i class="warning circle icon"></i>当前任务没有定时器，点击下面按钮来添加定时器</span>
+      <span v-if="!job.rules || job.rules.length == 0"><i class="warning circle icon"></i>当前任务没有定时器，点击下面按钮来添加定时器</span>
     </div>
     <JobEditRule v-for="(rule, index) in job.rules" :rule="rule" :index="index" v-on:remove="removeRule" v-on:change="changeRule"/>
     <div class="two fields">
@@ -84,7 +84,7 @@ export default {
       var exceptCode = this.action == 'CREATE' ? 201 : 200;
       this.loading = true;
       var vm = this;
-      this.$rest.PUT('job', JSON.stringify(this.job))
+      this.$rest.PUT('job', this.job)
         .onsucceed(exceptCode, ()=>{vm.$router.push('/job')})
         .onfailed((resp)=>{console.log(resp)})
         .onend(()=>{vm.loading=false})
@@ -93,9 +93,15 @@ export default {
   },
 
   mounted: function(){
-    this.action = this.$route.path.indexOf('/job/create') === 0 ? 'CREATE' : 'UPDATE';
-
     var vm = this;
+
+    if (this.$route.path.indexOf('/job/create') === 0) {
+      this.action = 'CREATE';
+    } else {
+      this.action = 'UPDATE';
+      this.$rest.GET('job/'+this.$route.params.group+'-'+this.$route.params.id).onsucceed(200, (resp)=>{vm.job = resp}).do();
+    }
+
     this.$rest.GET('job/groups').onsucceed(200, (resp)=>{
         !resp.includes('default') && resp.unshift('default');
         vm.groups = resp;

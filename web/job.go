@@ -3,7 +3,6 @@ package web
 import (
 	"encoding/json"
 	"net/http"
-	"path"
 	"sort"
 	"strings"
 
@@ -44,6 +43,39 @@ func (j *Job) DeleteJob(w http.ResponseWriter, r *http.Request) {
 	outJSONWithCode(w, http.StatusNoContent, nil)
 }
 
+func (j *Job) ChangeJobStatus(w http.ResponseWriter, r *http.Request) {
+	job := &models.Job{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&job)
+	if err != nil {
+		outJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	r.Body.Close()
+
+	vars := mux.Vars(r)
+	originJob, rev, err := models.GetJobAndRev(vars["group"], vars["id"])
+	if err != nil {
+		outJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	originJob.Pause = job.Pause
+	b, err := json.Marshal(originJob)
+	if err != nil {
+		outJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	_, err = models.DefalutClient.PutWithModRev(originJob.Key(), string(b), rev)
+	if err != nil {
+		outJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	outJSON(w, originJob)
+}
+
 func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 	job := &models.Job{}
 	decoder := json.NewDecoder(r.Body)
@@ -71,7 +103,7 @@ func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = models.DefalutClient.Put(path.Join(conf.Config.Cmd, job.Group, job.ID), string(b))
+	_, err = models.DefalutClient.Put(job.Key(), string(b))
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -107,7 +139,7 @@ func (j *Job) GetGroups(w http.ResponseWriter, r *http.Request) {
 
 func (j *Job) GetListByGroupName(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	resp, err := models.DefalutClient.Get(path.Join(conf.Config.Cmd, vars["name"]), clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
+	resp, err := models.DefalutClient.Get(conf.Config.Cmd+vars["name"], clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -115,13 +147,13 @@ func (j *Job) GetListByGroupName(w http.ResponseWriter, r *http.Request) {
 
 	var jobList = make([]*models.Job, 0, resp.Count)
 	for i := range resp.Kvs {
-		job := &models.Job{}
+		job := models.Job{}
 		err = json.Unmarshal(resp.Kvs[i].Value, &job)
 		if err != nil {
 			outJSONError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		jobList = append(jobList)
+		jobList = append(jobList, &job)
 	}
 
 	outJSON(w, jobList)

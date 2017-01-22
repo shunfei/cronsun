@@ -85,13 +85,13 @@ func (g *Group) Key() string {
 	return GroupKey(g.ID)
 }
 
-func (g *Group) Put(rev int64) (*client.PutResponse, error) {
+func (g *Group) Put(modRev int64) (*client.PutResponse, error) {
 	b, err := json.Marshal(g)
 	if err != nil {
 		return nil, err
 	}
 
-	return DefalutClient.PutWithRev(g.Key(), string(b), rev)
+	return DefalutClient.PutWithModRev(g.Key(), string(b), modRev)
 }
 
 func (g *Group) Check() error {

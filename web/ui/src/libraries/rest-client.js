@@ -37,6 +37,9 @@ var sendXHR = function(opt) {
     typeof opt.onend == 'function' && opt.onend(xhr);
   }
 
+  if (typeof opt.data == 'object') {
+    opt.data = JSON.stringify(opt.data);
+  }
   xhr.send(opt.data);
 }
 

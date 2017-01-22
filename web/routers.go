@@ -25,6 +25,9 @@ func InitRouters() (s *http.Server, err error) {
 	// create/update a job
 	h = BaseHandler{Handle: jobHandler.UpdateJob}
 	subrouter.Handle("/job", h).Methods("PUT")
+	// pause/start
+	h = BaseHandler{Handle: jobHandler.ChangeJobStatus}
+	subrouter.Handle("/job/{group}-{id}", h).Methods("POST")
 	// get a job
 	h = BaseHandler{Handle: jobHandler.GetJob}
 	subrouter.Handle("/job/{group}-{id}", h).Methods("GET")

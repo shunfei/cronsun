@@ -58,6 +58,11 @@ func (j *JobRule) included(nid string, gs map[string]*Group) (string, bool) {
 }
 
 func GetJob(group, id string) (job *Job, err error) {
+	job, _, err = GetJobAndRev(group, id)
+	return
+}
+
+func GetJobAndRev(group, id string) (job *Job, rev int64, err error) {
 	resp, err := DefalutClient.Get(JobKey(group, id))
 	if err != nil {
 		return
@@ -68,6 +73,7 @@ func GetJob(group, id string) (job *Job, err error) {
 		return
 	}
 
+	rev = resp.Kvs[0].ModRevision
 	err = json.Unmarshal(resp.Kvs[0].Value, &job)
 	return
 }
