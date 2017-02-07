@@ -12,6 +12,7 @@ import (
 func InitRouters() (s *http.Server, err error) {
 	jobHandler := &Job{}
 	nodeHandler := &Node{}
+	jobLogHandler := &JobLog{}
 
 	r := mux.NewRouter()
 	subrouter := r.PathPrefix("/v1").Subrouter()
@@ -34,6 +35,13 @@ func InitRouters() (s *http.Server, err error) {
 	// remove a job
 	h = BaseHandler{Handle: jobHandler.DeleteJob}
 	subrouter.Handle("/job/{group}-{id}", h).Methods("DELETE")
+
+	// get job log list
+	h = BaseHandler{Handle: jobLogHandler.GetList}
+	subrouter.Handle("/logs", h).Methods("GET")
+	// get job log
+	h = BaseHandler{Handle: jobLogHandler.GetDetail}
+	subrouter.Handle("/log/{id}", h).Methods("GET")
 
 	h = BaseHandler{Handle: nodeHandler.GetActivityNodeList}
 	subrouter.Handle("/node/activitys", h).Methods("GET")

@@ -23,6 +23,7 @@ Vue.use(VueRouter);
 import App from './App.vue';
 import Dash from './components/Dash.vue';
 import Log from './components/Log.vue';
+import LogDetail from './components/LogDetail.vue';
 import Job from './components/Job.vue';
 import JobEdit from './components/JobEdit.vue';
 import Node from './components/Node.vue';
@@ -30,6 +31,7 @@ import Node from './components/Node.vue';
 var routes = [
   {path: '/', component: Dash},
   {path: '/log', component: Log},
+  {path: '/log/:id', component: LogDetail},
   {path: '/job', component: Job},
   {path: '/job/create', component: JobEdit},
   {path: '/job/edit/:group/:id', component: JobEdit},

@@ -10,11 +10,11 @@
     </div>
   </div>
   <div class="field">
-    <label><strong style="color:green;">+</strong> 同时在这些节点上面运行任务</label>
+    <label>同时在这些节点上面运行任务</label>
     <Dropdown title="选择节点" v-bind:items="activityNodes" multiple="true"></Dropdown>
   </div>
   <div class="field">
-    <label><strong style="color:red;">-</strong> 不在这些节点上面运行任务</label>
+    <label>不在这些节点上面运行任务</label>
     <Dropdown title="选择节点" v-bind:items="activityNodes" multiple="true"></Dropdown>
   </div>
 </div>

@@ -1,5 +1,8 @@
 <template>
-  <form class="ui form segment" v-bind:class="{loading:loading}" v-on:submit.prevent>
+  <div v-if="error != ''" class="ui negative message">
+    <div class="header"><i class="attention icon"></i> {{error}}</div>
+  </div>
+  <form v-else class="ui form segment" v-bind:class="{loading:loading}" v-on:submit.prevent>
     <h3 class="ui header">{{action == 'CREATE' ? '添加' : '更新'}}任务&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <div class="ui toggle checkbox">
       <input type="checkbox" class="hidden" v-bind:checked="!job.pause">
@@ -11,7 +14,7 @@
         <label>任务名称</label>
         <input type="text" ref="name" v-bind:value="job.name" v-on:input="updateValue($event.target.value)" placeholder="任务名称">
       </div>
-       <div class="field">
+      <div class="field">
         <label>任务分组</label>
         <Dropdown title="选择分组" allowAdditions=true v-bind:items="groups" v-bind:selected="job.group" v-on:change="changeGroup"/>
       </div>
@@ -28,7 +31,7 @@
       <div class="field">
         <button class="fluid ui button" v-on:click="addNewTimer" type="button"><i class="history icon"></i> 添加定时器</button>
       </div>
-       <div class="field">
+      <div class="field">
         <button class="fluid blue ui button" type="button" v-on:click="submit"><i class="upload icon"></i> 保存任务</button>
       </div>
     </div>
@@ -53,7 +56,8 @@ export default {
           cmd: '',
           pause: false,
           rules: []
-        }
+        },
+        error: ''
       }
   },
 
@@ -99,7 +103,10 @@ export default {
       this.action = 'CREATE';
     } else {
       this.action = 'UPDATE';
-      this.$rest.GET('job/'+this.$route.params.group+'-'+this.$route.params.id).onsucceed(200, (resp)=>{vm.job = resp}).do();
+      this.$rest.GET('job/'+this.$route.params.group+'-'+this.$route.params.id).
+        onsucceed(200, (resp)=>{vm.job = resp}).
+        onfailed((data)=>{vm.error = data.error}).
+        do();
     }
 
     this.$rest.GET('job/groups').onsucceed(200, (resp)=>{
