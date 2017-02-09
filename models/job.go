@@ -23,7 +23,7 @@ type Job struct {
 	Name    string     `json:"name"`
 	Group   string     `json:"group"`
 	Command string     `json:"cmd"`
-	Rule    []*JobRule `json:"rule"`
+	Rules   []*JobRule `json:"rules"`
 	Pause   bool       `json:"pause"` // 可手工控制的状态
 
 	// node 服务使用
@@ -133,7 +133,7 @@ func (j *Job) Schedule(nid string, gs map[string]*Group, rebuild bool) (sch stri
 
 func (j *Job) buildSchedule(nid string, gs map[string]*Group) {
 	j.build = true
-	for _, r := range j.Rule {
+	for _, r := range j.Rules {
 		for _, id := range r.ExcludeNodeIDs {
 			if nid == id {
 				return
