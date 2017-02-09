@@ -1,6 +1,7 @@
 var path = require('path')
 var webpack = require('webpack')
 
+var fontPublicPath = process.env.NODE_ENV === 'production' ? '/ui/' : '';
 module.exports = {
   entry: './src/main.js',
   output: {
@@ -33,8 +34,8 @@ module.exports = {
         test: /\.(png|jpg|gif|svg|ttf|woff|woff2|eot)\w*/,
         loader: 'file-loader',
         options: {
-          name: '[name].[ext]?[hash]',
-publicPath: '/ui/dist/'
+          publicPath: fontPublicPath,
+          name: '[name].[ext]?[hash]'
         }
       },
       {

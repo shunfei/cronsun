@@ -60,7 +60,7 @@ func InitRouters() (s *http.Server, err error) {
 
 	uidir := conf.Config.Web.UIDir
 	if len(uidir) == 0 {
-		uidir = path.Join(conf.Config.Root, "web", "ui")
+		uidir = path.Join(conf.Config.Root, "web", "ui", "dist")
 	}
 	r.PathPrefix("/ui/").Handler(http.StripPrefix("/ui/", http.FileServer(http.Dir(uidir))))
 

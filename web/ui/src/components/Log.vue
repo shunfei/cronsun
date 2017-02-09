@@ -3,20 +3,20 @@
     <form class="ui form segment fixed" v-bind:class="{loading:loading}" v-on:submit.prevent>
       <div class="field">
         <label>任务名称</label>
-        <input type="text" ref="name" v-bind:value="names" v-on:input="updateValue($event.target.value)" placeholder="多个名称用英文逗号分隔">
+        <input type="text" ref="name" v-model="names"  placeholder="多个名称用英文逗号分隔">
       </div>
       <div class="field">
         <label>运行节点</label>
-        <input type="text" ref="name" v-bind:value="nodes" v-on:input="updateValue($event.target.value)" placeholder="ip，多个 ip 用英文逗号分隔">
+        <input type="text" ref="name" v-model="nodes" placeholder="ip，多个 ip 用英文逗号分隔">
       </div>
       <div class="two fields">
         <div class="field">
           <label>开始时间</label>
-          <input type="date"/>
+          <input type="date" v-model="begin">
         </div>
         <div class="field">
           <label>结束时间</label>
-          <input type="date"/>
+          <input type="date" v-model="end">
         </div>
       </div>
       <div class="field">
@@ -52,17 +52,27 @@ export default {
       loading: false,
       names: '',
       nodes: '',
+      begin: '',
+      end: '',
       list: []
     }
   },
 
-  methods: {
-    updateValue: function(){},
+  mounted: function(){
+    this.names = this.$route.query.names;
+    this.nodes = this.$route.query.nodes;
+    this.begin = this.$route.query.begin;
+    this.end = this.$route.query.end;
 
+    if (this.names || this.nodes || this.begin || this.end) this.submit();
+  },
+
+  methods: {
     submit: function(){
       this.loading = true;
       var vm = this;
-      this.$rest.GET('logs')
+      this.$rest.GET('logs?names='+this.name+'&nodes='+this.nodes+'&begin='+this.begin+'&end='+this.end
+      )
         .onsucceed(200, (resp)=>{vm.list = resp})
         .onfailed((resp)=>{console.log(resp)})
         .onend(()=>{vm.loading=false})
