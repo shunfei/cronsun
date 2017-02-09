@@ -71,6 +71,7 @@ export default {
     },
 
     addNewTimer: function(){
+      if (!this.job.rules) this.job.rules = [];
       this.job.rules.push({});
     },
 
