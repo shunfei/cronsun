@@ -163,6 +163,7 @@ func (n *Node) delJob(job *models.Job) {
 	n.delLink(gid, job.GetID())
 	delete(n.jobs, job.GetID())
 	n.Cron.DelJob(job)
+	log.Noticef("job[%s] has deleted", job)
 }
 
 func (n *Node) addGroup(g *models.Group) bool {
@@ -201,7 +202,9 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
-				n.addJob(job)
+				if n.addJob(job) {
+					log.Noticef("job[%s] has added", job)
+				}
 			case ev.IsModify():
 				job, err := models.GetJobFromKv(ev.Kv)
 				if err != nil {
@@ -215,6 +218,7 @@ func (n *Node) watchJobs() {
 				}
 
 				if n.addJob(job) {
+					log.Noticef("job[%s] has added", job)
 					continue
 				}
 
@@ -235,9 +239,8 @@ func (n *Node) watchJobs() {
 	}
 }
 
-// TODO
 func (n *Node) watchGroups() {
-	rch := models.WatchJobs()
+	rch := models.WatchGroups()
 	for wresp := range rch {
 		for _, ev := range wresp.Events {
 			switch {
@@ -298,7 +301,7 @@ func (n *Node) Run() (err error) {
 
 	n.Cron.Start()
 	go n.watchJobs()
-	go n.watchGroups()
+	// go n.watchGroups()
 	return
 }
 

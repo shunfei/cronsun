@@ -62,7 +62,7 @@ func GetGroups(nid string) (groups map[string]*Group, err error) {
 }
 
 func WatchGroups() client.WatchChan {
-	return DefalutClient.Watch(conf.Config.Group, client.WithPrefix())
+	return DefalutClient.Watch(conf.Config.Group, client.WithPrefix(), client.WithPrevKV())
 }
 
 func GetGroupFromKv(kv *mvccpb.KeyValue) (g *Group, err error) {

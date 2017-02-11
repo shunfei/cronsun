@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"os/exec"
 	"strings"
 
 	client "github.com/coreos/etcd/clientv3"
@@ -106,7 +107,7 @@ func GetJobs() (jobs map[string]*Job, err error) {
 }
 
 func WatchJobs() client.WatchChan {
-	return DefalutClient.Watch(conf.Config.Cmd, client.WithPrefix())
+	return DefalutClient.Watch(conf.Config.Cmd, client.WithPrefix(), client.WithPrevKV())
 }
 
 func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
@@ -151,7 +152,22 @@ func (j *Job) GetID() string {
 	return j.ID
 }
 
+func (j *Job) String() string {
+	data, err := json.Marshal(j)
+	if err != nil {
+		return err.Error()
+	}
+	return string(data)
+}
+
 func (j *Job) Run() {
+	cmd := strings.Split(j.Command, " ")
+	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
+	if err != nil {
+		return
+	}
+
+	fmt.Printf("%s\n", out)
 }
 
 func JobKey(group, id string) string {

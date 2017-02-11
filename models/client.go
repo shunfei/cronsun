@@ -100,9 +100,7 @@ func (c *Client) Delete(key string, opts ...client.OpOption) (*client.DeleteResp
 }
 
 func (c *Client) Watch(key string, opts ...client.OpOption) client.WatchChan {
-	ctx, cancel := context.WithTimeout(context.Background(), c.reqTimeout)
-	defer cancel()
-	return c.Client.Watch(ctx, key, opts...)
+	return c.Client.Watch(context.Background(), key, opts...)
 }
 
 func IsValidAsKeyPath(s string) bool {
