@@ -13,30 +13,7 @@ import (
 
 var (
 	DefalutClient *Client
-
-	initialized bool
 )
-
-func Init() (err error) {
-	if initialized {
-		return
-	}
-
-	if err = initID(); err != nil {
-		return
-	}
-
-	if err = conf.Init(); err != nil {
-		return
-	}
-
-	if DefalutClient, err = NewClient(conf.Config); err != nil {
-		return
-	}
-
-	initialized = true
-	return
-}
 
 type Client struct {
 	*client.Client

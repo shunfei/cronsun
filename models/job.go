@@ -160,14 +160,16 @@ func (j *Job) String() string {
 	return string(data)
 }
 
+// Run 执行任务
 func (j *Job) Run() {
 	cmd := strings.Split(j.Command, " ")
 	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
 	if err != nil {
+		j.fail(err)
 		return
 	}
 
-	fmt.Printf("%s\n", out)
+	j.success(out)
 }
 
 func JobKey(group, id string) string {
@@ -204,4 +206,13 @@ func (j *Job) Check() error {
 	}
 
 	return nil
+}
+
+// 执行结果写入 mongoDB
+func (j *Job) success(out []byte) {
+
+}
+
+func (j *Job) fail(err error) {
+
 }

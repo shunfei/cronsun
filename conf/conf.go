@@ -7,6 +7,7 @@ import (
 	client "github.com/coreos/etcd/clientv3"
 
 	"sunteng/commons/confutil"
+	"sunteng/commons/db/imgo"
 	"sunteng/commons/log"
 	"sunteng/commons/util"
 )
@@ -56,6 +57,7 @@ type Conf struct {
 
 	Log  log.Config
 	Etcd client.Config
+	Mgo  *imgo.Config
 	Web  webConfig
 }
 
