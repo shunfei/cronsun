@@ -11,6 +11,7 @@ import (
 
 	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
+	"time"
 )
 
 const (
@@ -33,6 +34,9 @@ type Job struct {
 	schedule string
 	gid      string
 	build    bool
+
+	// 执行任务的结点，用于记录 job log
+	runOn string
 }
 
 type JobRule struct {
@@ -152,6 +156,10 @@ func (j *Job) GetID() string {
 	return j.ID
 }
 
+func (j *Job) RunOn(n string) {
+	j.runOn = n
+}
+
 func (j *Job) String() string {
 	data, err := json.Marshal(j)
 	if err != nil {
@@ -162,14 +170,14 @@ func (j *Job) String() string {
 
 // Run 执行任务
 func (j *Job) Run() {
-	cmd := strings.Split(j.Command, " ")
+	cmd, t := strings.Split(j.Command, " "), time.Now()
 	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
 	if err != nil {
-		j.fail(err)
+		j.fail(t, err)
 		return
 	}
 
-	j.success(out)
+	j.success(t, out)
 }
 
 func JobKey(group, id string) string {
@@ -209,10 +217,10 @@ func (j *Job) Check() error {
 }
 
 // 执行结果写入 mongoDB
-func (j *Job) success(out []byte) {
-
+func (j *Job) success(t time.Time, out []byte) {
+	CreateJobLog(j, t, string(out), true)
 }
 
-func (j *Job) fail(err error) {
-
+func (j *Job) fail(t time.Time, err error) {
+	CreateJobLog(j, t, err.Error(), false)
 }

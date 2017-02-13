@@ -151,6 +151,7 @@ func (n *Node) addJob(job *models.Job) bool {
 	}
 
 	n.addLink(gid, j.GetID())
+	j.RunOn(n.Node.ID)
 	return true
 }
 

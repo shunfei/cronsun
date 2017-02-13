@@ -4,6 +4,12 @@ import (
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
+
+	"sunteng/commons/log"
+)
+
+const (
+	Coll_JobLog = "job_log"
 )
 
 // 任务执行记录
@@ -15,7 +21,7 @@ type JobLog struct {
 	Node      string        `bson:"node" json:"node"`                 // 运行此次任务的节点 ip，索引
 	Command   string        `bson:"command" json:"command,omitempty"` // 执行的命令，包括参数
 	Output    string        `bson:"output" json:"output,omitempty"`   // 任务输出的所有内容
-	ExitCode  uint8         `bson:"exitCode" json:"exitCode"`         // 脚本退出状态码
+	Success   bool          `bson:"success" json:"success"`           // 是否执行成功
 	BeginTime time.Time     `bson:"beginTime" json:"beginTime"`       // 任务开始执行时间，精确到毫秒，索引
 	EndTime   time.Time     `bson:"endTime" json:"endTime"`           // 任务执行完毕时间，精确到毫秒
 }
@@ -26,4 +32,26 @@ func GetJobLogById(id bson.ObjectId) (*JobLog, error) {
 
 func GetJobLogList(query interface{}, skip, limit int) (list []*JobLog, err error) {
 	return
+}
+
+func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
+	jl := JobLog{
+		Id:    bson.NewObjectId(),
+		JobId: j.GetID(),
+
+		JobGroup: j.Group,
+		Name:     j.Name,
+
+		Node: j.runOn,
+
+		Command: j.Command,
+		Output:  rs,
+		Success: success,
+
+		BeginTime: t,
+		EndTime:   time.Now(),
+	}
+	if err := mgoDB.Insert(Coll_JobLog, jl); err != nil {
+		log.Error(err.Error())
+	}
 }
