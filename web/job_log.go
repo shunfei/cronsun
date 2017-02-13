@@ -37,6 +37,11 @@ func (jl *JobLog) GetDetail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
+	// nodes := GetStringArrayFromQuery("nodes", ",", r)
+	// names := GetStringArrayFromQuery("names", ",", r)
+	// begin := r.FormValue("begin")
+	// end := r.FormValue("end")
+
 	list := []*models.JobLog{
 		&models.JobLog{
 			Id:        bson.NewObjectId(),
@@ -67,4 +72,13 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	outJSON(w, list)
+}
+
+func GetStringArrayFromQuery(name, sep string, r *http.Request) (arr []string) {
+	val := strings.TrimSpace(r.FormValue(name))
+	if len(val) == 0 {
+		return
+	}
+
+	return strings.Split(val, sep)
 }

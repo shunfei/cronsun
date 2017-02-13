@@ -1,6 +1,6 @@
 <template>
   <div>
-    <form class="ui form segment fixed" v-bind:class="{loading:loading}" v-on:submit.prevent>
+    <form class="ui form" v-bind:class="{loading:loading}" v-on:submit.prevent>
       <div class="field">
         <label>任务名称</label>
         <input type="text" ref="name" v-model="names"  placeholder="多个名称用英文逗号分隔">
@@ -23,7 +23,7 @@
         <button class="fluid ui button" type="button" v-on:click="submit">查询</button>
       </div>
     </form>
-    <table class="ui selectable green table">
+    <table class="ui selectable green table" v-if="list && list.length > 0">
       <thead>
         <tr>
           <th class="center aligned">任务名称</th>

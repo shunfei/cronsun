@@ -62,7 +62,7 @@ func (n *Node) Exist() (pid int, err error) {
 }
 
 func GetActivityNodeList() (nodes []string, err error) {
-	resp, err := DefalutClient.Get(conf.Config.Proc, client.WithPrefix(), client.WithKeysOnly())
+	resp, err := DefalutClient.Get(conf.Config.Proc, client.WithPrefix(), client.WithKeysOnly(), client.WithSort(client.SortByKey, client.SortAscend))
 	if err != nil {
 		return
 	}

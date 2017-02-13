@@ -12,7 +12,11 @@
 <script>
 export default {
   name: 'dropdown',
-  props: ['title', 'items', 'selected', 'allowAdditions', 'multiple'],
+  props: ['title', 'items', 'allowAdditions', 'multiple', 'selected'],
+
+  data: function(){
+    return {}
+  },
 
   mounted: function() {
     if (this.title.length === 0) this.title = '选择分组';
@@ -26,10 +30,13 @@ export default {
         vm.$emit('change', value, text);
       }
     });
-    
-    if (this.selected !== null) {
-      $(this.$el).dropdown('set selected', this.selected);
-    }
+    setTimeout(()=>{
+      $(vm.$el).dropdown('set exactly', vm.selected).dropdown('refresh');
+    }, 200);
+  },
+
+  updated: function(){
+    $(this.$el).dropdown('set exactly', this.selected);
   }
 }
 </script>

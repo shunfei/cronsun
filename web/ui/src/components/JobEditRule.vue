@@ -11,11 +11,11 @@
   </div>
   <div class="field">
     <label>同时在这些节点上面运行任务</label>
-    <Dropdown title="选择节点" v-bind:items="activityNodes" multiple="true"></Dropdown>
+    <Dropdown title="选择节点" v-bind:items="activityNodes" v-bind:selected="rule.nids" v-on:change="changeIncludeNodes($event)" multiple="true"></Dropdown>
   </div>
   <div class="field">
     <label>不在这些节点上面运行任务</label>
-    <Dropdown title="选择节点" v-bind:items="activityNodes" multiple="true"></Dropdown>
+    <Dropdown title="选择节点" v-bind:items="activityNodes" v-on:change="changeExcludeNodes($event)" multiple="true"></Dropdown>
   </div>
 </div>
 </template>
@@ -25,7 +25,7 @@ import Dropdown from './basic/Dropdown.vue';
 
 export default {
   name: 'job-edit-rule',
-  props: ['rule', 'index'],
+  props: ['index', 'rule'],
   data: function(){
     return {
       nodeGroups: [],
@@ -51,6 +51,14 @@ export default {
     },
     change: function(key, val){
       this.$emit('change', this.index, key, val);
+    },
+    changeIncludeNodes: function(val){
+      var nids = val.trim().length === 0 ? [] : val.split(',');
+      this.change('nids', nids);
+    },
+    changeExcludeNodes: function(val){
+      var exclude_nids = val.trim().length === 0 ? [] : val.split(',');
+      this.change('exclude_nids', exclude_nids);
     }
   },
 

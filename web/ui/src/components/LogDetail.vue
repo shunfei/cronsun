@@ -5,7 +5,7 @@
   <div v-else>
     <div class="ui segments">
       <div class="ui segment">
-        <p>任务：<router-link class="item" :to="'/job/'+log.jobGroup+'/'+log.jobId">{{log.name}}</router-link></p>
+        <p>任务：<router-link class="item" :to="'/job/edit/'+log.jobGroup+'/'+log.jobId">{{log.name}}</router-link></p>
       </div>
       <div class="ui segment">
         <p>节点：{{log.node}}</p>

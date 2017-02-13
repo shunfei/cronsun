@@ -2,7 +2,7 @@
   <div v-if="error != ''" class="ui negative message">
     <div class="header"><i class="attention icon"></i> {{error}}</div>
   </div>
-  <form v-else class="ui form segment" v-bind:class="{loading:loading}" v-on:submit.prevent>
+  <form v-else class="ui form" v-bind:class="{loading:loading}" v-on:submit.prevent>
     <h3 class="ui header">{{action == 'CREATE' ? '添加' : '更新'}}任务&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <div class="ui toggle checkbox">
       <input type="checkbox" class="hidden" v-bind:checked="!job.pause">
@@ -26,7 +26,7 @@
     <div class="field">
       <span v-if="!job.rules || job.rules.length == 0"><i class="warning circle icon"></i>当前任务没有定时器，点击下面按钮来添加定时器</span>
     </div>
-    <JobEditRule v-for="(rule, index) in job.rules" :rule="rule" :index="index" v-on:remove="removeRule" v-on:change="changeRule"/>
+    <JobEditRule v-for="(rule, index) in job.rules" :key="rule.id" v-bind:rule="rule" :index="index" v-on:remove="removeRule" v-on:change="changeRule"/>
     <div class="two fields">
       <div class="field">
         <button class="fluid ui button" v-on:click="addNewTimer" type="button"><i class="history icon"></i> 添加定时器</button>
@@ -72,7 +72,7 @@ export default {
 
     addNewTimer: function(){
       if (!this.job.rules) this.job.rules = [];
-      this.job.rules.push({});
+      this.job.rules.push({id: this.randomRuleId()});
     },
 
     changeGroup: function(val, text){
@@ -94,6 +94,10 @@ export default {
         .onfailed((resp)=>{console.log(resp)})
         .onend(()=>{vm.loading=false})
         .do();
+    },
+
+    randomRuleId: function(){
+      return Math.random().toString();
     }
   },
 
@@ -105,15 +109,22 @@ export default {
     } else {
       this.action = 'UPDATE';
       this.$rest.GET('job/'+this.$route.params.group+'-'+this.$route.params.id).
-        onsucceed(200, (resp)=>{vm.job = resp}).
+        onsucceed(200, (resp)=>{
+          vm.job = resp;
+          if (vm.job.rules) {
+            for (var i in vm.job.rules) {
+              vm.job.rules[i].id = vm.randomRuleId();
+            }
+          }
+        }).
         onfailed((data)=>{vm.error = data.error}).
         do();
     }
 
     this.$rest.GET('job/groups').onsucceed(200, (resp)=>{
-        !resp.includes('default') && resp.unshift('default');
-        vm.groups = resp;
-      }).do();
+      !resp.includes('default') && resp.unshift('default');
+      vm.groups = resp;
+    }).do();
 
     $(this.$el).find('.checkbox').checkbox({
       onChange: function(){
@@ -126,7 +137,7 @@ export default {
       onChange: function(value, text, $choice){
         vm.job.group = value;
       }
-    }).dropdown('set selected', this.job.group);
+    }).dropdown('set exactly', this.job.group);
   },
 
   components: {
