@@ -1,6 +1,4 @@
 {
-    "Mgo": {
-        "Host": "192.168.11.16:3000",
-        "Database": "cronsun"
-    }
+  "Host": "192.168.11.16:3000",
+  "Database": "cronsun"
 }
