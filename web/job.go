@@ -9,6 +9,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/gorilla/mux"
 
+	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
 	"sunteng/cronsun/models"
 )
@@ -138,6 +139,11 @@ func (j *Job) GetGroups(w http.ResponseWriter, r *http.Request) {
 }
 
 func (j *Job) GetListByGroupName(w http.ResponseWriter, r *http.Request) {
+	type jobStatus struct {
+		*models.Job
+		LatestStatus *models.JobLatestLog `json:"latestStatus"`
+	}
+
 	vars := mux.Vars(r)
 	resp, err := models.DefalutClient.Get(conf.Config.Cmd+vars["name"], clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 	if err != nil {
@@ -145,7 +151,8 @@ func (j *Job) GetListByGroupName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var jobList = make([]*models.Job, 0, resp.Count)
+	var jobIds []string
+	var jobList = make([]*jobStatus, 0, resp.Count)
 	for i := range resp.Kvs {
 		job := models.Job{}
 		err = json.Unmarshal(resp.Kvs[i].Value, &job)
@@ -153,7 +160,17 @@ func (j *Job) GetListByGroupName(w http.ResponseWriter, r *http.Request) {
 			outJSONError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		jobList = append(jobList, &job)
+		jobList = append(jobList, &jobStatus{Job: &job})
+		jobIds = append(jobIds, job.ID)
+	}
+
+	m, err := models.GetJobLatestLogListByJobIds(jobIds)
+	if err != nil {
+		log.Error("GetJobLatestLogListByJobIds error:", err.Error())
+	} else {
+		for i := range jobList {
+			jobList[i].LatestStatus = m[jobList[i].ID]
+		}
 	}
 
 	outJSON(w, jobList)

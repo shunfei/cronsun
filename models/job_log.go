@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	Coll_JobLog = "job_log"
+	Coll_JobLog       = "job_log"
+	Coll_JobLatestLog = "job_latest_log"
 )
 
 // 任务执行记录
@@ -27,12 +28,17 @@ type JobLog struct {
 	EndTime   time.Time     `bson:"endTime" json:"endTime"`           // 任务执行完毕时间，精确到毫秒
 }
 
+type JobLatestLog struct {
+	JobLog   `bson:",inline"`
+	RefLogId string `bson:"refLogId,omitempty" json:"refLogId"`
+}
+
 func GetJobLogById(id bson.ObjectId) (l *JobLog, err error) {
 	err = mgoDB.FindId(Coll_JobLog, id, &l)
 	return
 }
 
-var projection = bson.M{"command": -1, "output": -1}
+var selectForJobLogList = bson.M{"command": 0, "output": 0}
 
 func GetJobLogList(query bson.M, page, size int, sort string) (list []*JobLog, total int, err error) {
 	err = mgoDB.WithC(Coll_JobLog, func(c *mgo.Collection) error {
@@ -40,8 +46,22 @@ func GetJobLogList(query bson.M, page, size int, sort string) (list []*JobLog, t
 		if err != nil {
 			return err
 		}
-		return c.Find(query).Select(projection).Sort(sort).Skip((page - 1) * size).Limit(size).All(&list)
+		return c.Find(query).Select(selectForJobLogList).Sort(sort).Skip((page - 1) * size).Limit(size).All(&list)
 	})
+	return
+}
+
+func GetJobLatestLogListByJobIds(jobIds []string) (m map[string]*JobLatestLog, err error) {
+	var list []*JobLatestLog
+	err = mgoDB.AllSelect(Coll_JobLatestLog, bson.M{"jobId": bson.M{"$in": jobIds}}, selectForJobLogList, &list)
+	if err != nil {
+		return
+	}
+
+	m = make(map[string]*JobLatestLog, len(list))
+	for i := range list {
+		m[list[i].JobId] = list[i]
+	}
 	return
 }
 
@@ -63,6 +83,15 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 		EndTime:   time.Now(),
 	}
 	if err := mgoDB.Insert(Coll_JobLog, jl); err != nil {
+		log.Error(err.Error())
+	}
+
+	latestLog := &JobLatestLog{
+		RefLogId: jl.Id.Hex(),
+		JobLog:   jl,
+	}
+	latestLog.Id = ""
+	if err := mgoDB.Upsert(Coll_JobLatestLog, bson.M{"jobId": jl.JobId, "jobGroup": jl.JobGroup}, latestLog); err != nil {
 		log.Error(err.Error())
 	}
 }

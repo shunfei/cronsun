@@ -3,7 +3,10 @@
   <h4 class="ui horizontal divider header">定时器 - {{index}} <a href="#" v-on:click.prevent="remove">删除</a></h4>
   <div class="two fields">
     <div class="field">
-      <input type="text" v-bind:value="rule.timer" v-on:input="change('timer', $event.target.value)" placeholder="定时 * * * * *（crontab 格式）"/>
+      <div class="ui icon input">
+        <input type="text" v-bind:value="rule.timer" v-on:input="change('timer', $event.target.value)" placeholder="定时 * 5 * * * *"/>
+        <i ref="ruletip" class="large help circle link icon" data-position="top right" data-content="<秒> <分钟> <小时> <日> <月份> <星期>，规则与 crontab 一样" data-variation="wide"></i>
+      </div>
     </div>
     <div class="field">
       <Dropdown title="节点分组" v-bind:items="nodeGroups" multiple="true"></Dropdown>
@@ -35,7 +38,11 @@ export default {
 
   mounted: function(){
     var vm = this;
-    this.$rest.GET('nodes').onsucceed(200, (resp)=>{vm.activityNodes = resp}).do();
+    this.$rest.GET('nodes').onsucceed(200, (resp)=>{
+      for (var i in resp) {
+        vm.activityNodes.push(resp[i].id);
+      }
+    }).do();
     this.$rest.GET('nodes/groups').onsucceed(200, (resp)=>{
       var groups = [];
       for (var i in resp) {
@@ -43,6 +50,8 @@ export default {
       }
       vm.nodeGroups = groups;
     });
+
+    $(this.$refs.ruletip).popup();
   },
 
   methods: {

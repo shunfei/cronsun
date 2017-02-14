@@ -54,15 +54,17 @@ export default {
       nodes: '',
       begin: '',
       end: '',
-      list: []
+      list: [],
+      total: 0,
+      currPage: 1
     }
   },
 
   mounted: function(){
-    this.names = this.$route.query.names;
-    this.nodes = this.$route.query.nodes;
-    this.begin = this.$route.query.begin;
-    this.end = this.$route.query.end;
+    this.names = this.$route.query.names || '';
+    this.nodes = this.$route.query.nodes || '';
+    this.begin = this.$route.query.begin || '';
+    this.end = this.$route.query.end || '';
 
     if (this.names || this.nodes || this.begin || this.end) this.submit();
   },
@@ -71,8 +73,12 @@ export default {
     submit: function(){
       this.loading = true;
       var vm = this;
-      this.$rest.GET('logs?names='+this.name+'&nodes='+this.nodes+'&begin='+this.begin+'&end='+this.end
-      )
+      var params = [];
+      if (this.name) params.push('names='+this.name);
+      if (this.nodes) params.push('nodes='+this.nodes);
+      if (this.begin) params.push('begin='+this.begin);
+      if (this.end) params.push('end='+this.end);
+      this.$rest.GET('logs?'+params.join('&'))
         .onsucceed(200, (resp)=>{vm.list = resp})
         .onfailed((resp)=>{console.log(resp)})
         .onend(()=>{vm.loading=false})
@@ -122,13 +128,13 @@ export default {
         s += t.getFullYear().toString() + '-';
       }
       s += this._formatNumber(t.getMonth()+1, 2).toString() + '-';
-      s += this._formatNumber(t.getDate(), 2) + ' ' + this._formatNumber(t.getHours(), 2) + ':' + this._formatNumber(t.getMinutes());
+      s += this._formatNumber(t.getDate(), 2) + ' ' + this._formatNumber(t.getHours(), 2) + ':' + this._formatNumber(t.getMinutes(), 2) + ':' + this._formatNumber(t.getSeconds(), 2);
       return s;
     },
 
     // i > 0
     _formatNumber: function(i, len){
-      var n = Math.ceil(Math.log10(i));
+      var n = Math.ceil(Math.log10(i+1));
       if (n >= len) return i.toString();
       return '0'.repeat(len-n) + i.toString(); 
     }

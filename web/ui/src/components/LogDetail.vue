@@ -13,6 +13,9 @@
       <div class="ui segment">
         <p>时间：{{log.beginTime}} 到 {{log.endTime}}</p>
       </div>
+      <div class="ui segment">
+        <p>结果：{{log.success ? '成功' : '失败'}}</p>
+      </div>
     </div>
     <h4 class="ui header">执行的命令</h4>
     <pre class="ui grey inverted segment">{{log.command}}</pre>
@@ -45,7 +48,7 @@ export default {
   mounted: function(){
     var vm = this;
     this.$rest.GET('log/'+this.$route.params.id).
-        onsucceed(200, (resp)=>{/*vm.log = resp*/}).
+        onsucceed(200, (resp)=>{vm.log = resp}).
         onfailed((data)=>{vm.error = data.error}).
         do();
   }
