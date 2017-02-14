@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	"sunteng/commons/log"
@@ -26,11 +27,21 @@ type JobLog struct {
 	EndTime   time.Time     `bson:"endTime" json:"endTime"`           // 任务执行完毕时间，精确到毫秒
 }
 
-func GetJobLogById(id bson.ObjectId) (*JobLog, error) {
-	return nil, nil
+func GetJobLogById(id bson.ObjectId) (l *JobLog, err error) {
+	err = mgoDB.FindId(Coll_JobLog, id, &l)
+	return
 }
 
-func GetJobLogList(query interface{}, skip, limit int) (list []*JobLog, err error) {
+var projection = bson.M{"command": -1, "output": -1}
+
+func GetJobLogList(query bson.M, page, size int, sort string) (list []*JobLog, total int, err error) {
+	err = mgoDB.WithC(Coll_JobLog, func(c *mgo.Collection) error {
+		total, err = c.Find(query).Count()
+		if err != nil {
+			return err
+		}
+		return c.Find(query).Select(projection).Sort(sort).Skip((page - 1) * size).Limit(size).All(&list)
+	})
 	return
 }
 
