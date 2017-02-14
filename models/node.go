@@ -6,15 +6,23 @@ import (
 	"syscall"
 
 	client "github.com/coreos/etcd/clientv3"
+	"gopkg.in/mgo.v2/bson"
 
+	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
+)
+
+const (
+	Coll_Node = "node"
 )
 
 // 执行 cron cmd 的进程
 // 注册到 /cronsun/proc/<id>
 type Node struct {
-	ID  string `json:"-"`   // ip
-	PID string `json:"pid"` // 进程 pid
+	ID  string `bson:"_id" json:"-"`   // ip
+	PID string `bson:"pid" json:"pid"` // 进程 pid
+
+	Alived bool `bson:"alived" json:"-"` // 是否可用
 }
 
 func (n *Node) String() string {
@@ -73,4 +81,20 @@ func GetActivityNodeList() (nodes []string, err error) {
 	}
 
 	return
+}
+
+// On 结点实例启动后，在 mongoDB 中记录存活信息
+func (n *Node) On() {
+	n.Alived = true
+	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
+		log.Error(err.Error())
+	}
+}
+
+// On 结点实例停用后，在 mongoDB 中去掉存活信息
+func (n *Node) Down() {
+	n.Alived = false
+	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
+		log.Error(err.Error())
+	}
 }

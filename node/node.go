@@ -302,7 +302,8 @@ func (n *Node) Run() (err error) {
 
 	n.Cron.Start()
 	go n.watchJobs()
-	// go n.watchGroups()
+	go n.watchGroups()
+	n.Node.On()
 	return
 }
 
@@ -330,6 +331,7 @@ func (n *Node) keepAlive() {
 
 // 停止服务
 func (n *Node) Stop(i interface{}) {
+	n.Node.Down()
 	close(n.done)
 	n.Node.Del()
 	n.Client.Close()
