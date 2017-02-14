@@ -43,20 +43,20 @@ func InitRouters() (s *http.Server, err error) {
 	h = BaseHandler{Handle: jobLogHandler.GetDetail}
 	subrouter.Handle("/log/{id}", h).Methods("GET")
 
-	h = BaseHandler{Handle: nodeHandler.GetActivityNodeList}
-	subrouter.Handle("/node/activitys", h).Methods("GET")
+	h = BaseHandler{Handle: nodeHandler.GetNodes}
+	subrouter.Handle("/nodes", h).Methods("GET")
 	// get node group list
 	h = BaseHandler{Handle: nodeHandler.GetGroups}
-	subrouter.Handle("/node/groups", h).Methods("GET")
+	subrouter.Handle("/nodes/groups", h).Methods("GET")
 	// get a node group by group id
 	h = BaseHandler{Handle: nodeHandler.GetGroupByGroupId}
-	subrouter.Handle("/node/group/{id}", h).Methods("GET")
+	subrouter.Handle("/nodes/group/{id}", h).Methods("GET")
 	// create/update a node group
 	h = BaseHandler{Handle: nodeHandler.UpdateGroup}
-	subrouter.Handle("/node/group", h).Methods("PUT")
+	subrouter.Handle("/nodes/group", h).Methods("PUT")
 	// delete a node group
 	h = BaseHandler{Handle: nodeHandler.DeleteGroup}
-	subrouter.Handle("/node/group", h).Methods("DELETE")
+	subrouter.Handle("/nodes/group", h).Methods("DELETE")
 
 	uidir := conf.Config.Web.UIDir
 	if len(uidir) == 0 {

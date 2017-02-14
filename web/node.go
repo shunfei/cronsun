@@ -97,11 +97,11 @@ func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	outJSONWithCode(w, http.StatusNoContent, nil)
 }
 
-func (n *Node) GetActivityNodeList(w http.ResponseWriter, r *http.Request) {
-	ids, err := models.GetActivityNodeList()
+func (n *Node) GetNodes(w http.ResponseWriter, r *http.Request) {
+	nodes, err := models.GetNodes()
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	outJSONWithCode(w, http.StatusOK, ids)
+	outJSONWithCode(w, http.StatusOK, nodes)
 }

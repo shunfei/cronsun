@@ -35,8 +35,8 @@ export default {
 
   mounted: function(){
     var vm = this;
-    this.$rest.GET('node/activitys').onsucceed(200, (resp)=>{vm.activityNodes = resp}).do();
-    this.$rest.GET('node/groups').onsucceed(200, (resp)=>{
+    this.$rest.GET('nodes').onsucceed(200, (resp)=>{vm.activityNodes = resp}).do();
+    this.$rest.GET('nodes/groups').onsucceed(200, (resp)=>{
       var groups = [];
       for (var i in resp) {
         groups.push({value: resp[i].id, name: resp[i].name});

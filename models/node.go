@@ -6,6 +6,7 @@ import (
 	"syscall"
 
 	client "github.com/coreos/etcd/clientv3"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	"sunteng/commons/log"
@@ -19,10 +20,10 @@ const (
 // 执行 cron cmd 的进程
 // 注册到 /cronsun/proc/<id>
 type Node struct {
-	ID  string `bson:"_id" json:"-"`   // ip
+	ID  string `bson:"_id" json:"id"`  // ip
 	PID string `bson:"pid" json:"pid"` // 进程 pid
 
-	Alived bool `bson:"alived" json:"-"` // 是否可用
+	Alived bool `bson:"alived" json:"alived"` // 是否可用
 }
 
 func (n *Node) String() string {
@@ -69,16 +70,10 @@ func (n *Node) Exist() (pid int, err error) {
 	return -1, nil
 }
 
-func GetActivityNodeList() (nodes []string, err error) {
-	resp, err := DefalutClient.Get(conf.Config.Proc, client.WithPrefix(), client.WithKeysOnly(), client.WithSort(client.SortByKey, client.SortAscend))
-	if err != nil {
-		return
-	}
-
-	procKeyLen := len(conf.Config.Proc)
-	for _, n := range resp.Kvs {
-		nodes = append(nodes, string(n.Key[procKeyLen:]))
-	}
+func GetNodes() (nodes []*Node, err error) {
+	err = mgoDB.WithC(Coll_Node, func(c *mgo.Collection) error {
+		return c.Find(nil).All(&nodes)
+	})
 
 	return
 }
