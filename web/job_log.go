@@ -69,7 +69,7 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 		query["beginTime"] = bson.M{"$gte": begin}
 	}
 	if !end.IsZero() {
-		query["endTime"] = bson.M{"$lte": end}
+		query["endTime"] = bson.M{"$lt": end.Add(time.Hour * 24)}
 	}
 
 	var pager struct {
@@ -83,6 +83,7 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pager.Total /= pageSize
 	outJSON(w, pager)
 }
 

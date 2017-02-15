@@ -35,7 +35,7 @@ var routes = [
   {path: '/job', component: Job},
   {path: '/job/create', component: JobEdit},
   {path: '/job/edit/:group/:id', component: JobEdit},
-  {path: '/nodes', component: Node}
+  {path: '/node', component: Node}
 ];
 
 var router = new VueRouter({

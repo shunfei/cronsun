@@ -13,7 +13,7 @@
     "jquery": "^3.1.1",
     "semantic-ui": "^2.2.7",
     "vue": "^2.1.0",
-    "vue-router": "^2.1.1"
+    "vue-router": "^2.2.1"
   },
   "devDependencies": {
     "babel-core": "^6.0.0",

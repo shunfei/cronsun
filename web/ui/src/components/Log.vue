@@ -1,6 +1,6 @@
 <template>
   <div>
-    <form class="ui form" v-bind:class="{loading:loading}" v-on:submit.prevent>
+    <form class="ui form" method="GET" v-bind:class="{loading:loading}" v-on:submit.prevent>
       <div class="field">
         <label>任务名称</label>
         <input type="text" ref="name" v-model="names"  placeholder="多个名称用英文逗号分隔">
@@ -29,22 +29,27 @@
           <th class="center aligned">任务名称</th>
           <th class="center aligned">运行节点</th>
           <th class="center aligned">执行时间</th>
-          <th class="center aligned">状态码</th>
+          <th class="center aligned">运行结果</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="log in list">
-          <td><router-link class="item" :to="/log/+log.id">{{log.name}}</router-link></td>
+          <td><router-link class="item" :to="'/job/edit/'+log.jobGroup+'/'+log.jobId">{{log.name}}</router-link></td>
           <td>{{log.node}}</td>
           <td :class="{warning: durationAttention(log.beginTime, log.endTime)}"><i class="attention icon" v-if="durationAttention(log.beginTime, log.endTime)"></i> {{formatTime(log.beginTime, log.endTime)}}，{{formatDuration(log.beginTime, log.endTime)}}</td>
-          <td :class="{error: log.exitCode != 0}">{{log.exitCode}}</td>
+          <td :class="{error: !log.success}">
+            <router-link :to="'/log/'+log.id">{{log.success ? '成功' : '失败'}}</router-link>
+          </td>
         </tr>
       </tbody>
     </table>
+    <Pager v-if="list && list.length>0" :total="total" :length="5"/>
   </div>
 </template>
 
 <script>
+import Pager from './basic/Pager.vue';
+
 export default {
   name: 'log',
   data: function(){
@@ -56,33 +61,58 @@ export default {
       end: '',
       list: [],
       total: 0,
-      currPage: 1
+      page: 1
     }
   },
 
-  mounted: function(){
-    this.names = this.$route.query.names || '';
-    this.nodes = this.$route.query.nodes || '';
-    this.begin = this.$route.query.begin || '';
-    this.end = this.$route.query.end || '';
+  mounted: function(to, from, next){
+      this.names = this.$route.query.names || '';
+      this.nodes = this.$route.query.nodes || '';
+      this.begin = this.$route.query.begin || '';
+      this.end = this.$route.query.end || '';
+      this.page = this.$route.query.page || 1;
+      this.fetchList(this.buildQuery());
+  },
 
-    if (this.names || this.nodes || this.begin || this.end) this.submit();
+  watch: {
+    '$route': function(){
+      this.names = this.$route.query.names || '';
+      this.nodes = this.$route.query.nodes || '';
+      this.begin = this.$route.query.begin || '';
+      this.end = this.$route.query.end || '';
+      this.page = this.$route.query.page || 1;
+      
+      this.fetchList(this.buildQuery());
+    }
   },
 
   methods: {
-    submit: function(){
+    fetchList(query){
       this.loading = true;
       var vm = this;
-      var params = [];
-      if (this.name) params.push('names='+this.name);
-      if (this.nodes) params.push('nodes='+this.nodes);
-      if (this.begin) params.push('begin='+this.begin);
-      if (this.end) params.push('end='+this.end);
-      this.$rest.GET('logs?'+params.join('&'))
-        .onsucceed(200, (resp)=>{vm.list = resp})
+      this.$rest.GET('/logs?'+query)
+        .onsucceed(200, (resp)=>{
+          vm.list = resp.list;
+          vm.total = resp.total;
+        })
         .onfailed((resp)=>{console.log(resp)})
         .onend(()=>{vm.loading=false})
         .do();
+    },
+
+    buildQuery(){
+      var params = [];
+      if (this.names) params.push('names='+this.names);
+      if (this.nodes) params.push('nodes='+this.nodes);
+      if (this.begin) params.push('begin='+this.begin);
+      if (this.end) params.push('end='+this.end);
+      if (this.page == 0) this.page = 1;
+      params.push('page='+this.page);
+      return params.join('&');
+    },
+
+    submit: function(){
+      this.$router.push('/log?'+this.buildQuery());
     },
 
     durationAttention: function(beginTime, endTime){
@@ -134,10 +164,13 @@ export default {
 
     // i > 0
     _formatNumber: function(i, len){
-      var n = Math.ceil(Math.log10(i+1));
+      var n = i == 0 ? 1 : Math.ceil(Math.log10(i+1));
       if (n >= len) return i.toString();
       return '0'.repeat(len-n) + i.toString(); 
     }
+  },
+  components: {
+    Pager
   }
 }
 </script>
