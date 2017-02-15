@@ -14,7 +14,10 @@
         <p>时间：{{log.beginTime}} 到 {{log.endTime}}</p>
       </div>
       <div class="ui segment">
-        <p>结果：{{log.success ? '成功' : '失败'}}</p>
+        <p>结果：
+          <span v-if="log.success"><i class="checkmark green icon"></i></span>
+          <span v-else><i class="remove red icon"></i></span>
+        </p>
       </div>
     </div>
     <h4 class="ui header">执行的命令</h4>
