@@ -221,6 +221,8 @@ func (j *Job) Check() error {
 		return ErrIllegalJobGroupName
 	}
 
+	j.User = strings.TrimSpace(j.User)
+
 	// 不修改 Command 的内容，简单判断是否为空
 	if len(strings.TrimSpace(j.Command)) == 0 {
 		return ErrEmptyJobCommand

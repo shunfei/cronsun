@@ -20,9 +20,15 @@
         <Dropdown title="选择分组" allowAdditions=true v-bind:items="groups" v-bind:selected="job.group" v-on:change="changeGroup"/>
       </div>
     </div>
-    <div class="field">
-      <label>任务脚本</label>
-      <input type="text" v-model="job.cmd" placeholder="任务脚本">
+    <div class="fields">
+      <div class="twelve wide field">
+        <label>任务脚本</label>
+        <input type="text" v-model="job.cmd" placeholder="任务脚本">
+      </div>
+      <div class="four wide field">
+        <label>用户(可选)</label>
+        <input type="text" v-model="job.user" placeholder="指定执行脚本的用户">
+      </div>
     </div>
     <div class="field">
       <span v-if="!job.rules || job.rules.length == 0"><i class="warning circle icon"></i>当前任务没有定时器，点击下面按钮来添加定时器</span>
@@ -54,6 +60,7 @@ export default {
           id: '',
           name:  '',
           group: 'default',
+          user: '',
           cmd: '',
           pause: false,
           rules: []

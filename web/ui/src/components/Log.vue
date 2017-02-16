@@ -135,7 +135,13 @@ export default {
     },
 
     submit: function(){
-      this.$router.push('/log?'+this.buildQuery());
+      var query = this.buildQuery()
+      var url = '/log?'+query;
+      if (this.$router.fullPath == url) {
+        this.fetchList(query);
+        return;
+      }
+      this.$router.push(url);
     },
 
     durationAttention: function(beginTime, endTime){
