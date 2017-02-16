@@ -25,6 +25,7 @@ type Job struct {
 	Name    string     `json:"name"`
 	Group   string     `json:"group"`
 	Command string     `json:"cmd"`
+	User    string     `json:"user"`
 	Rules   []*JobRule `json:"rules"`
 	Pause   bool       `json:"pause"` // 可手工控制的状态
 
@@ -170,8 +171,20 @@ func (j *Job) String() string {
 
 // Run 执行任务
 func (j *Job) Run() {
-	cmd, t := strings.Split(j.Command, " "), time.Now()
-	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
+	t := time.Now()
+	var cmd *exec.Cmd
+	if len(j.User) > 0 {
+		if needPassword {
+			j.Fail(t, SudoErr)
+			return
+		}
+		cmd = exec.Command("sudo", "su", j.User, "-c", j.Command)
+	} else {
+		args := strings.Split(j.Command, " ")
+		cmd = exec.Command(args[0], args[1:]...)
+	}
+
+	out, err := cmd.Output()
 	if err != nil {
 		j.Fail(t, err)
 		return

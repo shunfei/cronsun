@@ -24,6 +24,7 @@ func main() {
 	//set cpu usage
 	runtime.GOMAXPROCS(*gomax)
 
+	models.InitPwd()
 	if err := models.Init(); err != nil {
 		log.Error(err.Error())
 		return
