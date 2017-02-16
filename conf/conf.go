@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"flag"
 	"path"
 	"time"
 
@@ -9,10 +10,12 @@ import (
 	"sunteng/commons/confutil"
 	"sunteng/commons/db/imgo"
 	"sunteng/commons/log"
-	"sunteng/commons/util"
 )
 
 var (
+	confFile = flag.String("conf",
+		"conf/files/base.json", "config file path")
+
 	Config      = new(Conf)
 	initialized bool
 )
@@ -22,10 +25,8 @@ func Init() error {
 		return nil
 	}
 
-	Config.Root = util.CurDir()
-
-	confFile := path.Join(Config.Root, "files", "base.json")
-	err := confutil.LoadExtendConf(confFile, Config)
+	flag.Parse()
+	err := confutil.LoadExtendConf(*confFile, Config)
 	if err != nil {
 		return err
 	}
@@ -39,15 +40,11 @@ func Init() error {
 	Config.Proc = cleanKeyPrefix(Config.Proc)
 	Config.Group = cleanKeyPrefix(Config.Group)
 
-	Config.Root = path.Join(Config.Root, "..")
-
 	initialized = true
 	return nil
 }
 
 type Conf struct {
-	Root string // 项目根目录
-
 	Proc  string // proc 路径
 	Cmd   string // cmd 路径
 	Group string // 节点分组
