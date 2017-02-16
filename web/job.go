@@ -135,17 +135,21 @@ func (j *Job) GetGroups(w http.ResponseWriter, r *http.Request) {
 
 	sort.Strings(groupList)
 	outJSON(w, groupList)
-
 }
 
-func (j *Job) GetListByGroupName(w http.ResponseWriter, r *http.Request) {
+func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
+	group := strings.TrimSpace(r.FormValue("group"))
+	var prefix = conf.Config.Cmd
+	if len(group) != 0 {
+		prefix += group
+	}
+
 	type jobStatus struct {
 		*models.Job
 		LatestStatus *models.JobLatestLog `json:"latestStatus"`
 	}
 
-	vars := mux.Vars(r)
-	resp, err := models.DefalutClient.Get(conf.Config.Cmd+vars["name"], clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
+	resp, err := models.DefalutClient.Get(prefix, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return

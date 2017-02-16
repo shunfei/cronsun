@@ -1,13 +1,19 @@
 <template>
   <div>
     <form class="ui form" method="GET" v-bind:class="{loading:loading}" v-on:submit.prevent>
-      <div class="field">
-        <label>任务名称</label>
-        <input type="text" ref="name" v-model="names"  placeholder="多个名称用英文逗号分隔">
+      <div class="two fields">
+        <div class="field">
+          <label>任务名称</label>
+          <input type="text" v-model="names"  placeholder="多个名称用英文逗号分隔">
+        </div>
+        <div class="field">
+          <label>任务 ID</label>
+          <input type="text" v-model="ids"  placeholder="多个 ID 用英文逗号分隔">
+        </div>
       </div>
       <div class="field">
         <label>运行节点</label>
-        <input type="text" ref="name" v-model="nodes" placeholder="ip，多个 ip 用英文逗号分隔">
+        <input type="text" v-model="nodes" placeholder="ip，多个 ip 用英文逗号分隔">
       </div>
       <div class="two fields">
         <div class="field">
@@ -17,6 +23,12 @@
         <div class="field">
           <label>结束时间</label>
           <input type="date" v-model="end">
+        </div>
+      </div>
+      <div class="field">
+        <div ref="latest" class="ui checkbox">
+          <input type="checkbox" tabindex="0" class="hidden" v-model="latest">
+          <label>只看每个任务在每个节点上最后一次运行的结果</label>
         </div>
       </div>
       <div class="field">
@@ -56,9 +68,11 @@ export default {
     return {
       loading: false,
       names: '',
+      ids: '',
       nodes: '',
       begin: '',
       end: '',
+      latest: false,
       list: [],
       total: 0,
       page: 1
@@ -67,21 +81,28 @@ export default {
 
   mounted: function(to, from, next){
       this.names = this.$route.query.names || '';
+      this.ids = this.$route.query.ids || '';
       this.nodes = this.$route.query.nodes || '';
       this.begin = this.$route.query.begin || '';
       this.end = this.$route.query.end || '';
       this.page = this.$route.query.page || 1;
+      this.latest = this.$route.query.latest ? true : false;
       this.fetchList(this.buildQuery());
+
+      var vm = this;
+      $(this.$refs.latest).checkbox({'onChange': ()=>{vm.latest = !vm.latest}});
   },
 
   watch: {
     '$route': function(){
       this.names = this.$route.query.names || '';
+      this.ids = this.$route.query.ids || '';
       this.nodes = this.$route.query.nodes || '';
       this.begin = this.$route.query.begin || '';
       this.end = this.$route.query.end || '';
       this.page = this.$route.query.page || 1;
-      
+      this.latest = this.$route.query.latest == 'true' ? true : false;
+
       this.fetchList(this.buildQuery());
     }
   },
@@ -103,11 +124,13 @@ export default {
     buildQuery(){
       var params = [];
       if (this.names) params.push('names='+this.names);
+      if (this.ids) params.push('ids='+this.ids);
       if (this.nodes) params.push('nodes='+this.nodes);
       if (this.begin) params.push('begin='+this.begin);
       if (this.end) params.push('end='+this.end);
       if (this.page == 0) this.page = 1;
       params.push('page='+this.page);
+      if (this.latest) params.push('latest=true');
       return params.join('&');
     },
 
@@ -141,6 +164,7 @@ export default {
       d = d%1000;
       if (d >= 1) s = d.toString() + ' 毫秒';
 
+      if (s.length == 0) s = "0 毫秒";
       return s;
     },
 

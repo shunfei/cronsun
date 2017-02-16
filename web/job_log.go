@@ -10,6 +10,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"math"
 	"sunteng/cronsun/models"
 )
 
@@ -20,6 +21,11 @@ func (jl *JobLog) GetDetail(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimSpace(vars["id"])
 	if len(id) == 0 {
 		outJSONWithCode(w, http.StatusBadRequest, "empty log id.")
+		return
+	}
+
+	if !bson.IsObjectIdHex(id) {
+		outJSONWithCode(w, http.StatusBadRequest, "invalid ObjectId.")
 		return
 	}
 
@@ -40,6 +46,7 @@ func (jl *JobLog) GetDetail(w http.ResponseWriter, r *http.Request) {
 func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 	nodes := GetStringArrayFromQuery("nodes", ",", r)
 	names := GetStringArrayFromQuery("names", ",", r)
+	ids := GetStringArrayFromQuery("ids", ",", r)
 	begin := getTime(r.FormValue("begin"))
 	end := getTime(r.FormValue("end"))
 	page := getPage(r.FormValue("page"))
@@ -53,6 +60,11 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 	if len(nodes) > 0 {
 		query["node"] = bson.M{"$in": nodes}
 	}
+
+	if len(ids) > 0 {
+		query["jobId"] = bson.M{"$in": ids}
+	}
+
 	if len(names) > 0 {
 		var search []bson.M
 		for _, k := range names {
@@ -77,13 +89,22 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 		List  []*models.JobLog `json:"list"`
 	}
 	var err error
-	pager.List, pager.Total, err = models.GetJobLogList(query, page, pageSize, sort)
+	if r.FormValue("latest") == "true" {
+		var latestLogList []*models.JobLatestLog
+		latestLogList, pager.Total, err = models.GetJobLatestLogList(query, page, pageSize, sort)
+		for i := range latestLogList {
+			latestLogList[i].JobLog.Id = bson.ObjectIdHex(latestLogList[i].RefLogId)
+			pager.List = append(pager.List, &latestLogList[i].JobLog)
+		}
+	} else {
+		pager.List, pager.Total, err = models.GetJobLogList(query, page, pageSize, sort)
+	}
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	pager.Total /= pageSize
+	pager.Total = int(math.Ceil(float64(pager.Total) / float64(pageSize)))
 	outJSON(w, pager)
 }
 

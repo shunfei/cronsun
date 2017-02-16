@@ -64,7 +64,10 @@ func GetJobLatestLogList(query bson.M, page, size int, sort string) (list []*Job
 
 func GetJobLatestLogListByJobIds(jobIds []string) (m map[string]*JobLatestLog, err error) {
 	var list []*JobLatestLog
-	err = mgoDB.AllSelect(Coll_JobLatestLog, bson.M{"jobId": bson.M{"$in": jobIds}}, selectForJobLogList, &list)
+
+	err = mgoDB.WithC(Coll_JobLatestLog, func(c *mgo.Collection) error {
+		return c.Find(bson.M{"jobId": bson.M{"$in": jobIds}}).Select(selectForJobLogList).Sort("beginTime").All(&list)
+	})
 	if err != nil {
 		return
 	}

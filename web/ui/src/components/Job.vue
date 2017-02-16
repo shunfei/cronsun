@@ -3,14 +3,17 @@
 </style>
 <template>
   <div>
-    <JobToolbar class="clearfix"/>
+    <div class="clearfix">
+      <router-link class="ui right floated primary button" to="/job/create"><i class="add to calendar icon"></i> 新任务</router-link>
+      <button class="ui right floated icon button" v-on:click="refresh"><i class="refresh icon"></i></button>
+    </div>
     <form class="ui form">
       <div class="field">
         <label>选择一个分组显示其下的任务</label>
-        <Dropdown title="选择分组" v-bind:items="groups" v-on:change="changeGroup"/>
+        <Dropdown title="选择分组" v-bind:items="groups" v-on:change="changeGroup" selected="group"/>
       </div>
     </form>
-    <table class="ui hover celled striped blue table" v-if="jobs.length > 0">
+    <table class="ui hover blue table" v-if="jobs.length > 0">
       <thead>
         <tr>
           <th class="collapsing center aligned">操作</th>
@@ -40,11 +43,12 @@
           <td>{{job.name}}</td>
           <td>
             <span v-if="!job.latestStatus">-</span>
-            <span v-else>{{formatTime(job.latestStatus.beginTime, job.latestStatus.endTime)}}，耗时 {{formatDuration(job.latestStatus.beginTime, job.latestStatus.endTime)}}</span>
+            <span v-else>{{formatTime(job.latestStatus.beginTime, job.latestStatus.endTime)}}，于 {{job.latestStatus.node}} 耗时 {{formatDuration(job.latestStatus.beginTime, job.latestStatus.endTime)}}</span>
           </td>
-          <td>
+          <td :class="{error: job.latestStatus && !job.latestStatus.success}">
             <span v-if="!job.latestStatus">-</span>
-            <router-link v-else :to="'/log/'+job.latestStatus.refLogId">{{job.latestStatus.success ? '成功' : '失败'}}</router-link>
+            <router-link v-else :to="'/log/'+job.latestStatus.refLogId">{{job.latestStatus.success ? '成功' : '失败'}}</router-link> |
+            <router-link :to="{path: 'log', query: {latest:true, ids: job.id}}">latest</router-link>
           </td>
         </tr>
       </tbody>
@@ -53,7 +57,6 @@
 </template>
 
 <script>
-import JobToolbar from './JobToolbar.vue';
 import Dropdown from './basic/Dropdown.vue';
 import Pager from './basic/Pager.vue';
 
@@ -69,27 +72,48 @@ export default {
   
   mounted: function(){
     var vm = this;
+    this.group = this.$route.query.group || '';
+
     this.$rest.GET('job/groups').onsucceed(200, (resp)=>{
       !resp.includes('default') && resp.unshift('default');
+      resp.unshift({value: '', name: '所有任务'});
       vm.groups = resp;
+      this.fetchList(this.buildQuery());
     }).do();
+  },
+
+  watch: {
+    '$route': function(){
+      this.group = this.$route.query.group || '';
+      this.fetchList(this.buildQuery());
+    }
   },
 
   methods: {
     changeGroup: function(val, text){
       var vm = this;
       this.group = val;
-      this.refreshList();
+      this.$router.push('job?'+this.buildQuery());
     },
 
-    refreshList: function(){
+    buildQuery: function(){
+      var params = [];
+      if (this.group) params.push('group='+this.group);
+      return params.join('&');
+    },
+
+    fetchList: function(query){
       var vm = this;
-      this.$rest.GET('job/group/'+this.group).onsucceed(200, (resp)=>{
+      this.$rest.GET('jobs?'+query).onsucceed(200, (resp)=>{
         vm.jobs = resp;
         vm.$nextTick(()=>{
           $(vm.$el).find('table .ui.dropdown').dropdown();
         });
       }).do();
+    },
+
+    refresh: function(){
+      this.fetchList(this.buildQuery());
     },
 
     removeJob: function(group, id, index){
@@ -132,6 +156,7 @@ export default {
       d = d%1000;
       if (d >= 1) s = d.toString() + ' 毫秒';
 
+      if (s.length == 0) s = "0 毫秒";
       return s;
     },
 
@@ -162,7 +187,6 @@ export default {
   },
 
   components: {
-    JobToolbar,
     Dropdown,
     Pager
   }

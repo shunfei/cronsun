@@ -52,7 +52,7 @@ export default {
     var vm = this;
     this.$rest.GET('log/'+this.$route.params.id).
         onsucceed(200, (resp)=>{vm.log = resp}).
-        onfailed((data)=>{vm.error = data.error}).
+        onfailed((data)=>{vm.error = data}).
         do();
   }
 }

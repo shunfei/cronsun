@@ -4,10 +4,11 @@
   </div>
   <form v-else class="ui form" v-bind:class="{loading:loading}" v-on:submit.prevent>
     <h3 class="ui header">{{action == 'CREATE' ? '添加' : '更新'}}任务&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <div class="ui toggle checkbox">
-      <input type="checkbox" class="hidden" v-bind:checked="!job.pause">
-      <label v-bind:style="{color: (job.pause?'red':'green')+' !important'}">{{job.pause ? '任务已暂停' : '开启'}}</label>
-    </div>
+      <div class="ui toggle checkbox">
+        <input type="checkbox" class="hidden" v-bind:checked="!job.pause">
+        <label v-bind:style="{color: (job.pause?'red':'green')+' !important'}">{{job.pause ? '任务已暂停' : '开启'}}</label>
+      </div>
+      <em v-if="job.id">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ID# {{job.id}}</em>
     </h3>
     <div class="two fields">
       <div class="field">
