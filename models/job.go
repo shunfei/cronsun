@@ -175,7 +175,7 @@ func (j *Job) Run() {
 	var cmd *exec.Cmd
 	if len(j.User) > 0 {
 		if needPassword {
-			j.Fail(t, SudoErr)
+			j.Fail(t, SudoErr.Error())
 			return
 		}
 		cmd = exec.Command("sudo", "su", j.User, "-c", j.Command)
@@ -184,13 +184,13 @@ func (j *Job) Run() {
 		cmd = exec.Command(args[0], args[1:]...)
 	}
 
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		j.Fail(t, err)
+		j.Fail(t, fmt.Sprintf("%s\n\n%s", err.Error(), string(out)))
 		return
 	}
 
-	j.Success(t, out)
+	j.Success(t, string(out))
 }
 
 func JobKey(group, id string) string {
@@ -232,10 +232,10 @@ func (j *Job) Check() error {
 }
 
 // 执行结果写入 mongoDB
-func (j *Job) Success(t time.Time, out []byte) {
-	CreateJobLog(j, t, string(out), true)
+func (j *Job) Success(t time.Time, out string) {
+	CreateJobLog(j, t, out, true)
 }
 
-func (j *Job) Fail(t time.Time, err error) {
-	CreateJobLog(j, t, err.Error(), false)
+func (j *Job) Fail(t time.Time, msg string) {
+	CreateJobLog(j, t, msg, false)
 }

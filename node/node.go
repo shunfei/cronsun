@@ -146,9 +146,9 @@ func (n *Node) addJob(job *models.Job) bool {
 
 	j.RunOn(n.Node.ID)
 	if err := n.Cron.AddJob(sch, j); err != nil {
-		err = fmt.Errorf("job[%s] timer[%s] parse err: %s", j.GetID(), sch, err.Error())
-		log.Warn(err.Error())
-		j.Fail(time.Now(), err)
+		msg := fmt.Sprintf("job[%s] timer[%s] parse err: %s", j.GetID(), sch, err.Error())
+		log.Warn(msg)
+		j.Fail(time.Now(), msg)
 		delete(n.jobs, j.GetID())
 		return false
 	}
