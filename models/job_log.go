@@ -51,6 +51,17 @@ func GetJobLogList(query bson.M, page, size int, sort string) (list []*JobLog, t
 	return
 }
 
+func GetJobLatestLogList(query bson.M, page, size int, sort string) (list []*JobLatestLog, total int, err error) {
+	err = mgoDB.WithC(Coll_JobLatestLog, func(c *mgo.Collection) error {
+		total, err = c.Find(query).Count()
+		if err != nil {
+			return err
+		}
+		return c.Find(query).Select(selectForJobLogList).Sort(sort).Skip((page - 1) * size).Limit(size).All(&list)
+	})
+	return
+}
+
 func GetJobLatestLogListByJobIds(jobIds []string) (m map[string]*JobLatestLog, err error) {
 	var list []*JobLatestLog
 	err = mgoDB.AllSelect(Coll_JobLatestLog, bson.M{"jobId": bson.M{"$in": jobIds}}, selectForJobLogList, &list)
@@ -91,7 +102,7 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 		JobLog:   jl,
 	}
 	latestLog.Id = ""
-	if err := mgoDB.Upsert(Coll_JobLatestLog, bson.M{"jobId": jl.JobId, "jobGroup": jl.JobGroup}, latestLog); err != nil {
+	if err := mgoDB.Upsert(Coll_JobLatestLog, bson.M{"node": jl.Node, "jobId": jl.JobId, "jobGroup": jl.JobGroup}, latestLog); err != nil {
 		log.Error(err.Error())
 	}
 }
