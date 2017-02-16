@@ -103,5 +103,22 @@ func (n *Node) GetNodes(w http.ResponseWriter, r *http.Request) {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	gresp, err := models.DefalutClient.Get(conf.Config.Proc, v3.WithPrefix(), v3.WithKeysOnly())
+	if err == nil {
+		connecedMap := make(map[string]bool, gresp.Count)
+		for i := range gresp.Kvs {
+			k := string(gresp.Kvs[i].Key)
+			index := strings.LastIndexByte(k, '/')
+			connecedMap[k[index+1:]] = true
+		}
+
+		for i := range nodes {
+			nodes[i].Connected = connecedMap[nodes[i].ID]
+		}
+	} else {
+		log.Errorf("failed to fetch key[%s] from etcd: %s", conf.Config.Proc, err.Error())
+	}
+
 	outJSONWithCode(w, http.StatusOK, nodes)
 }

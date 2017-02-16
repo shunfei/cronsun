@@ -23,7 +23,8 @@ type Node struct {
 	ID  string `bson:"_id" json:"id"`  // ip
 	PID string `bson:"pid" json:"pid"` // 进程 pid
 
-	Alived bool `bson:"alived" json:"alived"` // 是否可用
+	Alived    bool `bson:"alived" json:"alived"` // 是否可用
+	Connected bool `bson:"-" json:"connected"`   // 当 Alived 为 true 时有效，表示心跳是否正常
 }
 
 func (n *Node) String() string {
