@@ -173,11 +173,11 @@ func (j *Job) Run() {
 	cmd, t := strings.Split(j.Command, " "), time.Now()
 	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
 	if err != nil {
-		j.fail(t, err)
+		j.Fail(t, err)
 		return
 	}
 
-	j.success(t, out)
+	j.Success(t, out)
 }
 
 func JobKey(group, id string) string {
@@ -217,10 +217,10 @@ func (j *Job) Check() error {
 }
 
 // 执行结果写入 mongoDB
-func (j *Job) success(t time.Time, out []byte) {
+func (j *Job) Success(t time.Time, out []byte) {
 	CreateJobLog(j, t, string(out), true)
 }
 
-func (j *Job) fail(t time.Time, err error) {
+func (j *Job) Fail(t time.Time, err error) {
 	CreateJobLog(j, t, err.Error(), false)
 }

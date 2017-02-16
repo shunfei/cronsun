@@ -144,14 +144,16 @@ func (n *Node) addJob(job *models.Job) bool {
 		n.jobs[j.GetID()] = j
 	}
 
+	j.RunOn(n.Node.ID)
 	if err := n.Cron.AddJob(sch, j); err != nil {
-		log.Warnf("job[%s] timer[%s] parse err: %s", j.GetID(), sch)
+		err = fmt.Errorf("job[%s] timer[%s] parse err: %s", j.GetID(), sch, err.Error())
+		log.Warn(err.Error())
+		j.Fail(time.Now(), err)
 		delete(n.jobs, j.GetID())
 		return false
 	}
 
 	n.addLink(gid, j.GetID())
-	j.RunOn(n.Node.ID)
 	return true
 }
 
