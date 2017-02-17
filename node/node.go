@@ -97,23 +97,54 @@ func (n *Node) loadJobs() (err error) {
 		return
 	}
 
-	n.addCmds()
-	return
-}
-
-func (n *Node) addCmds() {
 	if len(n.jobs) == 0 {
 		return
 	}
 
 	for _, job := range n.jobs {
-		for _, cmd := range job.Cmds(n.ID, n.groups) {
-			n.addCmd(cmd)
-		}
+		n.addJob(job, false)
+	}
+	return
+}
+
+func (n *Node) addJob(job *models.Job, notice bool) {
+	cmds := job.Cmds(n.ID, n.groups)
+	if len(cmds) == 0 {
+		return
+	}
+
+	for _, cmd := range cmds {
+		n.addCmd(cmd, notice)
+	}
+	return
+}
+
+func (n *Node) delJob(job *models.Job) {
+	cmds := job.Cmds(n.ID, n.groups)
+	if len(cmds) == 0 {
+		return
+	}
+
+	for _, cmd := range cmds {
+		n.delCmd(cmd)
+	}
+	return
+}
+
+func (n *Node) modJob(job, prevJob *models.Job) {
+	cmds, prevCmds := job.Cmds(n.ID, n.groups), prevJob.Cmds(n.ID, n.groups)
+
+	for id, cmd := range cmds {
+		n.addCmd(cmd, true)
+		delete(prevCmds, id)
+	}
+
+	for _, cmd := range prevCmds {
+		n.delCmd(cmd)
 	}
 }
 
-func (n *Node) addCmd(cmd *models.Cmd) {
+func (n *Node) addCmd(cmd *models.Cmd, notice bool) {
 	c, ok := n.cmds[cmd.GetID()]
 	if ok {
 		sch := c.Schedule
@@ -137,7 +168,17 @@ func (n *Node) addCmd(cmd *models.Cmd) {
 	if !ok {
 		n.cmds[c.GetID()] = c
 	}
+
+	if notice {
+		log.Noticef("job[%s] rule[%s] timer[%s] has added", c.Job.ID, c.JobRule.ID, c.Schedule)
+	}
 	return
+}
+
+func (n *Node) delCmd(cmd *models.Cmd) {
+	delete(n.cmds, cmd.GetID())
+	n.Cron.DelJob(cmd)
+	log.Noticef("job[%s] rule[%s] timer[%s] has deleted", cmd.Job.ID, cmd.JobRule.ID, cmd.Schedule)
 }
 
 func (n *Node) addLink(gid, jid string) {
@@ -165,47 +206,6 @@ func (n *Node) delLink(gid, jid string) {
 	}
 
 	delete(js, jid)
-}
-
-func (n *Node) addJob(job *models.Job) bool {
-	sch, gid := job.Schedule(n.ID, n.groups, false)
-	if len(sch) == 0 {
-		return false
-	}
-
-	j, ok := n.jobs[job.GetID()]
-	if ok {
-		if j != job {
-			*j = *job
-		}
-	} else {
-		j = job
-		n.jobs[j.GetID()] = j
-	}
-
-	j.RunOn(n.Node.ID)
-	if err := n.Cron.AddJob(sch, j); err != nil {
-		msg := fmt.Sprintf("job[%s] timer[%s] parse err: %s", j.GetID(), sch, err.Error())
-		log.Warn(msg)
-		j.Fail(time.Now(), msg)
-		delete(n.jobs, j.GetID())
-		return false
-	}
-
-	n.addLink(gid, j.GetID())
-	return true
-}
-
-func (n *Node) delJob(job *models.Job) {
-	sch, gid := job.Schedule(n.ID, n.groups, false)
-	if len(sch) == 0 {
-		return
-	}
-
-	n.delLink(gid, job.GetID())
-	delete(n.jobs, job.GetID())
-	n.Cron.DelJob(job)
-	log.Noticef("job[%s] has deleted", job)
 }
 
 func (n *Node) addGroup(g *models.Group) bool {
@@ -244,9 +244,7 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
-				if n.addJob(job) {
-					log.Noticef("job[%s] has added", job)
-				}
+				n.addJob(job, true)
 			case ev.IsModify():
 				job, err := models.GetJobFromKv(ev.Kv)
 				if err != nil {
@@ -259,13 +257,7 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
-				if n.addJob(job) {
-					log.Noticef("job[%s] has added", job)
-					continue
-				}
-
-				// 此结点暂停或不再执行此 job
-				n.delJob(prevJob)
+				n.modJob(job, prevJob)
 			case ev.Type == client.EventTypeDelete:
 				prevJob, err := models.GetJobFromKv(ev.PrevKv)
 				if err != nil {
@@ -342,7 +334,7 @@ func (n *Node) Run() (err error) {
 	}
 
 	n.Cron.Start()
-	// go n.watchJobs()
+	go n.watchJobs()
 	// go n.watchGroups()
 	n.Node.On()
 	return
