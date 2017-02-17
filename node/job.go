@@ -6,7 +6,7 @@ import (
 
 type Jobs map[string]*models.Job
 
-func loadJobs(id string, g Group) (j Jobs, err error) {
+func loadJobs(id string, g Groups) (j Jobs, err error) {
 	jobs, err := models.GetJobs()
 	if err != nil {
 		return

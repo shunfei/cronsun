@@ -129,7 +129,7 @@ func GetJobs() (jobs map[string]*Job, err error) {
 }
 
 func WatchJobs() client.WatchChan {
-	return DefalutClient.Watch(conf.Config.Cmd, client.WithPrefix(), client.WithPrevKV())
+	return DefalutClient.Watch(conf.Config.Cmd, client.WithPrefix())
 }
 
 func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
@@ -221,6 +221,16 @@ func (j *Job) Run() {
 	}
 
 	j.Success(t, string(out))
+}
+
+// 从 etcd 的 key 中取 job id
+func GetJobID(key string) string {
+	index := strings.LastIndex(key, "/")
+	if index < 0 {
+		return ""
+	}
+
+	return key[index+1:]
 }
 
 func JobKey(group, id string) string {

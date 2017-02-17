@@ -24,7 +24,7 @@ type Node struct {
 	*cron.Cron
 
 	jobs   Jobs
-	groups Group
+	groups Groups
 	cmds   map[string]*models.Cmd
 	// map[group id]map[job id]bool
 	// 用于 group 发生变化的时候修改相应的 job
@@ -113,13 +113,20 @@ func (n *Node) addJob(job *models.Job, notice bool) {
 		return
 	}
 
+	n.jobs[job.ID] = job
 	for _, cmd := range cmds {
 		n.addCmd(cmd, notice)
 	}
 	return
 }
 
-func (n *Node) delJob(job *models.Job) {
+func (n *Node) delJob(id string) {
+	job, ok := n.jobs[id]
+	// 之前此任务没有在当前结点执行
+	if !ok {
+		return
+	}
+
 	cmds := job.Cmds(n.ID, n.groups)
 	if len(cmds) == 0 {
 		return
@@ -131,8 +138,17 @@ func (n *Node) delJob(job *models.Job) {
 	return
 }
 
-func (n *Node) modJob(job, prevJob *models.Job) {
-	cmds, prevCmds := job.Cmds(n.ID, n.groups), prevJob.Cmds(n.ID, n.groups)
+func (n *Node) modJob(job *models.Job) {
+	oJob, ok := n.jobs[job.ID]
+	// 之前此任务没有在当前结点执行，直接增加任务
+	if !ok {
+		n.addJob(job, true)
+		return
+	}
+
+	prevCmds := oJob.Cmds(n.ID, n.groups)
+	*oJob = *job
+	cmds := oJob.Cmds(n.ID, n.groups)
 
 	for id, cmd := range cmds {
 		n.addCmd(cmd, true)
@@ -251,21 +267,10 @@ func (n *Node) watchJobs() {
 					log.Warnf(err.Error())
 					continue
 				}
-				prevJob, err := models.GetJobFromKv(ev.PrevKv)
-				if err != nil {
-					log.Warnf(err.Error())
-					continue
-				}
 
-				n.modJob(job, prevJob)
+				n.modJob(job)
 			case ev.Type == client.EventTypeDelete:
-				prevJob, err := models.GetJobFromKv(ev.PrevKv)
-				if err != nil {
-					log.Warnf(err.Error())
-					continue
-				}
-
-				n.delJob(prevJob)
+				n.delJob(models.GetJobID(string(ev.Kv.Key)))
 			default:
 				log.Warnf("unknown event type[%v] from job[%s]", ev.Type, string(ev.Kv.Key))
 			}
