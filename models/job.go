@@ -223,8 +223,8 @@ func (j *Job) Run() {
 	j.Success(t, string(out))
 }
 
-// 从 etcd 的 key 中取 job id
-func GetJobID(key string) string {
+// 从 etcd 的 key 中取 id
+func GetIDFromKey(key string) string {
 	index := strings.LastIndex(key, "/")
 	if index < 0 {
 		return ""
