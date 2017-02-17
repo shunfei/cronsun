@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"os/user"
 	"strings"
+	"syscall"
 
 	client "github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 
+	"strconv"
 	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
 	"time"
@@ -171,17 +174,30 @@ func (j *Job) String() string {
 
 // Run 执行任务
 func (j *Job) Run() {
-	t := time.Now()
-	var cmd *exec.Cmd
+	t, args := time.Now(), strings.Split(j.Command, " ")
+	cmd := exec.Command(args[0], args[1:]...)
+
 	if len(j.User) > 0 {
-		if needPassword {
-			j.Fail(t, SudoErr.Error())
+		u, err := user.Lookup(j.User)
+		if err != nil {
+			j.Fail(t, err.Error())
 			return
 		}
-		cmd = exec.Command("sudo", "su", j.User, "-c", j.Command)
-	} else {
-		args := strings.Split(j.Command, " ")
-		cmd = exec.Command(args[0], args[1:]...)
+
+		uid, err := strconv.Atoi(u.Uid)
+		if err != nil {
+			if err != nil {
+				j.Fail(t, "not support run with user on windows")
+				return
+			}
+		}
+		gid, _ := strconv.Atoi(u.Gid)
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			Credential: &syscall.Credential{
+				Uid: uint32(uid),
+				Gid: uint32(gid),
+			},
+		}
 	}
 
 	out, err := cmd.CombinedOutput()

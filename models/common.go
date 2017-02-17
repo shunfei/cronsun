@@ -1,28 +1,13 @@
 package models
 
 import (
-	"errors"
-	"os/exec"
-
 	"sunteng/commons/db/imgo"
-	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
 )
 
 var (
 	initialized bool
-
-	needPassword = false
-	SudoErr      = errors.New("sudo need password")
 )
-
-func InitPwd() {
-	// 不支持 windows
-	if _, err := exec.Command("sh", "-c", "echo |sudo -S echo &>/dev/null").Output(); err != nil {
-		log.Warnf("当前用户 sudo 需要密码，所有指定用户执行的命令都将失败")
-		needPassword = true
-	}
-}
 
 func Init() (err error) {
 	if initialized {
