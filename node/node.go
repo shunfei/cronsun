@@ -23,8 +23,9 @@ type Node struct {
 	*models.Node
 	*cron.Cron
 
-	jobs   Job
+	jobs   Jobs
 	groups Group
+	cmds   map[string]*models.Cmd
 	// map[group id]map[job id]bool
 	// 用于 group 发生变化的时候修改相应的 job
 	link map[string]map[string]bool
@@ -50,6 +51,8 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 			PID: strconv.Itoa(os.Getpid()),
 		},
 		Cron: cron.New(),
+
+		cmds: make(map[string]*models.Cmd),
 
 		ttl:  cfg.Ttl,
 		done: make(chan struct{}),
@@ -86,17 +89,53 @@ func (n *Node) Register() (err error) {
 	return
 }
 
-func (n *Node) addJobs() (err error) {
+func (n *Node) loadJobs() (err error) {
 	if n.groups, err = models.GetGroups(n.ID); err != nil {
 		return
 	}
-	if n.jobs, err = newJob(n.ID, n.groups); err != nil {
+	if n.jobs, err = loadJobs(n.ID, n.groups); err != nil {
 		return
 	}
 
-	n.link = make(map[string]map[string]bool, len(n.groups))
+	n.addCmds()
+	return
+}
+
+func (n *Node) addCmds() {
+	if len(n.jobs) == 0 {
+		return
+	}
+
 	for _, job := range n.jobs {
-		n.addJob(job)
+		for _, cmd := range job.Cmds(n.ID, n.groups) {
+			n.addCmd(cmd)
+		}
+	}
+}
+
+func (n *Node) addCmd(cmd *models.Cmd) {
+	c, ok := n.cmds[cmd.GetID()]
+	if ok {
+		sch := c.Schedule
+		*c = *cmd
+
+		// 节点执行时间不变，不用更新 cron
+		if c.Schedule == sch {
+			return
+		}
+	} else {
+		c = cmd
+	}
+
+	if err := n.Cron.AddJob(c.Schedule, c); err != nil {
+		msg := fmt.Sprintf("job[%s] rule[%s] timer[%s] parse err: %s", c.Job.ID, c.JobRule.ID, c.Schedule, err.Error())
+		log.Warn(msg)
+		c.Fail(time.Now(), msg)
+		return
+	}
+
+	if !ok {
+		n.cmds[c.GetID()] = c
 	}
 	return
 }
@@ -298,13 +337,13 @@ func (n *Node) Run() (err error) {
 		}
 	}()
 
-	if err = n.addJobs(); err != nil {
+	if err = n.loadJobs(); err != nil {
 		return
 	}
 
 	n.Cron.Start()
-	go n.watchJobs()
-	go n.watchGroups()
+	// go n.watchJobs()
+	// go n.watchGroups()
 	n.Node.On()
 	return
 }

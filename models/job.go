@@ -44,23 +44,36 @@ type Job struct {
 }
 
 type JobRule struct {
-	Id             string   `json:"id"`
+	ID             string   `json:"id"`
 	Timer          string   `json:"timer"`
 	GroupIDs       []string `json:"gids"`
 	NodeIDs        []string `json:"nids"`
 	ExcludeNodeIDs []string `json:"exclude_nids"`
 }
 
-func (j *JobRule) included(nid string, gs map[string]*Group) (string, bool) {
-	for _, gid := range j.GroupIDs {
-		if _, ok := gs[gid]; ok {
-			return gid, true
-		}
-	}
+type Cmd struct {
+	*Job
+	*JobRule
 
+	Schedule string
+	Gid      string
+}
+
+func (c *Cmd) GetID() string {
+	return c.Job.ID + c.JobRule.ID
+}
+
+// 优先取结点里的值，更新 group 时可用 gid 判断是否对 job 进行处理
+func (j *JobRule) included(nid string, gs map[string]*Group) (string, bool) {
 	for i, count := 0, len(j.NodeIDs); i < count; i++ {
 		if nid == j.NodeIDs[i] {
 			return "", true
+		}
+	}
+
+	for _, gid := range j.GroupIDs {
+		if _, ok := gs[gid]; ok {
+			return gid, true
 		}
 	}
 
@@ -241,9 +254,9 @@ func (j *Job) Check() error {
 	j.User = strings.TrimSpace(j.User)
 
 	for i := range j.Rules {
-		id := strings.TrimSpace(j.Rules[i].Id)
+		id := strings.TrimSpace(j.Rules[i].ID)
 		if id == "" || strings.HasPrefix(id, "NEW") {
-			j.Rules[i].Id = NextID()
+			j.Rules[i].ID = NextID()
 		}
 	}
 
@@ -262,4 +275,29 @@ func (j *Job) Success(t time.Time, out string) {
 
 func (j *Job) Fail(t time.Time, msg string) {
 	CreateJobLog(j, t, msg, false)
+}
+
+func (j *Job) Cmds(nid string, gs map[string]*Group) (cmds map[string]*Cmd) {
+	cmds = make(map[string]*Cmd)
+	for _, r := range j.Rules {
+		for _, id := range r.ExcludeNodeIDs {
+			if nid == id {
+				continue
+			}
+		}
+
+		if gid, ok := r.included(nid, gs); ok {
+			cmd := &Cmd{
+				Job:     j,
+				JobRule: r,
+
+				Schedule: r.Timer,
+				Gid:      gid,
+			}
+			j.RunOn(nid)
+			cmds[cmd.GetID()] = cmd
+		}
+	}
+
+	return
 }
