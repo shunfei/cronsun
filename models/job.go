@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"os/exec"
 	"os/user"
+	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	client "github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 
-	"strconv"
 	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
-	"time"
 )
 
 const (
@@ -44,6 +44,7 @@ type Job struct {
 }
 
 type JobRule struct {
+	Id             string   `json:"id"`
 	Timer          string   `json:"timer"`
 	GroupIDs       []string `json:"gids"`
 	NodeIDs        []string `json:"nids"`
@@ -238,6 +239,13 @@ func (j *Job) Check() error {
 	}
 
 	j.User = strings.TrimSpace(j.User)
+
+	for i := range j.Rules {
+		id := strings.TrimSpace(j.Rules[i].Id)
+		if id == "" || strings.HasPrefix(id, "NEW") {
+			j.Rules[i].Id = NextID()
+		}
+	}
 
 	// 不修改 Command 的内容，简单判断是否为空
 	if len(strings.TrimSpace(j.Command)) == 0 {

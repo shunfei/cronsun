@@ -80,7 +80,7 @@ export default {
 
     addNewTimer: function(){
       if (!this.job.rules) this.job.rules = [];
-      this.job.rules.push({id: this.randomRuleId()});
+      this.job.rules.push({id: this.newRandomRuleId()});
     },
 
     changeGroup: function(val, text){
@@ -106,8 +106,8 @@ export default {
         .do();
     },
 
-    randomRuleId: function(){
-      return Math.random().toString();
+    newRandomRuleId: function(){
+      return 'NEW'+Math.random().toString();
     }
   },
 
@@ -123,7 +123,9 @@ export default {
           vm.job = resp;
           if (vm.job.rules) {
             for (var i in vm.job.rules) {
-              vm.job.rules[i].id = vm.randomRuleId();
+              if (vm.job.rules[i].id.length == 0) {
+                vm.job.rules[i].id = vm.newRandomRuleId();
+              }
             }
           }
         }).
