@@ -98,11 +98,11 @@ func GetJobs() (jobs map[string]*Job, err error) {
 	}
 
 	count := len(resp.Kvs)
+	jobs = make(map[string]*Job, count)
 	if count == 0 {
 		return
 	}
 
-	jobs = make(map[string]*Job, count)
 	for _, j := range resp.Kvs {
 		job := new(Job)
 		if e := json.Unmarshal(j.Value, job); e != nil {

@@ -43,11 +43,11 @@ func GetGroups(nid string) (groups map[string]*Group, err error) {
 	}
 
 	count := len(resp.Kvs)
+	groups = make(map[string]*Group, count)
 	if count == 0 {
 		return
 	}
 
-	groups = make(map[string]*Group, count)
 	for _, g := range resp.Kvs {
 		group := new(Group)
 		if e := json.Unmarshal(g.Value, group); e != nil {
