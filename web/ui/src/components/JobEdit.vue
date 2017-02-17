@@ -17,7 +17,7 @@
       </div>
       <div class="field">
         <label>任务分组</label>
-        <Dropdown title="选择分组" allowAdditions=true v-bind:items="groups" v-bind:selected="job.group" v-on:change="changeGroup"/>
+        <Dropdown title="选择分组" v-bind:items="groups" v-bind:selected="job.group" v-on:change="changeGroup"/>
       </div>
     </div>
     <div class="fields">
@@ -90,9 +90,11 @@ export default {
     removeRule: function(index){
       this.job.rules.splice(index, 1);
     },
+
     changeRule: function(index, key, val){
       this.job.rules[index][key] = val;
     },
+
     submit: function(){
       var exceptCode = this.action == 'CREATE' ? 201 : 200;
       this.loading = true;

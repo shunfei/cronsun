@@ -40,7 +40,7 @@
           </td>
           <td class="center aligned"><i class="icon" v-bind:class="{pause: job.pause, play: !job.pause, green: !job.pause}"></i></td>
           <td>{{job.group}}</td>
-          <td>{{job.name}}</td>
+          <td><router-link :to="'/job/edit/'+job.group+'/'+job.id">{{job.name}}</router-link></td>
           <td>
             <span v-if="!job.latestStatus">-</span>
             <span v-else>{{formatTime(job.latestStatus.beginTime, job.latestStatus.endTime)}}，于 {{job.latestStatus.node}} 耗时 {{formatDuration(job.latestStatus.beginTime, job.latestStatus.endTime)}}</span>

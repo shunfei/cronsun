@@ -27,6 +27,8 @@ import LogDetail from './components/LogDetail.vue';
 import Job from './components/Job.vue';
 import JobEdit from './components/JobEdit.vue';
 import Node from './components/Node.vue';
+import NodeGroup from './components/NodeGroup.vue';
+import NodeGroupEdit from './components/NodeGroupEdit.vue';
 
 var routes = [
   {path: '/', component: Dash},
@@ -35,7 +37,10 @@ var routes = [
   {path: '/job', component: Job},
   {path: '/job/create', component: JobEdit},
   {path: '/job/edit/:group/:id', component: JobEdit},
-  {path: '/node', component: Node}
+  {path: '/node', component: Node},
+  {path: '/node/group', component: NodeGroup},
+  {path: '/node/group/create', component: NodeGroupEdit},
+  {path: '/node/group/:id', component: NodeGroupEdit}
 ];
 
 var router = new VueRouter({

@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="field">
-      <Dropdown title="节点分组" v-bind:items="nodeGroups" multiple="true"></Dropdown>
+      <Dropdown title="节点分组" v-bind:items="nodeGroups" v-bind:selected="rule.gids" multiple="true" v-on:change="changeNodeGroups($event)"></Dropdown>
     </div>
   </div>
   <div class="field">
@@ -43,13 +43,15 @@ export default {
         vm.activityNodes.push(resp[i].id);
       }
     }).do();
-    this.$rest.GET('nodes/groups').onsucceed(200, (resp)=>{
+
+
+    this.$rest.GET('node/groups').onsucceed(200, (resp)=>{
       var groups = [];
       for (var i in resp) {
         groups.push({value: resp[i].id, name: resp[i].name});
       }
       vm.nodeGroups = groups;
-    });
+    }).do();
 
     $(this.$refs.ruletip).popup();
   },
@@ -60,6 +62,10 @@ export default {
     },
     change: function(key, val){
       this.$emit('change', this.index, key, val);
+    },
+    changeNodeGroups: function(val){
+      var gids = val.trim().length === 0 ? [] : val.split(',');
+      this.change('gids', gids);
     },
     changeIncludeNodes: function(val){
       var nids = val.trim().length === 0 ? [] : val.split(',');
