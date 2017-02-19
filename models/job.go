@@ -32,13 +32,6 @@ type Job struct {
 	Rules   []*JobRule `json:"rules"`
 	Pause   bool       `json:"pause"` // 可手工控制的状态
 
-	// node 服务使用
-	// 每个任务在单个结点上只支持一个时间规则
-	// 如果需要多个时间规则，需建新的任务
-	schedule string
-	gid      string
-	build    bool
-
 	// 执行任务的结点，用于记录 job log
 	runOn string
 }
@@ -56,7 +49,6 @@ type Cmd struct {
 	*JobRule
 
 	Schedule string
-	Gid      string
 }
 
 func (c *Cmd) GetID() string {
@@ -138,36 +130,6 @@ func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
 		err = fmt.Errorf("job[%s] umarshal err: %s", string(kv.Key), err.Error())
 	}
 	return
-}
-
-// Schedule return schedule and group id
-func (j *Job) Schedule(nid string, gs map[string]*Group, rebuild bool) (sch string, gid string) {
-	if j.Pause {
-		return
-	}
-
-	if j.build && !rebuild {
-		return j.schedule, j.gid
-	}
-
-	j.buildSchedule(nid, gs)
-	return j.schedule, j.gid
-}
-
-func (j *Job) buildSchedule(nid string, gs map[string]*Group) {
-	j.build = true
-	for _, r := range j.Rules {
-		for _, id := range r.ExcludeNodeIDs {
-			if nid == id {
-				return
-			}
-		}
-
-		if gid, ok := r.included(nid, gs); ok {
-			j.schedule, j.gid = r.Timer, gid
-			return
-		}
-	}
 }
 
 func (j *Job) GetID() string {
@@ -289,6 +251,10 @@ func (j *Job) Fail(t time.Time, msg string) {
 
 func (j *Job) Cmds(nid string, gs map[string]*Group) (cmds map[string]*Cmd) {
 	cmds = make(map[string]*Cmd)
+	if j.Pause {
+		return
+	}
+
 	for _, r := range j.Rules {
 		for _, id := range r.ExcludeNodeIDs {
 			if nid == id {
@@ -296,13 +262,12 @@ func (j *Job) Cmds(nid string, gs map[string]*Group) (cmds map[string]*Cmd) {
 			}
 		}
 
-		if gid, ok := r.included(nid, gs); ok {
+		if _, ok := r.included(nid, gs); ok {
 			cmd := &Cmd{
 				Job:     j,
 				JobRule: r,
 
 				Schedule: r.Timer,
-				Gid:      gid,
 			}
 			j.RunOn(nid)
 			cmds[cmd.GetID()] = cmd

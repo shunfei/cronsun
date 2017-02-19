@@ -95,9 +95,7 @@ func (n *Node) loadJobs() (err error) {
 	if n.groups, err = models.GetGroups(n.ID); err != nil {
 		return
 	}
-	if n.jobs, err = loadJobs(n.ID, n.groups); err != nil {
-		return
-	}
+
 	jobs, err := models.GetJobs()
 	if err != nil {
 		return
