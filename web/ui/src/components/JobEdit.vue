@@ -59,7 +59,8 @@ export default {
         job: {
           id: '',
           name:  '',
-          group: 'default',
+          oldGroup: '',
+          group: '',
           user: '',
           cmd: '',
           pause: false,
@@ -121,6 +122,7 @@ export default {
       this.$rest.GET('job/'+this.$route.params.group+'-'+this.$route.params.id).
         onsucceed(200, (resp)=>{
           vm.job = resp;
+          vm.job.oldGroup = resp.group;
           if (vm.job.rules) {
             for (var i in vm.job.rules) {
               if (vm.job.rules[i].id.length == 0) {

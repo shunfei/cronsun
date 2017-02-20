@@ -78,7 +78,11 @@ func (j *Job) ChangeJobStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
-	job := &models.Job{}
+	var job = &struct {
+		*models.Job
+		OldGroup string `json:"oldGroup"`
+	}{}
+
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&job)
 	if err != nil {
@@ -92,10 +96,16 @@ func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var deleteOldKey string
 	var successCode = http.StatusOK
 	if len(job.ID) == 0 {
 		successCode = http.StatusCreated
 		job.ID = models.NextID()
+	} else {
+		job.OldGroup = strings.TrimSpace(job.OldGroup)
+		if job.OldGroup != job.Group {
+			deleteOldKey = models.JobKey(job.OldGroup, job.ID)
+		}
 	}
 
 	b, err := json.Marshal(job)
@@ -108,6 +118,13 @@ func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
+	}
+
+	// remove old key
+	if len(deleteOldKey) > 0 {
+		if _, err = models.DefalutClient.Delete(deleteOldKey); err != nil {
+			log.Errorf("failed to remove old job key[%s], err: %s.", deleteOldKey, err.Error())
+		}
 	}
 
 	outJSONWithCode(w, successCode, nil)
