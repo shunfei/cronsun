@@ -126,7 +126,7 @@ export default {
     changeStatus: function(group, id, index, isPause){
       var vm = this;
       this.$rest.POST('job/'+group+'-'+id, {"pause": isPause}).onsucceed(200, (resp)=>{
-        vm.refreshList();
+        vm.refresh();
       }).do();
     },
 

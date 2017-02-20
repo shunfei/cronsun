@@ -50,6 +50,7 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 	begin := getTime(r.FormValue("begin"))
 	end := getTime(r.FormValue("end"))
 	page := getPage(r.FormValue("page"))
+	failedOnly := r.FormValue("failedOnly") == "true"
 	pageSize := getPageSize(r.FormValue("pageSize"))
 	sort := "-beginTime"
 	if r.FormValue("sort") == "1" {
@@ -82,6 +83,10 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 	if !end.IsZero() {
 		query["endTime"] = bson.M{"$lt": end.Add(time.Hour * 24)}
+	}
+
+	if failedOnly {
+		query["success"] = false
 	}
 
 	var pager struct {

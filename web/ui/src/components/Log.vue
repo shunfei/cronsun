@@ -25,10 +25,18 @@
           <input type="date" v-model="end">
         </div>
       </div>
-      <div class="field">
-        <div ref="latest" class="ui checkbox">
-          <input type="checkbox" tabindex="0" class="hidden" v-model="latest">
-          <label>只看每个任务在每个节点上最后一次运行的结果</label>
+      <div class="fields">
+        <div class="filed">
+          <div ref="latest" class="ui checkbox">
+            <input type="checkbox" class="hidden" v-model="latest">
+            <label>只看每个任务在每个节点上最后一次运行的结果</label>
+          </div>
+        <div class="filed">
+          <div ref="failedOnly" class="ui checkbox">
+            <input type="checkbox" class="hidden" v-model="failedOnly">
+            <label>只看失败的任务</label>
+          </div>
+        </div>
         </div>
       </div>
       <div class="field">
@@ -73,6 +81,7 @@ export default {
       begin: '',
       end: '',
       latest: false,
+      failedOnly: '',
       list: [],
       total: 0,
       page: 1
@@ -87,10 +96,12 @@ export default {
       this.end = this.$route.query.end || '';
       this.page = this.$route.query.page || 1;
       this.latest = this.$route.query.latest ? true : false;
+      this.failedOnly = this.$route.query.failedOnly ? true : false;
       this.fetchList(this.buildQuery());
 
       var vm = this;
       $(this.$refs.latest).checkbox({'onChange': ()=>{vm.latest = !vm.latest}});
+      $(this.$refs.failedOnly).checkbox({'onChange': ()=>{vm.failedOnly = !vm.failedOnly}});
   },
 
   watch: {
@@ -102,7 +113,7 @@ export default {
       this.end = this.$route.query.end || '';
       this.page = this.$route.query.page || 1;
       this.latest = this.$route.query.latest == 'true' ? true : false;
-
+      this.failedOnly = this.$route.query.failedOnly ? true : false;
       this.fetchList(this.buildQuery());
     }
   },
@@ -128,6 +139,7 @@ export default {
       if (this.nodes) params.push('nodes='+this.nodes);
       if (this.begin) params.push('begin='+this.begin);
       if (this.end) params.push('end='+this.end);
+      if (this.failedOnly) params.push('failedOnly=true');
       if (this.page == 0) this.page = 1;
       params.push('page='+this.page);
       if (this.latest) params.push('latest=true');
