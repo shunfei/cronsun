@@ -56,20 +56,20 @@ func (c *Cmd) GetID() string {
 }
 
 // 优先取结点里的值，更新 group 时可用 gid 判断是否对 job 进行处理
-func (j *JobRule) included(nid string, gs map[string]*Group) (string, bool) {
+func (j *JobRule) included(nid string, gs map[string]*Group) bool {
 	for i, count := 0, len(j.NodeIDs); i < count; i++ {
 		if nid == j.NodeIDs[i] {
-			return "", true
+			return true
 		}
 	}
 
 	for _, gid := range j.GroupIDs {
-		if _, ok := gs[gid]; ok {
-			return gid, true
+		if g, ok := gs[gid]; ok && g.Included(nid) {
+			return true
 		}
 	}
 
-	return "", false
+	return false
 }
 
 func GetJob(group, id string) (job *Job, err error) {
@@ -262,7 +262,7 @@ func (j *Job) Cmds(nid string, gs map[string]*Group) (cmds map[string]*Cmd) {
 			}
 		}
 
-		if _, ok := r.included(nid, gs); ok {
+		if r.included(nid, gs) {
 			cmd := &Cmd{
 				Job:     j,
 				JobRule: r,
