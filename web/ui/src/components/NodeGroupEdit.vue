@@ -14,6 +14,9 @@
     <div class="field">
       <button class="fluid blue ui button" type="button" v-on:click="submit"><i class="upload icon"></i> 保存分组</button>
     </div>
+    <div class="field">
+      <button class="fluid red ui button" type="button" v-on:click="remove"><i class="remove icon"></i> 删除分组</button>
+    </div>
   </form>
 </template>
 
@@ -77,6 +80,16 @@ export default {
       var vm = this;
       this.$rest.PUT('node/group', this.group)
         .onsucceed(exceptCode, ()=>{vm.$router.push('/node/group')})
+        .onfailed((resp)=>{console.log(resp)})
+        .onend(()=>{vm.loading=false})
+        .do();
+    },
+
+    remove(){
+      if (!confirm('确定删除该分组 ' + this.group.name + '?')) return;
+      var vm = this;
+      this.$rest.DELETE('node/group/'+this.group.id)
+        .onsucceed(204, ()=>{vm.$router.push('/node/group')})
         .onfailed((resp)=>{console.log(resp)})
         .onend(()=>{vm.loading=false})
         .do();

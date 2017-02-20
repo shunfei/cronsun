@@ -8,6 +8,7 @@ import (
 	v3 "github.com/coreos/etcd/clientv3"
 	"github.com/gorilla/mux"
 
+	"fmt"
 	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
 	"sunteng/cronsun/models"
@@ -88,10 +89,62 @@ func (n *Node) GetGroupByGroupId(w http.ResponseWriter, r *http.Request) {
 
 func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	_, err := models.DeleteGroupById(vars["id"])
+	groupId := strings.TrimSpace(vars["id"])
+	if len(groupId) == 0 {
+		outJSONError(w, http.StatusBadRequest, "empty node ground id.")
+		return
+	}
+
+	_, err := models.DeleteGroupById(groupId)
 	if err != nil {
 		outJSONError(w, http.StatusInternalServerError, err.Error())
 		return
+	}
+
+	gresp, err := models.DefalutClient.Get(conf.Config.Cmd, v3.WithPrefix())
+	if err != nil {
+		errstr := fmt.Sprintf("failed to fetch jobs from etcd after deleted node group[%s]: %s", groupId, err.Error())
+		log.Error(errstr)
+		outJSONError(w, http.StatusInternalServerError, errstr)
+		return
+	}
+
+	// update rule's node group
+	for i := range gresp.Kvs {
+		job := models.Job{}
+		err = json.Unmarshal(gresp.Kvs[i].Value, &job)
+		key := string(gresp.Kvs[i].Key)
+		if err != nil {
+			log.Errorf("failed to unmarshal job[%s]: %s", key, err.Error())
+			continue
+		}
+
+		update := false
+		for j := range job.Rules {
+			var ngs []string
+			for _, gid := range job.Rules[j].GroupIDs {
+				if gid != groupId {
+					ngs = append(ngs, gid)
+				}
+			}
+			if len(ngs) != len(job.Rules[j].GroupIDs) {
+				job.Rules[j].GroupIDs = ngs
+				update = true
+			}
+		}
+
+		if update {
+			v, err := json.Marshal(&job)
+			if err != nil {
+				log.Errorf("failed to marshal job[%s]: %s", key, err.Error())
+				continue
+			}
+			_, err = models.DefalutClient.PutWithModRev(key, string(v), gresp.Kvs[i].ModRevision)
+			if err != nil {
+				log.Errorf("failed to update job[%s]: %s", key, err.Error())
+				continue
+			}
+		}
 	}
 
 	outJSONWithCode(w, http.StatusNoContent, nil)
