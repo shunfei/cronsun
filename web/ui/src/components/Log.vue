@@ -25,7 +25,7 @@
           <input type="date" v-model="end">
         </div>
       </div>
-      <div class="fields">
+      <div class="two fields">
         <div class="filed">
           <div ref="latest" class="ui checkbox">
             <input type="checkbox" class="hidden" v-model="latest">

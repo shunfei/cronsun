@@ -48,7 +48,8 @@ module.exports = {
     alias: {
       'vue$': 'vue/dist/vue.common.js',
       'semantic$': 'semantic-ui/dist/semantic.min.js',
-      'semanticcss$': 'semantic-ui/dist/semantic.min.css'
+      'semanticcss$': 'semantic-ui/dist/semantic.min.css',
+      'charts$': 'chart.js/dist/Chart.min.js'
     }
   },
   devServer: {

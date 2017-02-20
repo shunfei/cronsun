@@ -13,6 +13,7 @@ func InitRouters() (s *http.Server, err error) {
 	jobHandler := &Job{}
 	nodeHandler := &Node{}
 	jobLogHandler := &JobLog{}
+	infoHandler := &Info{}
 
 	r := mux.NewRouter()
 	subrouter := r.PathPrefix("/v1").Subrouter()
@@ -57,6 +58,9 @@ func InitRouters() (s *http.Server, err error) {
 	// delete a node group
 	h = BaseHandler{Handle: nodeHandler.DeleteGroup}
 	subrouter.Handle("/node/group/{id}", h).Methods("DELETE")
+
+	h = BaseHandler{Handle: infoHandler.Overview}
+	subrouter.Handle("/info/overview", h).Methods("GET")
 
 	uidir := conf.Config.Web.UIDir
 	if len(uidir) == 0 {

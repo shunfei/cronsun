@@ -12,6 +12,7 @@ import (
 const (
 	Coll_JobLog       = "job_log"
 	Coll_JobLatestLog = "job_latest_log"
+	Coll_Stat         = "stat"
 )
 
 // 任务执行记录
@@ -108,4 +109,36 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 	if err := mgoDB.Upsert(Coll_JobLatestLog, bson.M{"node": jl.Node, "jobId": jl.JobId, "jobGroup": jl.JobGroup}, latestLog); err != nil {
 		log.Error(err.Error())
 	}
+
+	var inc = bson.M{"total": 1}
+	if jl.Success {
+		inc["successed"] = 1
+	} else {
+		inc["failed"] = 1
+	}
+
+	err := mgoDB.Upsert(Coll_Stat, bson.M{"name": "job-day", "date": time.Now().Format("2006-01-02")}, bson.M{"$inc": inc})
+	if err != nil {
+		log.Error("increase stat.job ", err.Error())
+	}
+	err = mgoDB.Upsert(Coll_Stat, bson.M{"name": "job"}, bson.M{"$inc": inc})
+	if err != nil {
+		log.Error("increase stat.job ", err.Error())
+	}
+}
+
+type StatExecuted struct {
+	Total     int64 `bson:"total" json:"total"`
+	Successed int64 `bson:"successed" json:"successed"`
+	Failed    int64 `bson:"failed" json:"failed"`
+}
+
+func JobLogStat() (s *StatExecuted, err error) {
+	err = mgoDB.One(Coll_Stat, bson.M{"name": "job"}, &s)
+	return
+}
+
+func JobLogDayStat(day time.Time) (s *StatExecuted, err error) {
+	err = mgoDB.One(Coll_Stat, bson.M{"name": "job-day", "date": day.Format("2006-01-02")}, &s)
+	return
 }
