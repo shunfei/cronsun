@@ -18,7 +18,7 @@
   </div>
   <div class="field">
     <label>不在这些节点上面运行任务</label>
-    <Dropdown title="选择节点" v-bind:items="activityNodes" v-on:change="changeExcludeNodes($event)" multiple="true"></Dropdown>
+    <Dropdown title="选择节点" v-bind:items="activityNodes" v-bind:selected="rule.exclude_nids" v-on:change="changeExcludeNodes($event)" multiple="true"></Dropdown>
   </div>
 </div>
 </template>
