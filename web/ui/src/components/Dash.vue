@@ -58,7 +58,7 @@
     <div id="charts">
       <div class="ui card">
         <div class="content">
-          <h4 class="header">当前节点状态</h4>
+          <h4 class="header"><router-link to="node">当前节点状态</router-link></h4>
           <div class="description">
             <canvas ref="node"></canvas>
           </div>
@@ -67,7 +67,7 @@
 
       <div class="ui card">
         <div class="content">
-          <h4 class="header">今日任务概况</h4>
+          <h4 class="header"><router-link :to="'log?begin='+today+'&end='+today">今日任务概况</router-link></h4>
           <div class="description">
             <canvas ref="job"></canvas>
           </div>
@@ -79,6 +79,7 @@
 
 <script>
 import Chart from 'charts';
+import {formatNumber} from '../libraries/functions';
 
 export default {
   name: 'dash',
@@ -87,11 +88,21 @@ export default {
       totalJobs: 0,
       totalExecuted: 0,
       todayExecuted: 0,
-      totalNodes: 0
+      totalNodes: 0,
+
+      today: ''
     }
   },
 
   mounted(){
+    // var formatNumber = function(i, len){
+    //   var n = i == 0 ? 1 : Math.ceil(Math.log10(i+1));
+    //   if (n >= len) return i.toString();
+    //   return '0'.repeat(len-n) + i.toString(); 
+    // }
+    var d = new Date()
+    this.today = d.getFullYear().toString() + '-' + formatNumber(d.getMonth()+1, 2) + '-' + d.getDate();
+
     var vm = this;
     var renderJobInfo = function(resp){
       vm.totalJobs = resp.totalJobs;
@@ -104,8 +115,8 @@ export default {
           labels: ["成功", "失败"],
           datasets: [{
           data: [resp.jobExecuted.successed, resp.jobExecuted.failed],
-            backgroundColor: ["#21BA45", "#333", "#DB2828"],
-            hoverBackgroundColor: ["#39DE60", "#555", "#D64848"]
+            backgroundColor: ["#21BA45", "#DB2828"],
+            hoverBackgroundColor: ["#39DE60", "#D64848"]
           }]
         }
       });
