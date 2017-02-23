@@ -251,38 +251,48 @@ func (n *Node) modGroup(g *models.Group) {
 
 	// 增加当前节点
 	if !oGroup.Included(n.ID) && g.Included(n.ID) {
-		n.groups[g.ID] = g
-		jls := n.link[g.ID]
-		if len(jls) == 0 {
-			return
-		}
-
-		var err error
-		for jid, jl := range jls {
-			job, ok := n.jobs[jid]
-			if !ok {
-				// job 已删除
-				if n.delIDs[jid] {
-					n.link.delGroupJob(g.ID, jid)
-					continue
-				}
-
-				if job, err = models.GetJob(jl.gname, jid); err != nil {
-					log.Warnf("get job[%s][%s] err: %s", jl.gname, jid, err.Error())
-					n.link.delGroupJob(g.ID, jid)
-					continue
-				}
-			}
-
-			cmds := job.Cmds(n.ID, n.groups)
-			for _, cmd := range cmds {
-				n.addCmd(cmd, true)
-			}
-		}
+		n.groupAddNode(g)
 		return
 	}
 
 	// 移除当前节点
+	n.groupRmNode(g, oGroup)
+	return
+}
+
+func (n *Node) groupAddNode(g *models.Group) {
+	n.groups[g.ID] = g
+	jls := n.link[g.ID]
+	if len(jls) == 0 {
+		return
+	}
+
+	var err error
+	for jid, jl := range jls {
+		job, ok := n.jobs[jid]
+		if !ok {
+			// job 已删除
+			if n.delIDs[jid] {
+				n.link.delGroupJob(g.ID, jid)
+				continue
+			}
+
+			if job, err = models.GetJob(jl.gname, jid); err != nil {
+				log.Warnf("get job[%s][%s] err: %s", jl.gname, jid, err.Error())
+				n.link.delGroupJob(g.ID, jid)
+				continue
+			}
+		}
+
+		cmds := job.Cmds(n.ID, n.groups)
+		for _, cmd := range cmds {
+			n.addCmd(cmd, true)
+		}
+	}
+	return
+}
+
+func (n *Node) groupRmNode(g, og *models.Group) {
 	jls := n.link[g.ID]
 	if len(jls) == 0 {
 		n.groups[g.ID] = g
@@ -298,7 +308,7 @@ func (n *Node) modGroup(g *models.Group) {
 			continue
 		}
 
-		n.groups[oGroup.ID] = oGroup
+		n.groups[og.ID] = og
 		prevCmds := job.Cmds(n.ID, n.groups)
 		n.groups[g.ID] = g
 		cmds := job.Cmds(n.ID, n.groups)
@@ -314,7 +324,6 @@ func (n *Node) modGroup(g *models.Group) {
 	}
 
 	n.groups[g.ID] = g
-	return
 }
 
 func (n *Node) watchJobs() {
