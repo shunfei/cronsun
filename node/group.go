@@ -39,6 +39,14 @@ func (l link) add(gid, jid, rid, gname string) {
 	j.rules[rid] = true
 }
 
+func (l link) addJob(job *models.Job) {
+	for _, r := range job.Rules {
+		for _, gid := range r.GroupIDs {
+			l.add(gid, job.ID, r.ID, job.Group)
+		}
+	}
+}
+
 func (l link) del(gid, jid, rid string) {
 	js, ok := l[gid]
 	if !ok {
@@ -56,7 +64,15 @@ func (l link) del(gid, jid, rid string) {
 	}
 }
 
-func (l link) delJob(gid, jid string) {
+func (l link) delJob(job *models.Job) {
+	for _, r := range job.Rules {
+		for _, gid := range r.GroupIDs {
+			l.delGroupJob(gid, job.ID)
+		}
+	}
+}
+
+func (l link) delGroupJob(gid, jid string) {
 	js, ok := l[gid]
 	if !ok {
 		return

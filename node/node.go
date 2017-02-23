@@ -113,11 +113,7 @@ func (n *Node) loadJobs() (err error) {
 }
 
 func (n *Node) addJob(job *models.Job, notice bool) {
-	for _, r := range job.Rules {
-		for _, gid := range r.GroupIDs {
-			n.link.add(gid, job.ID, r.ID, job.Group)
-		}
-	}
+	n.link.addJob(job)
 
 	cmds := job.Cmds(n.ID, n.groups)
 	if len(cmds) == 0 {
@@ -140,11 +136,7 @@ func (n *Node) delJob(id string) {
 	}
 
 	delete(n.jobs, id)
-	for _, r := range job.Rules {
-		for _, gid := range r.GroupIDs {
-			n.link.delJob(gid, job.ID)
-		}
-	}
+	n.link.delJob(job)
 
 	cmds := job.Cmds(n.ID, n.groups)
 	if len(cmds) == 0 {
@@ -165,12 +157,7 @@ func (n *Node) modJob(job *models.Job) {
 		return
 	}
 
-	for _, r := range oJob.Rules {
-		for _, gid := range r.GroupIDs {
-			n.link.del(gid, oJob.ID, r.ID)
-		}
-	}
-
+	n.link.delJob(oJob)
 	prevCmds := oJob.Cmds(n.ID, n.groups)
 	*oJob = *job
 	cmds := oJob.Cmds(n.ID, n.groups)
@@ -184,11 +171,7 @@ func (n *Node) modJob(job *models.Job) {
 		n.delCmd(cmd)
 	}
 
-	for _, r := range oJob.Rules {
-		for _, gid := range r.GroupIDs {
-			n.link.add(gid, oJob.ID, r.ID, oJob.Group)
-		}
-	}
+	n.link.addJob(oJob)
 }
 
 func (n *Node) addCmd(cmd *models.Cmd, notice bool) {
@@ -280,13 +263,13 @@ func (n *Node) modGroup(g *models.Group) {
 			if !ok {
 				// job 已删除
 				if n.delIDs[jid] {
-					n.link.delJob(g.ID, jid)
+					n.link.delGroupJob(g.ID, jid)
 					continue
 				}
 
 				if job, err = models.GetJob(jl.gname, jid); err != nil {
 					log.Warnf("get job[%s][%s] err: %s", jl.gname, jid, err.Error())
-					n.link.delJob(g.ID, jid)
+					n.link.delGroupJob(g.ID, jid)
 					continue
 				}
 			}
@@ -311,7 +294,7 @@ func (n *Node) modGroup(g *models.Group) {
 		if !ok {
 			// 数据出错
 			log.Warnf("WTF! group[%s] job[%s]", g.ID, jid)
-			n.link.delJob(g.ID, jid)
+			n.link.delGroupJob(g.ID, jid)
 			continue
 		}
 
