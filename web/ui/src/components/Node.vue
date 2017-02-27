@@ -25,7 +25,7 @@ export default {
     var vm = this;
     this.$rest.GET('nodes').onsucceed(200, (resp)=>{
       vm.nodes = resp;
-      vm.count = resp.length;
+      vm.count = resp.length || 0;
     }).do();
   }
 }

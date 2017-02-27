@@ -106,15 +106,16 @@ export default {
     var vm = this;
     var renderJobInfo = function(resp){
       vm.totalJobs = resp.totalJobs;
-      vm.totalExecuted = resp.jobExecuted.total;
-      vm.todayExecuted = resp.jobExecutedDaily.total;
-
+      vm.totalExecuted = resp.jobExecuted ? resp.jobExecuted.total : 0;
+      vm.todayExecuted = resp.jobExecutedDaily ? resp.jobExecutedDaily.total : 0;
+      var successed = resp.jobExecuted ? resp.jobExecuted.successed : 0;
+      var failed = resp.jobExecuted ? resp.jobExecuted.failed : 0;
       new Chart($(vm.$refs.job), {
         type: 'pie',
         data: {
           labels: ["成功", "失败"],
           datasets: [{
-          data: [resp.jobExecuted.successed, resp.jobExecuted.failed],
+          data: [successed, failed],
             backgroundColor: ["#21BA45", "#DB2828"],
             hoverBackgroundColor: ["#39DE60", "#D64848"]
           }]
@@ -123,7 +124,7 @@ export default {
     }
 
     var renderNodeInfo = function(resp){
-      vm.totalNodes = resp.length;
+      vm.totalNodes = resp ? resp.length : 0;
       var online = 0;
       var offline = 0;
       var damaged = 0;
