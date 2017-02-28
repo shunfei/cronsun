@@ -17,7 +17,7 @@ var formatDuration = function(beginTime, endTime){
   if (sec >= 1) s += sec.toString() + ' 秒 ';
 
   d = d%1000;
-  if (d >= 1) s = d.toString() + ' 毫秒';
+  if (d >= 1) s += d.toString() + ' 毫秒';
 
   if (s.length == 0) s = "0 毫秒";
   return s;
