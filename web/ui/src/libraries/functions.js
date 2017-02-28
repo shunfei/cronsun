@@ -1,22 +1,22 @@
 var formatDuration = function(beginTime, endTime){
   var d = new Date(endTime) - new Date(beginTime);
   var s = '';
-  var day = d/86400000;
+  var day = Math.floor(d/86400000);
   if (day >= 1) s +=  day.toString() + ' 天 '; 
   
   d = d%86400000;
-  var hour = d/3600000;
+  var hour = Math.floor(d/3600000);
   if (hour >= 1) s += hour.toString() + ' 小时 ';
 
   d = d%3600000;
-  var min = d/60000;
+  var min = Math.floor(d/60000);
   if (min >= 1) s += min.toString() + ' 分钟 ';
 
   d = d%60000;
-  var sec = d/1000;
+  var sec = Math.floor(d/1000);
   if (sec >= 1) s += sec.toString() + ' 秒 ';
 
-  d = d%1000;
+  d = Math.floor(d%1000);
   if (d >= 1) s += d.toString() + ' 毫秒';
 
   if (s.length == 0) s = "0 毫秒";
