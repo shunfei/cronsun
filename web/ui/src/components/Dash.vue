@@ -108,14 +108,14 @@ export default {
       vm.totalJobs = resp.totalJobs;
       vm.totalExecuted = resp.jobExecuted ? resp.jobExecuted.total : 0;
       vm.todayExecuted = resp.jobExecutedDaily ? resp.jobExecutedDaily.total : 0;
-      var successed = resp.jobExecuted ? resp.jobExecuted.successed : 0;
-      var failed = resp.jobExecuted ? resp.jobExecuted.failed : 0;
+      var dailySuccessed = resp.jobExecutedDaily ? resp.jobExecutedDaily.successed : 0;
+      var dailytotal = resp.jobExecutedDaily ? resp.jobExecutedDaily.total : 0;
       new Chart($(vm.$refs.job), {
         type: 'pie',
         data: {
           labels: ["成功", "失败"],
           datasets: [{
-          data: [successed, failed],
+          data: [dailySuccessed, dailytotal - dailySuccessed],
             backgroundColor: ["#21BA45", "#DB2828"],
             hoverBackgroundColor: ["#39DE60", "#D64848"]
           }]
