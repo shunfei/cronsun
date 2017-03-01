@@ -36,13 +36,13 @@ func (n *Node) Put(opts ...client.OpOption) (*client.PutResponse, error) {
 }
 
 func (n *Node) Del() (*client.DeleteResponse, error) {
-	return DefalutClient.Delete(conf.Config.Proc+n.ID, client.WithFromKey())
+	return DefalutClient.Delete(conf.Config.Proc + n.ID)
 }
 
 // 判断 node 是否已注册到 etcd
 // 存在则返回进行 pid，不存在返回 -1
 func (n *Node) Exist() (pid int, err error) {
-	resp, err := DefalutClient.Get(conf.Config.Proc+n.ID, client.WithFromKey())
+	resp, err := DefalutClient.Get(conf.Config.Proc + n.ID)
 	if err != nil {
 		return
 	}
@@ -52,7 +52,7 @@ func (n *Node) Exist() (pid int, err error) {
 	}
 
 	if pid, err = strconv.Atoi(string(resp.Kvs[0].Value)); err != nil {
-		if _, err = DefalutClient.Delete(conf.Config.Proc+n.ID, client.WithFromKey()); err != nil {
+		if _, err = DefalutClient.Delete(conf.Config.Proc + n.ID); err != nil {
 			return
 		}
 		return -1, nil
