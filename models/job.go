@@ -34,6 +34,8 @@ type Job struct {
 
 	// 执行任务的结点，用于记录 job log
 	runOn string
+	// 用于存储分隔后的任务
+	cmd []string
 }
 
 type JobRule struct {
@@ -87,7 +89,11 @@ func GetJobAndRev(group, id string) (job *Job, rev int64, err error) {
 	}
 
 	rev = resp.Kvs[0].ModRevision
-	err = json.Unmarshal(resp.Kvs[0].Value, &job)
+	if err = json.Unmarshal(resp.Kvs[0].Value, &job); err != nil {
+		return
+	}
+
+	job.splitCmd()
 	return
 }
 
@@ -113,6 +119,8 @@ func GetJobs() (jobs map[string]*Job, err error) {
 			log.Warnf("job[%s] umarshal err: %s", string(j.Key), e.Error())
 			continue
 		}
+
+		job.splitCmd()
 		jobs[job.ID] = job
 	}
 	return
@@ -126,12 +134,19 @@ func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
 	job = new(Job)
 	if err = json.Unmarshal(kv.Value, job); err != nil {
 		err = fmt.Errorf("job[%s] umarshal err: %s", string(kv.Key), err.Error())
+		return
 	}
+
+	job.splitCmd()
 	return
 }
 
 func (j *Job) RunOn(n string) {
 	j.runOn = n
+}
+
+func (j *Job) splitCmd() {
+	j.cmd = strings.Split(j.Command, " ")
 }
 
 func (j *Job) String() string {
@@ -144,8 +159,8 @@ func (j *Job) String() string {
 
 // Run 执行任务
 func (j *Job) Run() {
-	t, args := time.Now(), strings.Split(j.Command, " ")
-	cmd := exec.Command(args[0], args[1:]...)
+	t := time.Now()
+	cmd := exec.Command(j.cmd[0], j.cmd[1:]...)
 
 	if len(j.User) > 0 {
 		u, err := user.Lookup(j.User)
@@ -261,7 +276,6 @@ func (j *Job) Cmds(nid string, gs map[string]*Group) (cmds map[string]*Cmd) {
 				Job:     j,
 				JobRule: r,
 			}
-			j.RunOn(nid)
 			cmds[cmd.GetID()] = cmd
 		}
 	}

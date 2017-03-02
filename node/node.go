@@ -106,6 +106,7 @@ func (n *Node) loadJobs() (err error) {
 	}
 
 	for _, job := range jobs {
+		job.RunOn(n.ID)
 		n.addJob(job, false)
 	}
 
@@ -338,6 +339,7 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
+				job.RunOn(n.ID)
 				n.addJob(job, true)
 			case ev.IsModify():
 				job, err := models.GetJobFromKv(ev.Kv)
@@ -346,6 +348,7 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
+				job.RunOn(n.ID)
 				n.modJob(job)
 			case ev.Type == client.EventTypeDelete:
 				n.delJob(models.GetIDFromKey(string(ev.Kv.Key)))
