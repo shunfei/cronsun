@@ -83,7 +83,7 @@ func GetJobLatestLogListByJobIds(jobIds []string) (m map[string]*JobLatestLog, e
 func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 	jl := JobLog{
 		Id:    bson.NewObjectId(),
-		JobId: j.GetID(),
+		JobId: j.ID,
 
 		JobGroup: j.Group,
 		Name:     j.Name,

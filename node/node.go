@@ -177,19 +177,19 @@ func (n *Node) modJob(job *models.Job) {
 func (n *Node) addCmd(cmd *models.Cmd, notice bool) {
 	c, ok := n.cmds[cmd.GetID()]
 	if ok {
-		sch := c.Schedule
+		sch := c.JobRule.Timer
 		*c = *cmd
 
 		// 节点执行时间不变，不用更新 cron
-		if c.Schedule == sch {
+		if c.JobRule.Timer == sch {
 			return
 		}
 	} else {
 		c = cmd
 	}
 
-	if err := n.Cron.AddJob(c.Schedule, c); err != nil {
-		msg := fmt.Sprintf("job[%s] rule[%s] timer[%s] parse err: %s", c.Job.ID, c.JobRule.ID, c.Schedule, err.Error())
+	if err := n.Cron.AddJob(c.JobRule.Timer, c); err != nil {
+		msg := fmt.Sprintf("job[%s] rule[%s] timer[%s] parse err: %s", c.Job.ID, c.JobRule.ID, c.JobRule.Timer, err.Error())
 		log.Warn(msg)
 		c.Fail(time.Now(), msg)
 		return
@@ -200,7 +200,7 @@ func (n *Node) addCmd(cmd *models.Cmd, notice bool) {
 	}
 
 	if notice {
-		log.Noticef("job[%s] rule[%s] timer[%s] has added", c.Job.ID, c.JobRule.ID, c.Schedule)
+		log.Noticef("job[%s] rule[%s] timer[%s] has added", c.Job.ID, c.JobRule.ID, c.JobRule.Timer)
 	}
 	return
 }
@@ -208,7 +208,7 @@ func (n *Node) addCmd(cmd *models.Cmd, notice bool) {
 func (n *Node) delCmd(cmd *models.Cmd) {
 	delete(n.cmds, cmd.GetID())
 	n.Cron.DelJob(cmd)
-	log.Noticef("job[%s] rule[%s] timer[%s] has deleted", cmd.Job.ID, cmd.JobRule.ID, cmd.Schedule)
+	log.Noticef("job[%s] rule[%s] timer[%s] has deleted", cmd.Job.ID, cmd.JobRule.ID, cmd.JobRule.Timer)
 }
 
 func (n *Node) addGroup(g *models.Group) {

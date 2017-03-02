@@ -47,8 +47,6 @@ type JobRule struct {
 type Cmd struct {
 	*Job
 	*JobRule
-
-	Schedule string
 }
 
 func (c *Cmd) GetID() string {
@@ -130,10 +128,6 @@ func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
 		err = fmt.Errorf("job[%s] umarshal err: %s", string(kv.Key), err.Error())
 	}
 	return
-}
-
-func (j *Job) GetID() string {
-	return j.ID
 }
 
 func (j *Job) RunOn(n string) {
@@ -266,8 +260,6 @@ func (j *Job) Cmds(nid string, gs map[string]*Group) (cmds map[string]*Cmd) {
 			cmd := &Cmd{
 				Job:     j,
 				JobRule: r,
-
-				Schedule: r.Timer,
 			}
 			j.RunOn(nid)
 			cmds[cmd.GetID()] = cmd
