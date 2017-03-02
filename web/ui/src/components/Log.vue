@@ -125,7 +125,7 @@ export default {
     fetchList(query){
       this.loading = true;
       var vm = this;
-      this.$rest.GET('/logs?'+query)
+      this.$rest.GET('logs?'+query)
         .onsucceed(200, (resp)=>{
           vm.list = resp.list;
           vm.total = resp.total;
