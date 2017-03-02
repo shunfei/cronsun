@@ -11,6 +11,9 @@
         <p>节点：{{log.node}}</p>
       </div>
       <div class="ui segment">
+        <p>用户：<i class="attention warning icon" if="log.user=='root' || log.user == ''"></i> {{log.user}}</p>
+      </div>
+      <div class="ui segment">
         <p>时间：{{log.beginTime}} 到 {{log.endTime}}</p>
       </div>
       <div class="ui segment">
@@ -38,6 +41,7 @@ export default {
           jobGroup: 'test',
           name:  'run run run',
           node:  '192.168.1.2',
+          user:  '',
           command: 'echo hello;',
           output: 'hello',
           exitCode: 0,

@@ -48,6 +48,7 @@
         <tr>
           <th class="center aligned">任务名称</th>
           <th class="center aligned">运行节点</th>
+          <th class="center aligned">执行用户</th>
           <th class="center aligned">执行时间</th>
           <th class="center aligned">运行结果</th>
         </tr>
@@ -56,6 +57,7 @@
         <tr v-for="log in list">
           <td><router-link class="item" :to="'/job/edit/'+log.jobGroup+'/'+log.jobId">{{log.name}}</router-link></td>
           <td>{{log.node}}</td>
+          <td>{{log.user}}</td>
           <td :class="{warning: durationAttention(log.beginTime, log.endTime)}"><i class="attention icon" v-if="durationAttention(log.beginTime, log.endTime)"></i> {{formatTime(log)}}</td>
           <td :class="{error: !log.success}">
             <router-link :to="'/log/'+log.id">{{log.success ? '成功' : '失败'}}</router-link>

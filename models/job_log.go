@@ -20,6 +20,7 @@ type JobLog struct {
 	Id        bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	JobId     string        `bson:"jobId" json:"jobId"`               // 任务 Id，索引
 	JobGroup  string        `bson:"jobGroup" json:"jobGroup"`         // 任务分组，配合 Id 跳转用
+	User      string        `bson:"user" json:"user"`                 // 执行此次任务的用户
 	Name      string        `bson:"name" json:"name"`                 // 任务名称
 	Node      string        `bson:"node" json:"node"`                 // 运行此次任务的节点 ip，索引
 	Command   string        `bson:"command" json:"command,omitempty"` // 执行的命令，包括参数

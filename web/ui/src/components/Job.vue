@@ -19,6 +19,7 @@
           <th class="collapsing center aligned">操作</th>
           <th class="collapsing center aligned">状态</th>
           <th width="200px" class="center aligned">分组</th>
+          <th class="center aligned">用户</th>
           <th class="center aligned">名称</th>
           <th class="center aligned">最近执行时间</th>
           <th class="center aligned">执行结果</th>
@@ -40,6 +41,7 @@
           </td>
           <td class="center aligned"><i class="icon" v-bind:class="{pause: job.pause, play: !job.pause, green: !job.pause}"></i></td>
           <td>{{job.group}}</td>
+          <td>{{job.user}}</td>
           <td><router-link :to="'/job/edit/'+job.group+'/'+job.id">{{job.name}}</router-link></td>
           <td>
             <span v-if="!job.latestStatus">-</span>
