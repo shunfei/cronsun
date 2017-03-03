@@ -6,6 +6,7 @@ import (
 	"time"
 
 	client "github.com/coreos/etcd/clientv3"
+	"github.com/fsnotify/fsnotify"
 
 	"sunteng/commons/confutil"
 	"sunteng/commons/db/imgo"
@@ -18,6 +19,9 @@ var (
 
 	Config      = new(Conf)
 	initialized bool
+
+	watcher  *fsnotify.Watcher
+	exitChan = make(chan struct{})
 )
 
 func Init() error {
@@ -26,20 +30,12 @@ func Init() error {
 	}
 
 	flag.Parse()
-	err := confutil.LoadExtendConf(*confFile, Config)
-	if err != nil {
+	if err := Config.parse(); err != nil {
 		return err
 	}
-
-	if Config.Etcd.DialTimeout > 0 {
-		Config.Etcd.DialTimeout *= time.Second
+	if err := Config.watch(); err != nil {
+		return err
 	}
-	log.InitConf(Config.Log)
-
-	Config.Cmd = cleanKeyPrefix(Config.Cmd)
-	Config.Proc = cleanKeyPrefix(Config.Proc)
-	Config.Group = cleanKeyPrefix(Config.Group)
-
 	initialized = true
 	return nil
 }
@@ -88,4 +84,81 @@ func cleanKeyPrefix(p string) string {
 	p += "/"
 
 	return p
+}
+
+func (c *Conf) parse() error {
+	err := confutil.LoadExtendConf(*confFile, c)
+	if err != nil {
+		return err
+	}
+
+	if c.Etcd.DialTimeout > 0 {
+		c.Etcd.DialTimeout *= time.Second
+	}
+	log.InitConf(c.Log)
+
+	c.Cmd = cleanKeyPrefix(c.Cmd)
+	c.Proc = cleanKeyPrefix(c.Proc)
+	c.Group = cleanKeyPrefix(c.Group)
+
+	return nil
+}
+
+func (c *Conf) watch() error {
+	var err error
+	watcher, err = fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		duration := 3 * time.Second
+		timer, update := time.NewTimer(duration), false
+		for {
+			select {
+			case <-exitChan:
+				return
+			case event := <-watcher.Events:
+				// 保存文件时会产生多个事件
+				if event.Op&(fsnotify.Write|fsnotify.Chmod) > 0 {
+					timer.Reset(duration)
+					update = true
+				}
+			case <-timer.C:
+				if update {
+					c.reload()
+					update = false
+				}
+				timer.Reset(duration)
+			case err := <-watcher.Errors:
+				log.Warnf("config watcher err: %v", err)
+			}
+		}
+	}()
+
+	return watcher.Add(*confFile)
+}
+
+// 重新加载配置项
+// 注：与系统资源相关的选项不生效，需重启程序
+// Etcd
+// Mgo
+// Web
+func (c *Conf) reload() {
+	cf := new(Conf)
+	if err := cf.parse(); err != nil {
+		log.Warn("config file reload err:", err.Error())
+		return
+	}
+
+	*c = *cf
+	log.Noticef("config file[%s] reload success", *confFile)
+	return
+}
+
+func Exit(i interface{}) {
+	close(exitChan)
+	if watcher != nil {
+		watcher.Close()
+	}
 }

@@ -44,7 +44,7 @@ func main() {
 
 	log.Noticef("cronsun web server started on %s, Ctrl+C or send kill sign to exit", conf.Config.Web.BindAddr)
 	// 注册退出事件
-	// event.On(event.EXIT, n.Stop)
+	event.On(event.EXIT, conf.Exit)
 	// 监听退出信号
 	event.Wait()
 	event.Emit(event.EXIT, nil)

@@ -47,7 +47,7 @@ func main() {
 
 	log.Noticef("cronsun %s service started, Ctrl+C or send kill sign to exit", n.String())
 	// 注册退出事件
-	event.On(event.EXIT, n.Stop)
+	event.On(event.EXIT, n.Stop, conf.Exit)
 	// 监听退出信号
 	event.Wait()
 	// 处理退出事件
