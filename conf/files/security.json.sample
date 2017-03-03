@@ -1,0 +1,9 @@
+{
+    "Open": true,
+    "Users": [
+        "www", "db"
+    ],
+    "Ext": [
+        "sh", "py"
+    ]
+}

@@ -34,7 +34,7 @@ func Init() error {
 	if Config.Etcd.DialTimeout > 0 {
 		Config.Etcd.DialTimeout *= time.Second
 	}
-	log.InitConf(&Config.Log)
+	log.InitConf(Config.Log)
 
 	Config.Cmd = cleanKeyPrefix(Config.Cmd)
 	Config.Proc = cleanKeyPrefix(Config.Proc)
@@ -52,15 +52,30 @@ type Conf struct {
 	Ttl        int64 // 节点超时时间，单位秒
 	ReqTimeout int   // 请求超时时间，单位秒
 
-	Log  log.Config
+	Log  *log.Config
 	Etcd client.Config
 	Mgo  *imgo.Config
 	Web  webConfig
+
+	Security *Security
 }
 
 type webConfig struct {
 	BindAddr string
 	UIDir    string
+}
+
+type Security struct {
+	// 是不开启安全选项
+	// true 开启
+	// 所执行的命令只能是机器上的脚本，仅支持配置项里的扩展名
+	// 执行用户只能选择配置里的用户
+	// false 关闭，命令和用户可以用动填写
+	Open bool
+	// 配置执行用户
+	Users []string
+	// 支持的执行的脚本扩展名
+	Ext []string
 }
 
 // 返回前后包含斜杆的 /a/b/ 的前缀

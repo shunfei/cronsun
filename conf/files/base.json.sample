@@ -7,5 +7,6 @@
     "ReqTimeout": 2,
     "Log": "@extend:log.json",
     "Etcd": "@extend:etcd.json",
-    "Mgo": "@extend:db.json"
+    "Mgo": "@extend:db.json",
+    "Security": "@extend:security.json"
 }
