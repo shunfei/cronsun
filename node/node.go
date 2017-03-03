@@ -335,7 +335,7 @@ func (n *Node) watchJobs() {
 			case ev.IsCreate():
 				job, err := models.GetJobFromKv(ev.Kv)
 				if err != nil {
-					log.Warnf(err.Error())
+					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
 					continue
 				}
 
@@ -344,7 +344,7 @@ func (n *Node) watchJobs() {
 			case ev.IsModify():
 				job, err := models.GetJobFromKv(ev.Kv)
 				if err != nil {
-					log.Warnf(err.Error())
+					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
 					continue
 				}
 
@@ -367,7 +367,7 @@ func (n *Node) watchGroups() {
 			case ev.IsCreate():
 				g, err := models.GetGroupFromKv(ev.Kv)
 				if err != nil {
-					log.Warnf(err.Error())
+					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
 					continue
 				}
 
@@ -375,7 +375,7 @@ func (n *Node) watchGroups() {
 			case ev.IsModify():
 				g, err := models.GetGroupFromKv(ev.Kv)
 				if err != nil {
-					log.Warnf(err.Error())
+					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
 					continue
 				}
 

@@ -120,7 +120,11 @@ func GetJobs() (jobs map[string]*Job, err error) {
 			continue
 		}
 
-		job.splitCmd()
+		if !job.Valid() {
+			log.Warnf("job[%s] is invalid", string(j.Key))
+			continue
+		}
+
 		jobs[job.ID] = job
 	}
 	return
@@ -137,7 +141,9 @@ func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
 		return
 	}
 
-	job.splitCmd()
+	if !job.Valid() {
+		err = InvalidJobErr
+	}
 	return
 }
 
@@ -281,4 +287,44 @@ func (j *Job) Cmds(nid string, gs map[string]*Group) (cmds map[string]*Cmd) {
 	}
 
 	return
+}
+
+// 安全选项验证
+func (j *Job) Valid() bool {
+	if len(j.cmd) == 0 {
+		j.splitCmd()
+	}
+
+	security := conf.Config.Security
+	if !security.Open {
+		return true
+	}
+
+	return j.validUser() && j.validCmd()
+}
+
+func (j *Job) validUser() bool {
+	if len(conf.Config.Security.Users) == 0 {
+		return true
+	}
+
+	for _, u := range conf.Config.Security.Users {
+		if j.User == u {
+			return true
+		}
+	}
+	return false
+}
+
+func (j *Job) validCmd() bool {
+	if len(conf.Config.Security.Ext) == 0 {
+		return true
+	}
+
+	for _, ext := range conf.Config.Security.Ext {
+		if strings.HasSuffix(j.cmd[0], ext) {
+			return true
+		}
+	}
+	return false
 }

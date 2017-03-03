@@ -13,4 +13,6 @@ var (
 
 	ErrEmptyNodeGroupName = errors.New("Name of node group is empty.")
 	ErrIllegalNodeGroupId = errors.New("Invalid node group id that includes illegal characters such as '/'.")
+
+	InvalidJobErr = errors.New("invalid job")
 )
