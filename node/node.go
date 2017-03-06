@@ -61,7 +61,7 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 	return
 }
 
-// 注册到 /cronsun/proc/xx
+// 注册到 /cronsun/node/xx
 func (n *Node) Register() (err error) {
 	pid, err := n.Node.Exist()
 	if err != nil {

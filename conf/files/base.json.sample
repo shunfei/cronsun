@@ -1,5 +1,6 @@
 {
     "Web": "@extend:web.json",
+    "Node": "/cronsun/node/",
     "Proc": "/cronsun/proc/",
     "Cmd": "/cronsun/cmd/",
     "Group": "/cronsun/group/",

@@ -41,7 +41,8 @@ func Init() error {
 }
 
 type Conf struct {
-	Proc  string // proc 路径
+	Node  string // node 进程路径
+	Proc  string // 当前执行任务路径
 	Cmd   string // cmd 路径
 	Group string // 节点分组
 
@@ -98,6 +99,7 @@ func (c *Conf) parse() error {
 	log.InitConf(c.Log)
 
 	c.Cmd = cleanKeyPrefix(c.Cmd)
+	c.Node = cleanKeyPrefix(c.Node)
 	c.Proc = cleanKeyPrefix(c.Proc)
 	c.Group = cleanKeyPrefix(c.Group)
 
@@ -121,9 +123,9 @@ func (c *Conf) watch() error {
 			case event := <-watcher.Events:
 				// 保存文件时会产生多个事件
 				if event.Op&(fsnotify.Write|fsnotify.Chmod) > 0 {
-					timer.Reset(duration)
 					update = true
 				}
+				timer.Reset(duration)
 			case <-timer.C:
 				if update {
 					c.reload()

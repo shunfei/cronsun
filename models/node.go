@@ -18,7 +18,7 @@ const (
 )
 
 // 执行 cron cmd 的进程
-// 注册到 /cronsun/proc/<id>
+// 注册到 /cronsun/node/<id>
 type Node struct {
 	ID  string `bson:"_id" json:"id"`  // ip
 	PID string `bson:"pid" json:"pid"` // 进程 pid
@@ -32,17 +32,17 @@ func (n *Node) String() string {
 }
 
 func (n *Node) Put(opts ...client.OpOption) (*client.PutResponse, error) {
-	return DefalutClient.Put(conf.Config.Proc+n.ID, n.PID, opts...)
+	return DefalutClient.Put(conf.Config.Node+n.ID, n.PID, opts...)
 }
 
 func (n *Node) Del() (*client.DeleteResponse, error) {
-	return DefalutClient.Delete(conf.Config.Proc + n.ID)
+	return DefalutClient.Delete(conf.Config.Node + n.ID)
 }
 
 // 判断 node 是否已注册到 etcd
 // 存在则返回进行 pid，不存在返回 -1
 func (n *Node) Exist() (pid int, err error) {
-	resp, err := DefalutClient.Get(conf.Config.Proc + n.ID)
+	resp, err := DefalutClient.Get(conf.Config.Node + n.ID)
 	if err != nil {
 		return
 	}
@@ -52,7 +52,7 @@ func (n *Node) Exist() (pid int, err error) {
 	}
 
 	if pid, err = strconv.Atoi(string(resp.Kvs[0].Value)); err != nil {
-		if _, err = DefalutClient.Delete(conf.Config.Proc + n.ID); err != nil {
+		if _, err = DefalutClient.Delete(conf.Config.Node + n.ID); err != nil {
 			return
 		}
 		return -1, nil
