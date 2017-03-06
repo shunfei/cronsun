@@ -6,6 +6,7 @@
     "Group": "/cronsun/group/",
     "Ttl": 10,
     "ReqTimeout": 2,
+    "ProcTtl": 600,
     "Log": "@extend:log.json",
     "Etcd": "@extend:etcd.json",
     "Mgo": "@extend:db.json",
