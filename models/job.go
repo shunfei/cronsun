@@ -206,7 +206,7 @@ func (j *Job) Run() {
 		NodeID: j.runOn,
 		Time:   t,
 	}
-	go p.Start()
+	p.Start()
 
 	if err := cmd.Wait(); err != nil {
 		p.Stop()
