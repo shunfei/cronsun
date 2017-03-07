@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -191,13 +192,30 @@ func (j *Job) Run() {
 		}
 	}
 
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		j.Fail(t, fmt.Sprintf("%s\n\n%s", err.Error(), string(out)))
+	var b bytes.Buffer
+	cmd.Stdout = &b
+	cmd.Stderr = &b
+	if err := cmd.Start(); err != nil {
+		j.Fail(t, fmt.Sprintf("%s", err.Error()))
 		return
 	}
 
-	j.Success(t, string(out))
+	p := &Process{
+		ID:     strconv.Itoa(cmd.Process.Pid),
+		JobID:  j.ID,
+		NodeID: j.runOn,
+		Time:   t,
+	}
+	go p.Start()
+
+	if err := cmd.Wait(); err != nil {
+		p.Stop()
+		j.Fail(t, fmt.Sprintf("%s", err.Error()))
+		return
+	}
+	p.Stop()
+
+	j.Success(t, b.String())
 }
 
 // 从 etcd 的 key 中取 id

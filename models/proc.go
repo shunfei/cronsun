@@ -52,3 +52,11 @@ func (p *Process) Put() error {
 	_, err = DefalutClient.Put(p.Key(), p.Val(), client.WithLease(resp.ID))
 	return err
 }
+
+func (p *Process) Start() error {
+	return nil
+}
+
+func (p *Process) Stop() error {
+	return nil
+}
