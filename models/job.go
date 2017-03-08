@@ -203,6 +203,7 @@ func (j *Job) Run() {
 	p := &Process{
 		ID:     strconv.Itoa(cmd.Process.Pid),
 		JobID:  j.ID,
+		Group:  j.Group,
 		NodeID: j.runOn,
 		Time:   t,
 	}

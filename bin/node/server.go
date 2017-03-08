@@ -40,6 +40,10 @@ func main() {
 		return
 	}
 
+	if err = models.StartProc(); err != nil {
+		log.Warnf("[process key will not timeout]proc lease id set err: %s", err.Error())
+	}
+
 	if err = n.Run(); err != nil {
 		log.Error(err.Error())
 		return
@@ -47,7 +51,9 @@ func main() {
 
 	log.Noticef("cronsun %s service started, Ctrl+C or send kill sign to exit", n.String())
 	// 注册退出事件
-	event.On(event.EXIT, n.Stop, conf.Exit)
+	event.On(event.EXIT, n.Stop, conf.Exit, models.Exit)
+	// 注册监听配置更新事件
+	event.On(event.WAIT, models.Reload)
 	// 监听退出信号
 	event.Wait()
 	// 处理退出事件

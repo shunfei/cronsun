@@ -10,6 +10,7 @@ import (
 
 	"sunteng/commons/confutil"
 	"sunteng/commons/db/imgo"
+	"sunteng/commons/event"
 	"sunteng/commons/log"
 )
 
@@ -132,6 +133,7 @@ func (c *Conf) watch() error {
 			case <-timer.C:
 				if update {
 					c.reload()
+					event.Emit(event.WAIT, nil)
 					update = false
 				}
 				timer.Reset(duration)
