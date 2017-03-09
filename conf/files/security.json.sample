@@ -1,9 +1,9 @@
 {
-    "Open": false,
-    "Users": [
+    "open": false,
+    "users": [
         "www", "db"
     ],
-    "Ext": [
+    "ext": [
         ".sh", ".py"
     ]
 }

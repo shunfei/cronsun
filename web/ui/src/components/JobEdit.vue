@@ -26,8 +26,8 @@
         <input type="text" v-model="job.cmd" placeholder="任务脚本">
       </div>
       <div class="four wide field">
-        <label>用户({{$appConfig.security.enable ? '必选' : '可选'}})</label>
-        <Dropdown v-if="$appConfig.security.enable" title="指定执行用户" v-bind:items="$appConfig.security.allowUsers" v-bind:selected="job.user" v-on:change="changeUser"></Dropdown>
+        <label>用户({{$appConfig.security.open ? '必选' : '可选'}})</label>
+        <Dropdown v-if="$appConfig.security.open" title="指定执行用户" v-bind:items="$appConfig.security.users" v-bind:selected="job.user" v-on:change="changeUser"></Dropdown>
         <input v-else type="text" v-model="job.user" placeholder="指定执行用户">
       </div>
     </div>
@@ -136,9 +136,9 @@ export default {
   mounted: function(){
     var vm = this;
     var secCnf = this.$appConfig.security;
-    if (secCnf.enable) {
-      if (secCnf.allowSuffixs && secCnf.allowSuffixs.length > 0) {
-        this.allowSuffixsTip = '（当前限制只允许添加此类后缀脚本：' + secCnf.allowSuffixs.join(' ') + '）';
+    if (secCnf.open) {
+      if (secCnf.ext && secCnf.ext.length > 0) {
+        this.allowSuffixsTip = '（当前限制只允许添加此类后缀脚本：' + secCnf.ext.join(' ') + '）';
       }
     }
 

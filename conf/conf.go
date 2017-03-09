@@ -73,11 +73,11 @@ type Security struct {
 	// 所执行的命令只能是机器上的脚本，仅支持配置项里的扩展名
 	// 执行用户只能选择配置里的用户
 	// false 关闭，命令和用户可以用动填写
-	Open bool
+	Open bool `json:"open"`
 	// 配置执行用户
-	Users []string
+	Users []string `json:"users"`
 	// 支持的执行的脚本扩展名
-	Ext []string
+	Ext []string `json:"ext"`
 }
 
 // 返回前后包含斜杆的 /a/b/ 的前缀
