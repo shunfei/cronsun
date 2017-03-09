@@ -389,6 +389,27 @@ func (n *Node) watchGroups() {
 	}
 }
 
+func (n *Node) watchOnce() {
+	rch := models.WatchOnce()
+	for wresp := range rch {
+		for _, ev := range wresp.Events {
+			switch {
+			case ev.IsCreate(), ev.IsModify():
+				if len(ev.Kv.Value) != 0 && string(ev.Kv.Value) != n.ID {
+					continue
+				}
+
+				job, ok := n.jobs[models.GetIDFromKey(string(ev.Kv.Key))]
+				if !ok || job.IsRunOn(n.ID, n.groups) {
+					continue
+				}
+
+				go job.RunWithRecovery()
+			}
+		}
+	}
+}
+
 // 启动服务
 func (n *Node) Run() (err error) {
 	go n.keepAlive()

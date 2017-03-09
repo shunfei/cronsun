@@ -45,6 +45,7 @@ type Conf struct {
 	Node  string // node 进程路径
 	Proc  string // 当前执行任务路径
 	Cmd   string // cmd 路径
+	Once  string // 马上执行任务路径
 	Group string // 节点分组
 
 	Ttl        int64 // 节点超时时间，单位秒
@@ -157,6 +158,9 @@ func (c *Conf) reload() {
 		log.Warn("config file reload err:", err.Error())
 		return
 	}
+
+	// etcd key 选项需要重启
+	cf.Node, cf.Proc, cf.Cmd, cf.Once, cf.Group = c.Node, c.Proc, c.Cmd, c.Once, c.Group
 
 	*c = *cf
 	log.Noticef("config file[%s] reload success", *confFile)

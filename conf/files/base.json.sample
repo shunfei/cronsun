@@ -3,6 +3,7 @@
     "Node": "/cronsun/node/",
     "Proc": "/cronsun/proc/",
     "Cmd": "/cronsun/cmd/",
+    "Once": "/cronsun/once/",
     "Group": "/cronsun/group/",
     "Ttl": 10,
     "ReqTimeout": 2,

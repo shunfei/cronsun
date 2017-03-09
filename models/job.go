@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os/exec"
 	"os/user"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -247,6 +248,18 @@ func (j *Job) Run() {
 	j.Success(t, b.String())
 }
 
+func (j *Job) RunWithRecovery() {
+	defer func() {
+		if r := recover(); r != nil {
+			const size = 64 << 10
+			buf := make([]byte, size)
+			buf = buf[:runtime.Stack(buf, false)]
+			log.Warnf("panic running job: %v\n%s", r, buf)
+		}
+	}()
+	j.Run()
+}
+
 // 从 etcd 的 key 中取 id
 func GetIDFromKey(key string) string {
 	index := strings.LastIndex(key, "/")
@@ -334,6 +347,22 @@ func (j *Job) Cmds(nid string, gs map[string]*Group) (cmds map[string]*Cmd) {
 	}
 
 	return
+}
+
+func (j Job) IsRunOn(nid string, gs map[string]*Group) bool {
+	for _, r := range j.Rules {
+		for _, id := range r.ExcludeNodeIDs {
+			if nid == id {
+				continue
+			}
+		}
+
+		if r.included(nid, gs) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // 安全选项验证
