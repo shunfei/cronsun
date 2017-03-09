@@ -11,11 +11,17 @@
     <div class="ui container">
       <router-view></router-view>
     </div>
+    <Messager/>
   </div>
 </template>
 
 <script>
+import Messager from './components/Messager.vue';
+
 export default {
-  name: 'app'
+  name: 'app',
+  components: {
+    Messager
+  }
 }
 </script>

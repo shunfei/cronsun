@@ -121,8 +121,8 @@ func GetJobs() (jobs map[string]*Job, err error) {
 			continue
 		}
 
-		if !job.Valid() {
-			log.Warnf("job[%s] is invalid", string(j.Key))
+		if err := job.Valid(); err != nil {
+			log.Warnf("job[%s] is invalid: %s", string(j.Key), err.Error())
 			continue
 		}
 
@@ -142,9 +142,7 @@ func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
 		return
 	}
 
-	if !job.Valid() {
-		err = InvalidJobErr
-	}
+	err = job.Valid()
 	return
 }
 
@@ -271,7 +269,7 @@ func (j *Job) Check() error {
 		return ErrEmptyJobCommand
 	}
 
-	return nil
+	return j.Valid()
 }
 
 // 执行结果写入 mongoDB
@@ -309,17 +307,25 @@ func (j *Job) Cmds(nid string, gs map[string]*Group) (cmds map[string]*Cmd) {
 }
 
 // 安全选项验证
-func (j *Job) Valid() bool {
+func (j *Job) Valid() error {
 	if len(j.cmd) == 0 {
 		j.splitCmd()
 	}
 
 	security := conf.Config.Security
 	if !security.Open {
-		return true
+		return nil
 	}
 
-	return j.validUser() && j.validCmd()
+	if !j.validUser() {
+		return ErrSecurityInvalidUser
+	}
+
+	if !j.validCmd() {
+		return ErrSecurityInvalidCmd
+	}
+
+	return nil
 }
 
 func (j *Job) validUser() bool {
@@ -339,7 +345,6 @@ func (j *Job) validCmd() bool {
 	if len(conf.Config.Security.Ext) == 0 {
 		return true
 	}
-
 	for _, ext := range conf.Config.Security.Ext {
 		if strings.HasSuffix(j.cmd[0], ext) {
 			return true

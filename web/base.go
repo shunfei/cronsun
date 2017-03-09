@@ -27,7 +27,7 @@ func (b BaseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		buf.Write(debug.Stack())
 		stack = buf.String()
 
-		outJSONError(w, http.StatusInternalServerError, "Internal Server Error")
+		outJSONWithCode(w, http.StatusInternalServerError, "Internal Server Error")
 
 		log.Errorf("%v\n\n%s\n", err_, stack)
 		return
@@ -52,11 +52,4 @@ func outJSONWithCode(w http.ResponseWriter, httpCode int, data interface{}) {
 
 func outJSON(w http.ResponseWriter, data interface{}) {
 	outJSONWithCode(w, http.StatusOK, data)
-}
-
-func outJSONError(w http.ResponseWriter, httpCode int, msg string) {
-	r := map[string]string{
-		"error": msg,
-	}
-	outJSONWithCode(w, httpCode, r)
 }

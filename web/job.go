@@ -26,7 +26,7 @@ func (j *Job) GetJob(w http.ResponseWriter, r *http.Request) {
 		} else {
 			statusCode = http.StatusInternalServerError
 		}
-		outJSONError(w, statusCode, err.Error())
+		outJSONWithCode(w, statusCode, err.Error())
 		return
 	}
 
@@ -37,7 +37,7 @@ func (j *Job) DeleteJob(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	_, err := models.DeleteJob(vars["group"], vars["id"])
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -49,7 +49,7 @@ func (j *Job) ChangeJobStatus(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&job)
 	if err != nil {
-		outJSONError(w, http.StatusBadRequest, err.Error())
+		outJSONWithCode(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	r.Body.Close()
@@ -57,20 +57,20 @@ func (j *Job) ChangeJobStatus(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	originJob, rev, err := models.GetJobAndRev(vars["group"], vars["id"])
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	originJob.Pause = job.Pause
 	b, err := json.Marshal(originJob)
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	_, err = models.DefalutClient.PutWithModRev(originJob.Key(), string(b), rev)
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -86,13 +86,13 @@ func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&job)
 	if err != nil {
-		outJSONError(w, http.StatusBadRequest, err.Error())
+		outJSONWithCode(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	r.Body.Close()
 
 	if err = job.Check(); err != nil {
-		outJSONError(w, http.StatusBadRequest, err.Error())
+		outJSONWithCode(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -110,13 +110,13 @@ func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(job)
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	_, err = models.DefalutClient.Put(job.Key(), string(b))
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -133,7 +133,7 @@ func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 func (j *Job) GetGroups(w http.ResponseWriter, r *http.Request) {
 	resp, err := models.DefalutClient.Get(conf.Config.Cmd, clientv3.WithPrefix(), clientv3.WithKeysOnly())
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -168,7 +168,7 @@ func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := models.DefalutClient.Get(prefix, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -178,7 +178,7 @@ func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
 		job := models.Job{}
 		err = json.Unmarshal(resp.Kvs[i].Value, &job)
 		if err != nil {
-			outJSONError(w, http.StatusInternalServerError, err.Error())
+			outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 		jobList = append(jobList, &jobStatus{Job: &job})

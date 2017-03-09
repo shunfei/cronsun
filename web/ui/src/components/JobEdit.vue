@@ -17,17 +17,18 @@
       </div>
       <div class="field">
         <label>任务分组</label>
-        <Dropdown title="选择分组" v-bind:items="groups" v-bind:selected="job.group" v-on:change="changeGroup"/>
+        <Dropdown title="选择分组" v-bind:items="groups" v-bind:selected="job.group" v-on:change="changeGroup"></Dropdown>
       </div>
     </div>
     <div class="fields">
       <div class="twelve wide field">
-        <label>任务脚本</label>
+        <label>任务脚本 {{allowSuffixsTip}}</label>
         <input type="text" v-model="job.cmd" placeholder="任务脚本">
       </div>
       <div class="four wide field">
-        <label>用户(可选)</label>
-        <input type="text" v-model="job.user" placeholder="指定执行脚本的用户">
+        <label>用户({{$appConfig.security.enable ? '必选' : '可选'}})</label>
+        <Dropdown v-if="$appConfig.security.enable" title="指定执行用户" v-bind:items="$appConfig.security.allowUsers" v-bind:selected="job.user" v-on:change="changeUser"></Dropdown>
+        <input v-else type="text" v-model="job.user" placeholder="指定执行用户">
       </div>
     </div>
     <div class="field">
@@ -56,6 +57,7 @@ export default {
         action: 'CREATE',
         groups: [],
         loading: false,
+        allowSuffixsTip: '',
         job: {
           id: '',
           name:  '',
@@ -88,6 +90,10 @@ export default {
       this.job.group = val;
     },
 
+    changeUser: function(val, text){
+      this.job.user = val;
+    },
+
     removeRule: function(index){
       this.job.rules.splice(index, 1);
     },
@@ -102,7 +108,7 @@ export default {
       var vm = this;
       this.$rest.PUT('job', this.job)
         .onsucceed(exceptCode, ()=>{vm.$router.push('/job')})
-        .onfailed((resp)=>{console.log(resp)})
+        .onfailed((resp)=>{vm.$bus.$emit('error', resp)})
         .onend(()=>{vm.loading=false})
         .do();
     },
@@ -114,6 +120,12 @@ export default {
 
   mounted: function(){
     var vm = this;
+    var secCnf = this.$appConfig.security;
+    if (secCnf.enable) {
+      if (secCnf.allowSuffixs && secCnf.allowSuffixs.length > 0) {
+        this.allowSuffixsTip = '（当前限制只允许添加此类后缀脚本：' + secCnf.allowSuffixs.join(' ') + '）';
+      }
+    }
 
     if (this.$route.path.indexOf('/job/create') === 0) {
       this.action = 'CREATE';
@@ -145,13 +157,6 @@ export default {
         vm.job.pause = !vm.job.pause;
       }
     });
-
-    $(this.$el).find('.dropdown').dropdown({
-      allowAdditions: true,
-      onChange: function(value, text, $choice){
-        vm.job.group = value;
-      }
-    }).dropdown('set exactly', this.job.group);
   },
 
   components: {

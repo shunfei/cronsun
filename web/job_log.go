@@ -105,7 +105,7 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 		pager.List, pager.Total, err = models.GetJobLogList(query, page, pageSize, sort)
 	}
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 

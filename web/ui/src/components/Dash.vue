@@ -95,11 +95,6 @@ export default {
   },
 
   mounted(){
-    // var formatNumber = function(i, len){
-    //   var n = i == 0 ? 1 : Math.ceil(Math.log10(i+1));
-    //   if (n >= len) return i.toString();
-    //   return '0'.repeat(len-n) + i.toString(); 
-    // }
     var d = new Date()
     this.today = d.getFullYear().toString() + '-' + formatNumber(d.getMonth()+1, 2) + '-' + d.getDate();
 

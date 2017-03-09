@@ -4,3 +4,5 @@ conf/files/*.json
 bin/*/*server
 .DS_Store
 web/ui/node_modules
+.vscode
+*npm-debug.log

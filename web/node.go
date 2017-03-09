@@ -23,7 +23,7 @@ func (n *Node) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	de := json.NewDecoder(r.Body)
 	var err error
 	if err = de.Decode(&g); err != nil {
-		outJSONError(w, http.StatusBadRequest, err.Error())
+		outJSONWithCode(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	defer r.Body.Close()
@@ -36,14 +36,14 @@ func (n *Node) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = g.Check(); err != nil {
-		outJSONError(w, http.StatusBadRequest, err.Error())
+		outJSONWithCode(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// @TODO modRev
 	var modRev int64 = 0
 	if _, err = g.Put(modRev); err != nil {
-		outJSONError(w, http.StatusBadRequest, err.Error())
+		outJSONWithCode(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -53,7 +53,7 @@ func (n *Node) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 func (n *Node) GetGroups(w http.ResponseWriter, r *http.Request) {
 	resp, err := models.DefalutClient.Get(conf.Config.Group, v3.WithPrefix(), v3.WithSort(v3.SortByKey, v3.SortAscend))
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -63,7 +63,7 @@ func (n *Node) GetGroups(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(resp.Kvs[i].Value, &g)
 		if err != nil {
 			log.Errorf("node.GetGroups(key: %s) error: %s", string(resp.Kvs[i].Key), err.Error())
-			outJSONError(w, http.StatusInternalServerError, err.Error())
+			outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 		list = append(list, &g)
@@ -76,7 +76,7 @@ func (n *Node) GetGroupByGroupId(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	g, err := models.GetGroupById(vars["id"])
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -91,13 +91,13 @@ func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	groupId := strings.TrimSpace(vars["id"])
 	if len(groupId) == 0 {
-		outJSONError(w, http.StatusBadRequest, "empty node ground id.")
+		outJSONWithCode(w, http.StatusBadRequest, "empty node ground id.")
 		return
 	}
 
 	_, err := models.DeleteGroupById(groupId)
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -105,7 +105,7 @@ func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errstr := fmt.Sprintf("failed to fetch jobs from etcd after deleted node group[%s]: %s", groupId, err.Error())
 		log.Error(errstr)
-		outJSONError(w, http.StatusInternalServerError, errstr)
+		outJSONWithCode(w, http.StatusInternalServerError, errstr)
 		return
 	}
 
@@ -153,7 +153,7 @@ func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 func (n *Node) GetNodes(w http.ResponseWriter, r *http.Request) {
 	nodes, err := models.GetNodes()
 	if err != nil {
-		outJSONError(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 

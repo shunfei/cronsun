@@ -14,6 +14,7 @@ func InitRouters() (s *http.Server, err error) {
 	nodeHandler := &Node{}
 	jobLogHandler := &JobLog{}
 	infoHandler := &Info{}
+	configHandler := NewConfiguration()
 
 	r := mux.NewRouter()
 	subrouter := r.PathPrefix("/v1").Subrouter()
@@ -61,6 +62,9 @@ func InitRouters() (s *http.Server, err error) {
 
 	h = BaseHandler{Handle: infoHandler.Overview}
 	subrouter.Handle("/info/overview", h).Methods("GET")
+
+	h = BaseHandler{Handle: configHandler.Configuratios}
+	subrouter.Handle("/configurations", h).Methods("GET")
 
 	uidir := conf.Config.Web.UIDir
 	if len(uidir) == 0 {

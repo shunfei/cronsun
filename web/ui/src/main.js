@@ -7,8 +7,9 @@ Vue.config.debug = true;
 
 // global restful client
 import Rest from './libraries/rest-client.js';
-const RestApi =(Vue, options)=>{
-  Vue.prototype.$rest = new Rest('/v1/');
+var restApi = new Rest('/v1/');
+const RestApi = (Vue, options)=>{
+  Vue.prototype.$rest = restApi;
 };
 Vue.use(RestApi);
 
@@ -47,8 +48,27 @@ var router = new VueRouter({
   routes: routes
 });
 
-var app = new Vue({
-  el: '#app',
-  render: h => h(App),
-  router: router
-});
+
+restApi.GET('configurations').onsucceed(200, (resp)=>{
+  const Config = (Vue, options)=>{
+    Vue.prototype.$appConfig = resp;
+  }
+  Vue.use(Config);
+
+  var app = new Vue({
+    el: '#app',
+    render: h => h(App),
+    router: router
+  });
+}).onfailed((data, xhr)=>{
+  var msg = data ? data : xhr.status+' '+xhr.statusText;
+  showInitialError('Failed to get global configurations('+xhr.responseURL+'): '+msg);
+}).onexception((msg)=>{
+  showInitialError('Failed to get global configurations('+xhr.responseURL+'): '+msg);
+}).do();
+
+function showInitialError(msg) {
+  var d = document.getElementById('app');
+  d.innerHTML = msg;
+  d.className = 'initial error';
+}
