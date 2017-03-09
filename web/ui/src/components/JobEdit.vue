@@ -31,6 +31,19 @@
         <input v-else type="text" v-model="job.user" placeholder="指定执行用户">
       </div>
     </div>
+    <div class="two fields">
+      <div class="field">
+        <label>超时设置（单位“秒”，0 表示不限制）</label>
+        <input type="number" ref="timeout" v-model:value="job.timeout" placeholder="任务执行超时时间">
+      </div>
+      <div class="field">
+        <label>并行数设置（0 表示不限制）</label>
+        <div class="ui icon input">
+          <input type="number" ref="parallels" v-model:value="job.parallels" placeholder="任务执行超时时间">
+          <i ref="parallelstip" class="large help circle link icon" data-position="top right" data-content="设置在单个节点上面同时可执行多少个任务，针对某些任务执行时间很长，但两次任务执行间隔较短时比较有用" data-variation="wide"></i>
+        </div>
+      </div>
+    </div>
     <div class="field">
       <span v-if="!job.rules || job.rules.length == 0"><i class="warning circle icon"></i>当前任务没有定时器，点击下面按钮来添加定时器</span>
     </div>
@@ -66,6 +79,8 @@ export default {
           user: '',
           cmd: '',
           pause: false,
+          parallels: 0,
+          timeout: 0,
           rules: []
         },
         error: ''
@@ -157,6 +172,8 @@ export default {
         vm.job.pause = !vm.job.pause;
       }
     });
+
+    $(this.$refs.parallelstip).popup();
   },
 
   components: {

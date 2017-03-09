@@ -25,13 +25,15 @@ const (
 // 需要执行的 cron cmd 命令
 // 注册到 /cronsun/cmd/groupName/<id>
 type Job struct {
-	ID      string     `json:"id"`
-	Name    string     `json:"name"`
-	Group   string     `json:"group"`
-	Command string     `json:"cmd"`
-	User    string     `json:"user"`
-	Rules   []*JobRule `json:"rules"`
-	Pause   bool       `json:"pause"` // 可手工控制的状态
+	ID        string     `json:"id"`
+	Name      string     `json:"name"`
+	Group     string     `json:"group"`
+	Command   string     `json:"cmd"`
+	User      string     `json:"user"`
+	Rules     []*JobRule `json:"rules"`
+	Pause     bool       `json:"pause"`     // 可手工控制的状态
+	Timeout   int64      `json:"timeout"`   // 任务执行时间超时设置，大于 0 时有效
+	Parallels int        `json:"parallels"` // 设置任务在单个节点上可以同时允许多少个，针对两次任务执行间隔比任务执行时间要长的任务启用
 
 	// 执行任务的结点，用于记录 job log
 	runOn string
