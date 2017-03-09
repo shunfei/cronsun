@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"golang.org/x/net/context"
+
 	client "github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 
@@ -166,9 +168,12 @@ func (j *Job) String() string {
 
 // Run 执行任务
 func (j *Job) Run() {
-	t := time.Now()
-	cmd := exec.Command(j.cmd[0], j.cmd[1:]...)
+	var (
+		cmd         *exec.Cmd
+		sysProcAttr *syscall.SysProcAttr
+	)
 
+	t := time.Now()
 	if len(j.User) > 0 {
 		u, err := user.Lookup(j.User)
 		if err != nil {
@@ -184,13 +189,22 @@ func (j *Job) Run() {
 			}
 		}
 		gid, _ := strconv.Atoi(u.Gid)
-		cmd.SysProcAttr = &syscall.SysProcAttr{
+		sysProcAttr = &syscall.SysProcAttr{
 			Credential: &syscall.Credential{
 				Uid: uint32(uid),
 				Gid: uint32(gid),
 			},
 		}
 	}
+
+	if j.Timeout > 0 {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(j.Timeout)*time.Second)
+		defer cancel()
+		cmd = exec.CommandContext(ctx, j.cmd[0], j.cmd[1:]...)
+	} else {
+		cmd = exec.Command(j.cmd[0], j.cmd[1:]...)
+	}
+	cmd.SysProcAttr = sysProcAttr
 
 	var b bytes.Buffer
 	cmd.Stdout = &b
