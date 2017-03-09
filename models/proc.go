@@ -146,9 +146,8 @@ func (p *Process) Val() string {
 }
 
 // 获取结点正在执行任务的数量
-func (p *Process) Count() (int64, error) {
-	key := p.Key()
-	resp, err := DefalutClient.Get(key[:len(key)-len(p.ID)])
+func (j *Job) CountRunning() (int64, error) {
+	resp, err := DefalutClient.Get(conf.Config.Proc + j.runOn + "/" + j.Group + "/" + j.ID)
 	if err != nil {
 		return 0, err
 	}
