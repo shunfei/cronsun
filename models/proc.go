@@ -2,11 +2,13 @@ package models
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
 	client "github.com/coreos/etcd/clientv3"
 
+	"strings"
 	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
 )
@@ -88,7 +90,7 @@ func (l *leaseID) set() error {
 }
 
 func (l *leaseID) keepAlive() {
-	duration := time.Duration(l.ttl)
+	duration := time.Duration(l.ttl) * time.Second
 	timer := time.NewTimer(duration)
 	for {
 		select {
@@ -124,17 +126,34 @@ func (l *leaseID) keepAlive() {
 }
 
 // 当前执行中的任务信息
-// key: /cronsun/proc/node/job id/pid
+// key: /cronsun/proc/node/group/jobId/pid
 // value: 开始执行时间
 // key 会自动过期，防止进程意外退出后没有清除相关 key，过期时间可配置
 type Process struct {
-	ID     string    `json:"id"`
-	JobID  string    `json:"job_id"`
+	ID     string    `json:"id"` // pid
+	JobID  string    `json:"jobId"`
 	Group  string    `json:"group"`
-	NodeID string    `json:"node_id"`
-	Time   time.Time `json:"name"` // 开始执行时间
+	NodeID string    `json:"nodeId"`
+	Time   time.Time `json:"time"` // 开始执行时间
 
 	running bool
+}
+
+func GetProcFromKey(key string) (proc *Process, err error) {
+	ss := strings.Split(key, "/")
+	var sslen = len(ss)
+	if sslen < 5 {
+		err = fmt.Errorf("invalid proc key [%s]", err.Error())
+		return
+	}
+
+	proc = &Process{
+		ID:     ss[sslen-1],
+		JobID:  ss[sslen-2],
+		Group:  ss[sslen-3],
+		NodeID: ss[sslen-4],
+	}
+	return
 }
 
 func (p *Process) Key() string {
@@ -147,7 +166,7 @@ func (p *Process) Val() string {
 
 // 获取结点正在执行任务的数量
 func (j *Job) CountRunning() (int64, error) {
-	resp, err := DefalutClient.Get(conf.Config.Proc + j.runOn + "/" + j.Group + "/" + j.ID)
+	resp, err := DefalutClient.Get(conf.Config.Proc+j.runOn+"/"+j.Group+"/"+j.ID, client.WithPrefix(), client.WithCountOnly())
 	if err != nil {
 		return 0, err
 	}

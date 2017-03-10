@@ -53,3 +53,13 @@ func outJSONWithCode(w http.ResponseWriter, httpCode int, data interface{}) {
 func outJSON(w http.ResponseWriter, data interface{}) {
 	outJSONWithCode(w, http.StatusOK, data)
 }
+
+func InStringArray(k string, ss []string) bool {
+	for i := range ss {
+		if ss[i] == k {
+			return true
+		}
+	}
+
+	return false
+}

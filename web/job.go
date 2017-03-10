@@ -12,6 +12,7 @@ import (
 	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
 	"sunteng/cronsun/models"
+	"time"
 )
 
 type Job struct{}
@@ -196,3 +197,64 @@ func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
 
 	outJSON(w, jobList)
 }
+
+func (j *Job) GetExecutingJob(w http.ResponseWriter, r *http.Request) {
+	opt := &ProcFetchOptions{
+		Groups:  GetStringArrayFromQuery("groups", ",", r),
+		NodeIds: GetStringArrayFromQuery("nodes", ",", r),
+		JobIds:  GetStringArrayFromQuery("jobs", ",", r),
+	}
+
+	gresp, err := models.DefalutClient.Get(conf.Config.Proc, clientv3.WithPrefix())
+	if err != nil {
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	var list = make([]*models.Process, 0, 8)
+	for i := range gresp.Kvs {
+		proc, err := models.GetProcFromKey(string(gresp.Kvs[i].Key))
+		if err != nil {
+			log.Error("Failed to unmarshal Proc from key: ", err.Error())
+			continue
+		}
+
+		if !opt.Match(proc) {
+			continue
+		}
+		proc.Time, _ = time.Parse(time.RFC3339, string(gresp.Kvs[i].Value))
+		list = append(list, proc)
+	}
+
+	sort.Sort(ByProcTime(list))
+	outJSON(w, list)
+}
+
+type ProcFetchOptions struct {
+	Groups  []string
+	NodeIds []string
+	JobIds  []string
+}
+
+func (opt *ProcFetchOptions) Match(proc *models.Process) bool {
+	if len(opt.Groups) > 0 && !InStringArray(proc.Group, opt.Groups) {
+		return false
+	}
+
+	if len(opt.JobIds) > 0 && !InStringArray(proc.JobID, opt.JobIds) {
+		return false
+
+	}
+
+	if len(opt.NodeIds) > 0 && !InStringArray(proc.NodeID, opt.NodeIds) {
+		return false
+	}
+
+	return true
+}
+
+type ByProcTime []*models.Process
+
+func (a ByProcTime) Len() int           { return len(a) }
+func (a ByProcTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByProcTime) Less(i, j int) bool { return a[i].Time.After(a[j].Time) }

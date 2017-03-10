@@ -220,7 +220,6 @@ func (j *Job) Run() {
 		cmd = exec.Command(j.cmd[0], j.cmd[1:]...)
 	}
 	cmd.SysProcAttr = sysProcAttr
-
 	var b bytes.Buffer
 	cmd.Stdout = &b
 	cmd.Stderr = &b

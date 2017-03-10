@@ -38,6 +38,10 @@ func InitRouters() (s *http.Server, err error) {
 	h = BaseHandler{Handle: jobHandler.DeleteJob}
 	subrouter.Handle("/job/{group}-{id}", h).Methods("DELETE")
 
+	// query executing job
+	h = BaseHandler{Handle: jobHandler.GetExecutingJob}
+	subrouter.Handle("/job/executing", h).Methods("GET")
+
 	// get job log list
 	h = BaseHandler{Handle: jobLogHandler.GetList}
 	subrouter.Handle("/logs", h).Methods("GET")

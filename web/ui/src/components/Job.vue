@@ -3,9 +3,10 @@
 </style>
 <template>
   <div>
-    <div class="clearfix">
+    <div class="clearfix" style="margin-bottom: 20px;">
+      <router-link class="ui left floated button" to="/job/executing">查看执行中的任务</router-link>
+      <button class="ui left floated icon button" v-on:click="refresh"><i class="refresh icon"></i></button>
       <router-link class="ui right floated primary button" to="/job/create"><i class="add to calendar icon"></i> 新任务</router-link>
-      <button class="ui right floated icon button" v-on:click="refresh"><i class="refresh icon"></i></button>
     </div>
     <form class="ui form">
       <div class="field">

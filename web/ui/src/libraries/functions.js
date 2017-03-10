@@ -48,4 +48,9 @@ var formatNumber = function(i, len){
   return '0'.repeat(len-n) + i.toString(); 
 }
 
-export {formatDuration, formatTime, formatNumber};
+var split = function(str, sep){
+  if (typeof str != 'string' || str.length === 0) return [];
+  return str.split(sep || ',');
+}
+
+export {formatDuration, formatTime, formatNumber, split};
