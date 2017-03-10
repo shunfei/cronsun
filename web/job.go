@@ -198,11 +198,67 @@ func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
 	outJSON(w, jobList)
 }
 
+func (j *Job) GetJobNodes(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	job, err := models.GetJob(vars["group"], vars["id"])
+	var statusCode int
+	if err != nil {
+		if err == models.ErrNotFound {
+			statusCode = http.StatusNotFound
+		} else {
+			statusCode = http.StatusInternalServerError
+		}
+		outJSONWithCode(w, statusCode, err.Error())
+		return
+	}
+
+	var nodes []string
+	var exNodes []string
+	groups, err := models.GetGroups("")
+	if err != nil {
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	for i := range job.Rules {
+		inNodes := append(nodes, job.Rules[i].NodeIDs...)
+		for _, gid := range job.Rules[i].GroupIDs {
+			if g, ok := groups[gid]; ok {
+				inNodes = append(inNodes, g.NodeIDs...)
+			}
+		}
+		exNodes = append(exNodes, job.Rules[i].ExcludeNodeIDs...)
+		inNodes = SubtractStringArray(inNodes, exNodes)
+		nodes = append(nodes, inNodes...)
+	}
+
+	outJSON(w, UniqueStringArray(nodes))
+}
+
+func (j *Job) JobExecute(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	group := strings.TrimSpace(vars["group"])
+	id := strings.TrimSpace(vars["id"])
+	if len(group) == 0 || len(id) == 0 {
+		outJSONWithCode(w, http.StatusBadRequest, "Invalid job id or group.")
+		return
+	}
+
+	node := getStringVal("node", r)
+	err := models.PutOnce(group, id, node)
+	if err != nil {
+		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	outJSONWithCode(w, http.StatusNoContent, nil)
+}
+
 func (j *Job) GetExecutingJob(w http.ResponseWriter, r *http.Request) {
 	opt := &ProcFetchOptions{
-		Groups:  GetStringArrayFromQuery("groups", ",", r),
-		NodeIds: GetStringArrayFromQuery("nodes", ",", r),
-		JobIds:  GetStringArrayFromQuery("jobs", ",", r),
+		Groups:  getStringArrayFromQuery("groups", ",", r),
+		NodeIds: getStringArrayFromQuery("nodes", ",", r),
+		JobIds:  getStringArrayFromQuery("jobs", ",", r),
 	}
 
 	gresp, err := models.DefalutClient.Get(conf.Config.Proc, clientv3.WithPrefix())

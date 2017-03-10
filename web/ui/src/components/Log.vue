@@ -60,17 +60,20 @@
           <td>{{log.user}}</td>
           <td :class="{warning: durationAttention(log.beginTime, log.endTime)}"><i class="attention icon" v-if="durationAttention(log.beginTime, log.endTime)"></i> {{formatTime(log)}}</td>
           <td :class="{error: !log.success}">
-            <router-link :to="'/log/'+log.id">{{log.success ? '成功' : '失败'}}</router-link>
+            <router-link :to="'/log/'+log.id">{{log.success ? '成功' : '失败'}}</router-link> |
+            <a href="#" title="点此选择节点重新执行任务" v-on:click.prevent="showExecuteJobModal(log.name, log.jobGroup, log.jobId)"><i class="icon repeat"></i></a>
           </td>
         </tr>
       </tbody>
     </table>
+    <ExecuteJob ref="executeJobModal">
     <Pager v-if="list && list.length>0" :total="total" :length="5"/>
   </div>
 </template>
 
 <script>
 import Pager from './basic/Pager.vue';
+import ExecuteJob from './ExecuteJob.vue';
 import {formatTime, formatDuration} from '../libraries/functions';
 
 export default {
@@ -130,7 +133,7 @@ export default {
           vm.list = resp.list;
           vm.total = resp.total;
         })
-        .onfailed((resp)=>{console.log(resp)})
+        .onfailed((msg)=>{vm.$bus.$emit('error', msg)})
         .onend(()=>{vm.loading=false})
         .do();
     },
@@ -166,10 +169,15 @@ export default {
 
     formatTime: function(log){
       return formatTime(log.beginTime, log.endTime)+'，于 '+log.node+' 耗时 '+formatDuration(log.beginTime, log.endTime);
+    },
+
+    showExecuteJobModal: function(jobName, jobGroup, jobId){
+      this.$refs.executeJobModal.show(jobName, jobGroup, jobId);
     }
   },
   components: {
-    Pager
+    Pager,
+    ExecuteJob
   }
 }
 </script>

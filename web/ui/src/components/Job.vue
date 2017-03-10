@@ -51,17 +51,19 @@
           <td :class="{error: job.latestStatus && !job.latestStatus.success}">
             <span v-if="!job.latestStatus">-</span>
             <router-link v-else :to="'/log/'+job.latestStatus.refLogId">{{job.latestStatus.success ? '成功' : '失败'}}</router-link> |
-            <router-link :to="{path: 'log', query: {latest:true, ids: job.id}}">latest</router-link>
+            <router-link :to="{path: 'log', query: {latest:true, ids: job.id}}">latest</router-link> |
+            <a href="#" title="点此选择节点重新执行任务" v-on:click.prevent="showExecuteJobModal(job.name, job.group, job.id)"><i class="icon repeat"></i></a>
           </td>
         </tr>
       </tbody>
     </table>
+    <ExecuteJob ref="executeJobModal">
   </div>
 </template>
 
 <script>
 import Dropdown from './basic/Dropdown.vue';
-import Pager from './basic/Pager.vue';
+import ExecuteJob from './ExecuteJob.vue';
 import {formatTime, formatDuration} from '../libraries/functions';
 
 export default {
@@ -141,12 +143,16 @@ export default {
 
     formatLatest: function(latest){
       return formatTime(latest.beginTime, latest.endTime)+'，于 '+latest.node+' 耗时 '+formatDuration(latest.beginTime, latest.endTime);
+    },
+
+    showExecuteJobModal: function(jobName, jobGroup, jobId){
+      this.$refs.executeJobModal.show(jobName, jobGroup, jobId);
     }
   },
 
   components: {
     Dropdown,
-    Pager
+    ExecuteJob
   }
 }
 </script>

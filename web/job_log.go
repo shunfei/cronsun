@@ -2,7 +2,6 @@ package web
 
 import (
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -44,9 +43,9 @@ func (jl *JobLog) GetDetail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
-	nodes := GetStringArrayFromQuery("nodes", ",", r)
-	names := GetStringArrayFromQuery("names", ",", r)
-	ids := GetStringArrayFromQuery("ids", ",", r)
+	nodes := getStringArrayFromQuery("nodes", ",", r)
+	names := getStringArrayFromQuery("names", ",", r)
+	ids := getStringArrayFromQuery("ids", ",", r)
 	begin := getTime(r.FormValue("begin"))
 	end := getTime(r.FormValue("end"))
 	page := getPage(r.FormValue("page"))
@@ -111,38 +110,4 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 
 	pager.Total = int(math.Ceil(float64(pager.Total) / float64(pageSize)))
 	outJSON(w, pager)
-}
-
-func GetStringArrayFromQuery(name, sep string, r *http.Request) (arr []string) {
-	val := strings.TrimSpace(r.FormValue(name))
-	if len(val) == 0 {
-		return
-	}
-
-	return strings.Split(val, sep)
-}
-
-func getPage(page string) int {
-	p, err := strconv.Atoi(page)
-	if err != nil || p < 1 {
-		p = 1
-	}
-
-	return p
-}
-
-func getPageSize(ps string) int {
-	p, err := strconv.Atoi(ps)
-	if err != nil || p < 1 {
-		p = 50
-	} else if p > 200 {
-		p = 200
-	}
-	return p
-}
-
-func getTime(t string) time.Time {
-	t = strings.TrimSpace(t)
-	time, _ := time.Parse("2006-01-02", t)
-	return time
 }

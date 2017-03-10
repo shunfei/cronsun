@@ -19,7 +19,7 @@ export default {
   },
 
   mounted: function() {
-    if (this.title.length === 0) this.title = '选择分组';
+    if (!this.title || this.title.length === 0) this.title = '选择分组';
 
     var vm = this;
     $(this.$el).dropdown({

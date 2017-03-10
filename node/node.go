@@ -115,13 +115,13 @@ func (n *Node) loadJobs() (err error) {
 
 func (n *Node) addJob(job *models.Job, notice bool) {
 	n.link.addJob(job)
+	n.jobs[job.ID] = job
 
 	cmds := job.Cmds(n.ID, n.groups)
 	if len(cmds) == 0 {
 		return
 	}
 
-	n.jobs[job.ID] = job
 	for _, cmd := range cmds {
 		n.addCmd(cmd, notice)
 	}
@@ -400,7 +400,7 @@ func (n *Node) watchOnce() {
 				}
 
 				job, ok := n.jobs[models.GetIDFromKey(string(ev.Kv.Key))]
-				if !ok || job.IsRunOn(n.ID, n.groups) {
+				if !ok || !job.IsRunOn(n.ID, n.groups) {
 					continue
 				}
 
@@ -427,6 +427,7 @@ func (n *Node) Run() (err error) {
 	n.Cron.Start()
 	go n.watchJobs()
 	go n.watchGroups()
+	go n.watchOnce()
 	n.Node.On()
 	return
 }
