@@ -191,6 +191,10 @@ func (p *Process) del() error {
 }
 
 func (p *Process) Start() {
+	if p == nil {
+		return
+	}
+
 	if err := p.put(); err != nil {
 		log.Warnf("proc put err: %s", err.Error())
 		return
@@ -200,7 +204,7 @@ func (p *Process) Start() {
 }
 
 func (p *Process) Stop() error {
-	if !p.running {
+	if p == nil || !p.running {
 		return nil
 	}
 

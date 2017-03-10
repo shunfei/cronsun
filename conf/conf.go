@@ -53,6 +53,9 @@ type Conf struct {
 	// 执行任务信息过期时间，单位秒
 	// 0 为不过期
 	ProcTtl int64
+	// 记录任务执行中的信息的执行时间阀值，单位秒
+	// 0 为不限制
+	ProcReq int64
 
 	Log  *log.Config
 	Etcd client.Config
@@ -98,6 +101,10 @@ func (c *Conf) parse() error {
 		return err
 	}
 
+	// 转为 ms
+	if c.ProcReq > 0 {
+		c.ProcReq *= 1000
+	}
 	if c.Etcd.DialTimeout > 0 {
 		c.Etcd.DialTimeout *= time.Second
 	}

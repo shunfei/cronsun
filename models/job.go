@@ -28,15 +28,19 @@ const (
 // 需要执行的 cron cmd 命令
 // 注册到 /cronsun/cmd/groupName/<id>
 type Job struct {
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
-	Group     string     `json:"group"`
-	Command   string     `json:"cmd"`
-	User      string     `json:"user"`
-	Rules     []*JobRule `json:"rules"`
-	Pause     bool       `json:"pause"`     // 可手工控制的状态
-	Timeout   int64      `json:"timeout"`   // 任务执行时间超时设置，大于 0 时有效
-	Parallels int64      `json:"parallels"` // 设置任务在单个节点上可以同时允许多少个，针对两次任务执行间隔比任务执行时间要长的任务启用
+	ID      string     `json:"id"`
+	Name    string     `json:"name"`
+	Group   string     `json:"group"`
+	Command string     `json:"cmd"`
+	User    string     `json:"user"`
+	Rules   []*JobRule `json:"rules"`
+	Pause   bool       `json:"pause"`   // 可手工控制的状态
+	Timeout int64      `json:"timeout"` // 任务执行时间超时设置，大于 0 时有效
+	// 设置任务在单个节点上可以同时允许多少个
+	// 针对两次任务执行间隔比任务执行时间要长的任务启用
+	Parallels int64 `json:"parallels"`
+	// 平均执行时间，单位 ms
+	AvgTime int64 `json:"avg_time"`
 
 	// 执行任务的结点，用于记录 job log
 	runOn string
@@ -171,6 +175,7 @@ func (j *Job) String() string {
 func (j *Job) Run() {
 	var (
 		cmd         *exec.Cmd
+		proc        *Process
 		sysProcAttr *syscall.SysProcAttr
 	)
 
@@ -228,21 +233,23 @@ func (j *Job) Run() {
 		return
 	}
 
-	p := &Process{
-		ID:     strconv.Itoa(cmd.Process.Pid),
-		JobID:  j.ID,
-		Group:  j.Group,
-		NodeID: j.runOn,
-		Time:   t,
+	if j.AvgTime >= conf.Config.ProcReq {
+		proc = &Process{
+			ID:     strconv.Itoa(cmd.Process.Pid),
+			JobID:  j.ID,
+			Group:  j.Group,
+			NodeID: j.runOn,
+			Time:   t,
+		}
+		proc.Start()
 	}
-	p.Start()
 
 	if err := cmd.Wait(); err != nil {
-		p.Stop()
+		proc.Stop()
 		j.Fail(t, fmt.Sprintf("%s", err.Error()))
 		return
 	}
-	p.Stop()
+	proc.Stop()
 
 	j.Success(t, b.String())
 }
@@ -321,6 +328,16 @@ func (j *Job) Success(t time.Time, out string) {
 
 func (j *Job) Fail(t time.Time, msg string) {
 	CreateJobLog(j, t, msg, false)
+}
+
+func (j *Job) Avg(t, et time.Time) {
+	execTime := int64(et.Sub(t) / time.Millisecond)
+	if j.AvgTime == 0 {
+		j.AvgTime = execTime
+		return
+	}
+
+	j.AvgTime = (j.AvgTime + execTime) / 2
 }
 
 func (j *Job) Cmds(nid string, gs map[string]*Group) (cmds map[string]*Cmd) {

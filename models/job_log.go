@@ -82,6 +82,9 @@ func GetJobLatestLogListByJobIds(jobIds []string) (m map[string]*JobLatestLog, e
 }
 
 func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
+	et := time.Now()
+	j.Avg(t, et)
+
 	jl := JobLog{
 		Id:    bson.NewObjectId(),
 		JobId: j.ID,
@@ -97,7 +100,7 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 		Success: success,
 
 		BeginTime: t,
-		EndTime:   time.Now(),
+		EndTime:   et,
 	}
 	if err := mgoDB.Insert(Coll_JobLog, jl); err != nil {
 		log.Error(err.Error())
