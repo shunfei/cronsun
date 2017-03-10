@@ -3,7 +3,7 @@ var sendXHR = function(opt) {
   xhr.open(opt.method, opt.url, true);
 
   if (typeof opt.onexception == 'function') {
-    var warpExceptionHandler = ()=>{
+    var warpExceptionHandler = (msg)=>{
       opt.onexception(msg);
       typeof opt.onend == 'function' && opt.onend(xhr);
     }

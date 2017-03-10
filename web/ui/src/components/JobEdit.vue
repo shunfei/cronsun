@@ -158,7 +158,7 @@ export default {
             }
           }
         }).
-        onfailed((data)=>{vm.error = data.error}).
+        onfailed((msg)=>{vm.error = msg}).
         do();
     }
 

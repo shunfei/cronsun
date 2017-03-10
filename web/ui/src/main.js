@@ -14,8 +14,9 @@ const RestApi = (Vue, options)=>{
 Vue.use(RestApi);
 
 // global event bus
+var bus = new Vue();
 Vue.use((Vue)=>{
-  Vue.prototype.$bus = new Vue();
+  Vue.prototype.$bus = bus;
 });
 
 import VueRouter from 'vue-router';
@@ -57,6 +58,9 @@ restApi.GET('configurations').onsucceed(200, (resp)=>{
   }
   Vue.use(Config);
 
+  restApi.defaultExceptionHandler = (msg)=>{bus.$emit('error', msg)};
+  restApi.defaultFailedHandler = (msg)=>{bus.$emit('error', msg)};
+  
   var app = new Vue({
     el: '#app',
     render: h => h(App),
