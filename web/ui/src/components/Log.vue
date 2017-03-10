@@ -155,7 +155,7 @@ export default {
     submit: function(){
       var query = this.buildQuery()
       var url = '/log?'+query;
-      if (this.$router.fullPath == url) {
+      if (this.$route.fullPath == url) {
         this.fetchList(query);
         return;
       }
