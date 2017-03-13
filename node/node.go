@@ -23,7 +23,7 @@ type Node struct {
 	*models.Node
 	*cron.Cron
 
-	jobs   Jobs
+	jobs   Jobs // 和结点相关的任务
 	groups Groups
 	cmds   map[string]*models.Cmd
 
@@ -115,7 +115,9 @@ func (n *Node) loadJobs() (err error) {
 
 func (n *Node) addJob(job *models.Job, notice bool) {
 	n.link.addJob(job)
-	n.jobs[job.ID] = job
+	if job.IsRunOn(n.ID, n.groups) {
+		n.jobs[job.ID] = job
+	}
 
 	cmds := job.Cmds(n.ID, n.groups)
 	if len(cmds) == 0 {
@@ -129,10 +131,10 @@ func (n *Node) addJob(job *models.Job, notice bool) {
 }
 
 func (n *Node) delJob(id string) {
+	n.delIDs[id] = true
 	job, ok := n.jobs[id]
 	// 之前此任务没有在当前结点执行
 	if !ok {
-		n.delIDs[id] = true
 		return
 	}
 
@@ -302,9 +304,8 @@ func (n *Node) groupRmNode(g, og *models.Group) {
 
 	for jid, _ := range jls {
 		job, ok := n.jobs[jid]
+		// 之前此任务没有在当前结点执行
 		if !ok {
-			// 数据出错
-			log.Warnf("WTF! group[%s] job[%s]", g.ID, jid)
 			n.link.delGroupJob(g.ID, jid)
 			continue
 		}

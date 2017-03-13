@@ -198,6 +198,7 @@ func (j *Job) unlimit() {
 
 // Run 执行任务
 func (j *Job) Run() {
+	// 同时执行任务数限制
 	if j.limit() {
 		return
 	}
