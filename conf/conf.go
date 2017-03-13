@@ -101,10 +101,6 @@ func (c *Conf) parse() error {
 		return err
 	}
 
-	// 转为 ms
-	if c.ProcReq > 0 {
-		c.ProcReq *= 1000
-	}
 	if c.Etcd.DialTimeout > 0 {
 		c.Etcd.DialTimeout *= time.Second
 	}

@@ -137,6 +137,9 @@ type Process struct {
 	Time   time.Time `json:"time"` // 开始执行时间
 
 	running bool
+	hasPut  bool
+	timer   *time.Timer
+	done    chan struct{}
 }
 
 func GetProcFromKey(key string) (proc *Process, err error) {
@@ -175,32 +178,60 @@ func (j *Job) CountRunning() (int64, error) {
 }
 
 func (p *Process) put() error {
+	if p.hasPut {
+		return nil
+	}
+
 	id := lID.get()
 	if id < 0 {
 		_, err := DefalutClient.Put(p.Key(), p.Val())
+		if err == nil {
+			p.hasPut = true
+		}
 		return err
 	}
 
 	_, err := DefalutClient.Put(p.Key(), p.Val(), client.WithLease(id))
+	if err == nil {
+		p.hasPut = true
+	}
 	return err
 }
 
 func (p *Process) del() error {
+	if !p.hasPut {
+		return nil
+	}
+
 	_, err := DefalutClient.Delete(p.Key())
 	return err
 }
 
 func (p *Process) Start() {
-	if p == nil {
-		return
-	}
-
-	if err := p.put(); err != nil {
-		log.Warnf("proc put err: %s", err.Error())
+	if p == nil || p.running {
 		return
 	}
 
 	p.running = true
+	if conf.Config.ProcReq == 0 {
+		if err := p.put(); err != nil {
+			log.Warnf("proc put err: %s", err.Error())
+		}
+		return
+	}
+
+	p.timer = time.NewTimer(time.Duration(conf.Config.ProcReq) * time.Second)
+	p.done = make(chan struct{})
+
+	go func() {
+		select {
+		case <-p.done:
+		case <-p.timer.C:
+			if err := p.put(); err != nil {
+				log.Warnf("proc put err: %s", err.Error())
+			}
+		}
+	}()
 }
 
 func (p *Process) Stop() error {
@@ -208,5 +239,15 @@ func (p *Process) Stop() error {
 		return nil
 	}
 
-	return p.del()
+	if p.done != nil {
+		close(p.done)
+	}
+
+	if p.timer != nil {
+		p.timer.Stop()
+	}
+
+	err := p.del()
+	p.running, p.hasPut = false, false
+	return err
 }

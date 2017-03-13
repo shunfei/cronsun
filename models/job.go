@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -46,6 +47,8 @@ type Job struct {
 	runOn string
 	// 用于存储分隔后的任务
 	cmd []string
+	// 控制同时执行任务数
+	count int64
 }
 
 type JobRule struct {
@@ -171,8 +174,35 @@ func (j *Job) String() string {
 	return string(data)
 }
 
+func (j *Job) limit() bool {
+	if j.Parallels == 0 {
+		return false
+	}
+
+	count := atomic.LoadInt64(&j.count)
+	if j.Parallels <= count {
+		j.Fail(time.Now(), fmt.Sprintf("job[%s] running on[%s] running:[%d]", j.Key(), j.runOn, count))
+		return true
+	}
+
+	atomic.AddInt64(&j.count, 1)
+	return false
+}
+
+func (j *Job) unlimit() {
+	if j.Parallels == 0 {
+		return
+	}
+	atomic.AddInt64(&j.count, -1)
+}
+
 // Run 执行任务
 func (j *Job) Run() {
+	if j.limit() {
+		return
+	}
+	defer j.unlimit()
+
 	var (
 		cmd         *exec.Cmd
 		proc        *Process
@@ -202,20 +232,6 @@ func (j *Job) Run() {
 		}
 	}
 
-	// 同时允许任务进程数控制
-	if j.Parallels > 0 {
-		count, err := j.CountRunning()
-		if err != nil {
-			j.Fail(t, fmt.Sprintf("count job[%s] running on[%s] err: %s", j.Key(), j.runOn, err.Error()))
-			return
-		}
-
-		if j.Parallels <= count {
-			j.Fail(t, fmt.Sprintf("job[%s] running on[%s] limit:[%d]", j.Key(), j.runOn, count))
-			return
-		}
-	}
-
 	// 超时控制
 	if j.Timeout > 0 {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(j.Timeout)*time.Second)
@@ -233,16 +249,14 @@ func (j *Job) Run() {
 		return
 	}
 
-	if j.AvgTime >= conf.Config.ProcReq {
-		proc = &Process{
-			ID:     strconv.Itoa(cmd.Process.Pid),
-			JobID:  j.ID,
-			Group:  j.Group,
-			NodeID: j.runOn,
-			Time:   t,
-		}
-		proc.Start()
+	proc = &Process{
+		ID:     strconv.Itoa(cmd.Process.Pid),
+		JobID:  j.ID,
+		Group:  j.Group,
+		NodeID: j.runOn,
+		Time:   t,
 	}
+	proc.Start()
 
 	if err := cmd.Wait(); err != nil {
 		proc.Stop()
