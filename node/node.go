@@ -31,11 +31,8 @@ type Node struct {
 	// 删除的 job id，用于 group 更新
 	delIDs map[string]bool
 
-	ttl int64
-
-	lID client.LeaseID // lease id
-	lch <-chan *client.LeaseKeepAliveResponse
-
+	ttl  int64
+	lID  client.LeaseID // lease id
 	done chan struct{}
 }
 
@@ -53,7 +50,11 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 		},
 		Cron: cron.New(),
 
+		jobs: make(Jobs, 8),
 		cmds: make(map[string]*models.Cmd),
+
+		link:   newLink(8),
+		delIDs: make(map[string]bool, 8),
 
 		ttl:  cfg.Ttl,
 		done: make(chan struct{}),
@@ -72,22 +73,51 @@ func (n *Node) Register() (err error) {
 		return fmt.Errorf("node[%s] pid[%d] exist", n.Node.ID, pid)
 	}
 
-	resp, err := n.Client.Grant(context.TODO(), n.ttl)
+	return n.set()
+}
+
+func (n *Node) set() error {
+	resp, err := n.Client.Grant(context.TODO(), n.ttl+2)
 	if err != nil {
-		return
+		return err
 	}
 
 	if _, err = n.Node.Put(client.WithLease(resp.ID)); err != nil {
-		return
+		return err
 	}
 
-	ch, err := n.Client.KeepAlive(context.TODO(), resp.ID)
-	if err != nil {
-		return
-	}
+	n.lID = resp.ID
+	return nil
+}
 
-	n.lID, n.lch = resp.ID, ch
-	return
+// 断网掉线重新注册
+func (n *Node) keepAlive() {
+	duration := time.Duration(n.ttl) * time.Second
+	timer := time.NewTimer(duration)
+	for {
+		select {
+		case <-n.done:
+			return
+		case <-timer.C:
+			if n.lID > 0 {
+				_, err := n.Client.KeepAliveOnce(context.TODO(), n.lID)
+				if err == nil {
+					timer.Reset(duration)
+					continue
+				}
+
+				log.Warnf("%s lid[%x] keepAlive err: %s, try to reset...", n.String(), n.lID, err.Error())
+				n.lID = 0
+			}
+
+			if err := n.set(); err != nil {
+				log.Warnf("%s set lid err: %s, try to reset after %d seconds...", n.String(), err.Error(), n.ttl)
+			} else {
+				log.Noticef("%s set lid[%x] success", n.String(), n.lID)
+			}
+			timer.Reset(duration)
+		}
+	}
 }
 
 func (n *Node) loadJobs() (err error) {
@@ -100,7 +130,6 @@ func (n *Node) loadJobs() (err error) {
 		return
 	}
 
-	n.jobs, n.link = make(Jobs, len(jobs)), newLink(len(n.groups))
 	if len(jobs) == 0 {
 		return
 	}
@@ -431,28 +460,6 @@ func (n *Node) Run() (err error) {
 	go n.watchOnce()
 	n.Node.On()
 	return
-}
-
-// 断网掉线重新注册
-func (n *Node) keepAlive() {
-	for {
-		for _ = range n.lch {
-		}
-
-		select {
-		case <-n.done:
-			return
-		default:
-		}
-		time.Sleep(time.Duration(n.ttl+1) * time.Second)
-
-		log.Noticef("%s has dropped, try to reconnect...", n.String())
-		if err := n.Register(); err != nil {
-			log.Warn(err.Error())
-		} else {
-			log.Noticef("%s reconnected", n.String())
-		}
-	}
 }
 
 // 停止服务

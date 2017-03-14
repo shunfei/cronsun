@@ -104,6 +104,9 @@ func (c *Conf) parse() error {
 	if c.Etcd.DialTimeout > 0 {
 		c.Etcd.DialTimeout *= time.Second
 	}
+	if c.Ttl <= 0 {
+		c.Ttl = 10
+	}
 	log.InitConf(c.Log)
 
 	c.Cmd = cleanKeyPrefix(c.Cmd)

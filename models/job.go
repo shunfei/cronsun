@@ -258,13 +258,12 @@ func (j *Job) Run() {
 		Time:   t,
 	}
 	proc.Start()
+	defer proc.Stop()
 
 	if err := cmd.Wait(); err != nil {
-		proc.Stop()
 		j.Fail(t, fmt.Sprintf("%s", err.Error()))
 		return
 	}
-	proc.Stop()
 
 	j.Success(t, b.String())
 }

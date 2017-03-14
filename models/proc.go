@@ -102,23 +102,20 @@ func (l *leaseID) keepAlive() {
 			}
 
 			id := l.get()
-			if id < 0 {
-				if err := l.set(); err != nil {
-					log.Warnf("proc lease id set err: %s, try to reset after %d seconds...", err.Error(), l.ttl)
+			if id > 0 {
+				_, err := DefalutClient.KeepAliveOnce(context.TODO(), l.ID)
+				if err == nil {
+					timer.Reset(duration)
+					continue
 				}
-				timer.Reset(duration)
-				continue
+
+				log.Warnf("proc lease id[%x] keepAlive err: %s, try to reset...", id, err.Error())
 			}
 
-			_, err := DefalutClient.KeepAliveOnce(context.TODO(), l.ID)
-			if err == nil {
-				timer.Reset(duration)
-				continue
-			}
-
-			log.Warnf("proc lease id keepAlive err: %s, try to reset...", err.Error())
-			if err = l.set(); err != nil {
+			if err := l.set(); err != nil {
 				log.Warnf("proc lease id set err: %s, try to reset after %d seconds...", err.Error(), l.ttl)
+			} else {
+				log.Noticef("proc set lease id[%x] success", l.get())
 			}
 			timer.Reset(duration)
 		}
