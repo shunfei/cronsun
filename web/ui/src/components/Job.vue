@@ -9,9 +9,15 @@
       <router-link class="ui right floated primary button" to="/job/create"><i class="add to calendar icon"></i> 新任务</router-link>
     </div>
     <form class="ui form">
-      <div class="field">
-        <label>选择一个分组显示其下的任务</label>
-        <Dropdown title="选择分组" v-bind:items="groups" v-on:change="changeGroup" selected="group"/>
+      <div class="two fields">
+        <div class="field">
+          <label>任务分组</label>
+          <Dropdown title="选择分组" v-bind:items="groups" v-on:change="changeGroup" selected="group"/>
+        </div>
+        <div class="field">
+          <label>节点过滤</label>
+          <Dropdown title="选择节点" v-bind:items="nodes" v-on:change="changeNode" selected="node"/>
+        </div>
       </div>
     </form>
     <table class="ui hover blue table" v-if="jobs.length > 0">
@@ -72,6 +78,8 @@ export default {
     return {
       groups: [],
       group: '',
+      nodes: [],
+      node: '',
       jobs: []
     }
   },
@@ -82,9 +90,16 @@ export default {
 
     this.$rest.GET('job/groups').onsucceed(200, (resp)=>{
       !resp.includes('default') && resp.unshift('default');
-      resp.unshift({value: '', name: '所有任务'});
+      resp.unshift({value: '', name: '所有分组'});
       vm.groups = resp;
       this.fetchList(this.buildQuery());
+    }).do();
+
+    this.$rest.GET('nodes').onsucceed(200, (resp)=>{
+      vm.nodes.push({name: '所有节点', value: ''});
+      for (var i in resp) {
+        vm.nodes.push(resp[i].id);
+      }
     }).do();
   },
 
@@ -102,9 +117,16 @@ export default {
       this.$router.push('job?'+this.buildQuery());
     },
 
+    changeNode: function(val, text){
+      var vm = this;
+      this.node = val;
+      this.$router.push('job?'+this.buildQuery());
+    },
+
     buildQuery: function(){
       var params = [];
       if (this.group) params.push('group='+this.group);
+      if (this.node) params.push('node='+this.node);
       return params.join('&');
     },
 

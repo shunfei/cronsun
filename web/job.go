@@ -156,7 +156,8 @@ func (j *Job) GetGroups(w http.ResponseWriter, r *http.Request) {
 }
 
 func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
-	group := strings.TrimSpace(r.FormValue("group"))
+	group := getStringVal("group", r)
+	node := getStringVal("node", r)
 	var prefix = conf.Config.Cmd
 	if len(group) != 0 {
 		prefix += group
@@ -173,6 +174,19 @@ func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var nodeGroupMap map[string]*models.Group
+	if len(node) > 0 {
+		nodeGrouplist, err := models.GetNodeGroups()
+		if err != nil {
+			outJSONWithCode(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		nodeGroupMap = map[string]*models.Group{}
+		for i := range nodeGrouplist {
+			nodeGroupMap[nodeGrouplist[i].ID] = nodeGrouplist[i]
+		}
+	}
+
 	var jobIds []string
 	var jobList = make([]*jobStatus, 0, resp.Count)
 	for i := range resp.Kvs {
@@ -181,6 +195,10 @@ func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 			return
+		}
+
+		if len(node) > 0 && !job.IsRunOn(node, nodeGroupMap) {
+			continue
 		}
 		jobList = append(jobList, &jobStatus{Job: &job})
 		jobIds = append(jobIds, job.ID)

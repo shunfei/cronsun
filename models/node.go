@@ -1,6 +1,8 @@
 package models
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"strconv"
 	"syscall"
@@ -75,6 +77,26 @@ func GetNodes() (nodes []*Node, err error) {
 	err = mgoDB.WithC(Coll_Node, func(c *mgo.Collection) error {
 		return c.Find(nil).All(&nodes)
 	})
+
+	return
+}
+
+func GetNodeGroups() (list []*Group, err error) {
+	resp, err := DefalutClient.Get(conf.Config.Group, client.WithPrefix(), client.WithSort(client.SortByKey, client.SortAscend))
+	if err != nil {
+		return
+	}
+
+	list = make([]*Group, 0, resp.Count)
+	for i := range resp.Kvs {
+		g := Group{}
+		err = json.Unmarshal(resp.Kvs[i].Value, &g)
+		if err != nil {
+			err = fmt.Errorf("node.GetGroups(key: %s) error: %s", string(resp.Kvs[i].Key), err.Error())
+			return
+		}
+		list = append(list, &g)
+	}
 
 	return
 }

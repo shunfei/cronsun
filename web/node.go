@@ -51,22 +51,10 @@ func (n *Node) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (n *Node) GetGroups(w http.ResponseWriter, r *http.Request) {
-	resp, err := models.DefalutClient.Get(conf.Config.Group, v3.WithPrefix(), v3.WithSort(v3.SortByKey, v3.SortAscend))
+	list, err := models.GetNodeGroups()
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
-	}
-
-	var list = make([]*models.Group, 0, resp.Count)
-	for i := range resp.Kvs {
-		g := models.Group{}
-		err = json.Unmarshal(resp.Kvs[i].Value, &g)
-		if err != nil {
-			log.Errorf("node.GetGroups(key: %s) error: %s", string(resp.Kvs[i].Key), err.Error())
-			outJSONWithCode(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-		list = append(list, &g)
 	}
 
 	outJSON(w, list)
