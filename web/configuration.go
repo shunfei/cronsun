@@ -6,18 +6,12 @@ import (
 	"sunteng/cronsun/conf"
 )
 
-type Configuration struct {
-	Security *conf.Security `json:"security"`
-}
-
-func NewConfiguration() *Configuration {
-	cnf := &Configuration{
-		Security: conf.Config.Security,
-	}
-
-	return cnf
-}
+type Configuration struct{}
 
 func (cnf *Configuration) Configuratios(w http.ResponseWriter, r *http.Request) {
-	outJSON(w, cnf)
+	outJSON(w, struct {
+		Security *conf.Security `json:"security"`
+	}{
+		Security: conf.Config.Security,
+	})
 }

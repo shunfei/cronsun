@@ -14,7 +14,7 @@ func InitRouters() (s *http.Server, err error) {
 	nodeHandler := &Node{}
 	jobLogHandler := &JobLog{}
 	infoHandler := &Info{}
-	configHandler := NewConfiguration()
+	configHandler := &Configuration{}
 
 	r := mux.NewRouter()
 	subrouter := r.PathPrefix("/v1").Subrouter()
