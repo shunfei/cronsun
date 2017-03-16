@@ -143,7 +143,7 @@ func GetProcFromKey(key string) (proc *Process, err error) {
 	ss := strings.Split(key, "/")
 	var sslen = len(ss)
 	if sslen < 5 {
-		err = fmt.Errorf("invalid proc key [%s]", err.Error())
+		err = fmt.Errorf("invalid proc key [%s]", key)
 		return
 	}
 
