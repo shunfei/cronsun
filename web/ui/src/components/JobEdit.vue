@@ -44,6 +44,16 @@
         </div>
       </div>
     </div>
+    <div class="two fields">
+      <div class="field">
+        <label>失败重试次数（0 表示不重试）</label>
+        <input type="number" ref="retry" v-model:value="job.retry" placeholder="任务失败后重试的次数">
+      </div>
+      <div class="field">
+        <label>失败重试间隔（0 表示立即执行）</label>
+        <input type="number" ref="interval" v-model:value="job.interval" placeholder="任务失败后多长时间再次执行">
+      </div>
+    </div>
     <div class="field">
       <span v-if="!job.rules || job.rules.length == 0"><i class="warning circle icon"></i>当前任务没有定时器，点击下面按钮来添加定时器</span>
     </div>
@@ -81,6 +91,8 @@ export default {
           pause: false,
           parallels: 0,
           timeout: 0,
+          interval: 0,
+          retry: 0,
           rules: []
         },
         error: ''
