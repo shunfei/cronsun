@@ -75,6 +75,12 @@ func (c *Cmd) GetID() string {
 }
 
 func (c *Cmd) Run() {
+	// 同时执行任务数限制
+	if c.Job.limit() {
+		return
+	}
+	defer c.Job.unlimit()
+
 	if c.Job.Retry <= 0 {
 		c.Job.Run()
 		return
@@ -221,12 +227,6 @@ func (j *Job) unlimit() {
 
 // Run 执行任务
 func (j *Job) Run() bool {
-	// 同时执行任务数限制
-	if j.limit() {
-		return true
-	}
-	defer j.unlimit()
-
 	var (
 		cmd         *exec.Cmd
 		proc        *Process
