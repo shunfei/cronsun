@@ -17,7 +17,7 @@
       </div>
       <div class="field">
         <label>任务分组</label>
-        <Dropdown title="选择分组" v-bind:items="groups" v-bind:selected="job.group" v-on:change="changeGroup"></Dropdown>
+        <Dropdown title="选择分组" v-bind:allowAdditions="true" v-bind:items="groups" v-bind:selected="job.group" v-on:change="changeGroup"></Dropdown>
       </div>
     </div>
     <div class="fields">
