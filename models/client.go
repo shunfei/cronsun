@@ -80,6 +80,18 @@ func (c *Client) Watch(key string, opts ...client.OpOption) client.WatchChan {
 	return c.Client.Watch(context.Background(), key, opts...)
 }
 
+func (c *Client) Grant(ttl int64) (*client.LeaseGrantResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), c.reqTimeout)
+	defer cancel()
+	return c.Client.Grant(ctx, ttl)
+}
+
+func (c *Client) KeepAliveOnce(id client.LeaseID) (*client.LeaseKeepAliveResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), c.reqTimeout)
+	defer cancel()
+	return c.Client.KeepAliveOnce(ctx, id)
+}
+
 func IsValidAsKeyPath(s string) bool {
 	return strings.IndexByte(s, '/') == -1
 }

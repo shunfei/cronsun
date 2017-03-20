@@ -1,7 +1,6 @@
 package models
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -78,7 +77,7 @@ func (l *leaseID) get() client.LeaseID {
 
 func (l *leaseID) set() error {
 	id := client.LeaseID(-1)
-	resp, err := DefalutClient.Grant(context.TODO(), l.ttl+2)
+	resp, err := DefalutClient.Grant(l.ttl + 2)
 	if err == nil {
 		id = resp.ID
 	}
@@ -103,7 +102,7 @@ func (l *leaseID) keepAlive() {
 
 			id := l.get()
 			if id > 0 {
-				_, err := DefalutClient.KeepAliveOnce(context.TODO(), l.ID)
+				_, err := DefalutClient.KeepAliveOnce(l.ID)
 				if err == nil {
 					timer.Reset(duration)
 					continue

@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"golang.org/x/net/context"
-
 	client "github.com/coreos/etcd/clientv3"
 
 	"sunteng/commons/log"
@@ -77,7 +75,7 @@ func (n *Node) Register() (err error) {
 }
 
 func (n *Node) set() error {
-	resp, err := n.Client.Grant(context.TODO(), n.ttl+2)
+	resp, err := n.Client.Grant(n.ttl + 2)
 	if err != nil {
 		return err
 	}
@@ -100,7 +98,7 @@ func (n *Node) keepAlive() {
 			return
 		case <-timer.C:
 			if n.lID > 0 {
-				_, err := n.Client.KeepAliveOnce(context.TODO(), n.lID)
+				_, err := n.Client.KeepAliveOnce(n.lID)
 				if err == nil {
 					timer.Reset(duration)
 					continue
