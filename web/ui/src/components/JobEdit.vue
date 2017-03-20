@@ -4,7 +4,7 @@
   </div>
   <form v-else class="ui form" v-bind:class="{loading:loading}" v-on:submit.prevent>
     <h3 class="ui header">{{action == 'CREATE' ? '添加' : '更新'}}任务&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <div class="ui toggle checkbox">
+      <div class="ui toggle checkbox" ref="pause">
         <input type="checkbox" class="hidden" v-bind:checked="!job.pause">
         <label v-bind:style="{color: (job.pause?'red':'green')+' !important'}">{{job.pause ? '任务已暂停' : '开启'}}</label>
       </div>
@@ -55,6 +55,12 @@
       </div>
     </div>
     <div class="field">
+      <div class="ui checkbox" ref="kind">
+        <input type="checkbox" class="hidden" v-bind:checked="job.kind==1">
+        <label>单机任务（同一时间只会在一个节点执行）</label>
+      </div>
+    </div>
+    <div class="field">
       <span v-if="!job.rules || job.rules.length == 0"><i class="warning circle icon"></i>当前任务没有定时器，点击下面按钮来添加定时器</span>
     </div>
     <JobEditRule v-for="(rule, index) in job.rules" :key="rule.id" v-bind:rule="rule" :index="index" v-on:remove="removeRule" v-on:change="changeRule"/>
@@ -83,6 +89,7 @@ export default {
         allowSuffixsTip: '',
         job: {
           id: '',
+          kind: 0, // 0 == 普通任务，1 == 单机任务
           name:  '',
           oldGroup: '',
           group: '',
@@ -179,11 +186,17 @@ export default {
       vm.groups = resp;
     }).do();
 
-    $(this.$el).find('.checkbox').checkbox({
+    $(this.$refs.pause).checkbox({
       onChange: function(){
         vm.job.pause = !vm.job.pause;
       }
     });
+
+    $(this.$refs.kind).checkbox({
+      onChange: function(){
+        vm.job.kind = vm.job.kind === 1 ? 0 : 1;
+      }
+    })
 
     $(this.$refs.parallelstip).popup();
   },
