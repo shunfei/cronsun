@@ -92,6 +92,27 @@ func (c *Client) KeepAliveOnce(id client.LeaseID) (*client.LeaseKeepAliveRespons
 	return c.Client.KeepAliveOnce(ctx, id)
 }
 
+func (c *Client) GetLock(key string) (bool, error) {
+	key = conf.Config.Lock + key
+	ctx, cancel := context.WithTimeout(context.Background(), c.reqTimeout)
+	resp, err := DefalutClient.Txn(ctx).
+		If(client.Compare(client.CreateRevision(key), "=", 0)).
+		Then(client.OpPut(key, "")).
+		Commit()
+	cancel()
+
+	if err != nil {
+		return false, err
+	}
+
+	return resp.Succeeded, nil
+}
+
+func (c *Client) DelLock(key string) error {
+	_, err := c.Delete(conf.Config.Lock + key)
+	return err
+}
+
 func IsValidAsKeyPath(s string) bool {
 	return strings.IndexByte(s, '/') == -1
 }

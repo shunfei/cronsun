@@ -26,6 +26,11 @@ const (
 	DefaultJobGroup = "default"
 )
 
+const (
+	KindCommon = iota
+	KindAlone  // 单机执行
+)
+
 // 需要执行的 cron cmd 命令
 // 注册到 /cronsun/cmd/groupName/<id>
 type Job struct {
@@ -46,6 +51,10 @@ type Job struct {
 	// 执行任务失败重试时间间隔
 	// 单位秒，如果不大于 0 则马上重试
 	Interval int `json:"interval"`
+	// 任务类型
+	// 0: 普通任务
+	// 1: 单机任务
+	Kind int `json:"kind"`
 	// 平均执行时间，单位 ms
 	AvgTime int64 `json:"avg_time"`
 
@@ -225,6 +234,20 @@ func (j *Job) unlimit() {
 	atomic.AddInt64(&j.count, -1)
 }
 
+func (j *Job) lock() bool {
+	ok, err := DefalutClient.GetLock(j.ID)
+	if err != nil {
+		log.Noticef("job[%s] didn't get a lock", j.Key())
+	}
+	return ok
+}
+
+func (j *Job) unlock() {
+	if err := DefalutClient.DelLock(j.ID); err != nil {
+		log.Noticef("job[%s] del a lock err: %s", j.Key(), err.Error())
+	}
+}
+
 // Run 执行任务
 func (j *Job) Run() bool {
 	var (
@@ -254,6 +277,13 @@ func (j *Job) Run() bool {
 				Gid: uint32(gid),
 			},
 		}
+	}
+
+	if j.Kind == KindAlone {
+		if !j.lock() {
+			return true
+		}
+		defer j.unlock()
 	}
 
 	// 超时控制

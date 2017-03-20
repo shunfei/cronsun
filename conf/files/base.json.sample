@@ -4,6 +4,7 @@
     "Proc": "/cronsun/proc/",
     "Cmd": "/cronsun/cmd/",
     "Once": "/cronsun/once/",
+    "Lock": "/cronsun/lock/",
     "Group": "/cronsun/group/",
     "#Ttl": "节点超时时间，单位秒",
     "Ttl": 10,
