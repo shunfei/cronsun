@@ -175,7 +175,7 @@ func (j *Job) CountRunning() (int64, error) {
 }
 
 func (p *Process) put() error {
-	if p.hasPut {
+	if p.hasPut || !p.running {
 		return nil
 	}
 
@@ -235,6 +235,7 @@ func (p *Process) Stop() error {
 	if p == nil || !p.running {
 		return nil
 	}
+	p.running = false
 
 	if p.done != nil {
 		close(p.done)
@@ -245,6 +246,6 @@ func (p *Process) Stop() error {
 	}
 
 	err := p.del()
-	p.running, p.hasPut = false, false
+	p.hasPut = false
 	return err
 }
