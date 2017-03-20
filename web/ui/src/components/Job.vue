@@ -41,7 +41,7 @@
                 <div class="item" v-on:click="$router.push('/job/edit/'+job.group+'/'+job.id)">编辑</div>
                 <div class="item" v-if="job.pause" v-on:click="changeStatus(job.group, job.id, index, !job.pause)">开启</div>
                 <div class="item" v-if="!job.pause" v-on:click="changeStatus(job.group, job.id, index, !job.pause)">暂停</div>
-                 <div class="divider"></div>
+                <div class="divider"></div>
                 <div class="item" style="color:red;" v-on:click="removeJob(job.group, job.id, index)">删除</div>
               </div>
             </div>

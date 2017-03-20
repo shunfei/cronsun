@@ -40,7 +40,7 @@
         <label>并行数设置（0 表示不限制）</label>
         <div class="ui icon input">
           <input type="number" ref="parallels" v-model:value="job.parallels" placeholder="任务执行超时时间">
-          <i ref="parallelstip" class="large help circle link icon" data-position="top right" data-content="设置在单个节点上面同时可执行多少个任务，针对某些任务执行时间很长，但两次任务执行间隔较短时比较有用" data-variation="wide"></i>
+          <i ref="parallelstip" class="large help circle link icon" data-position="top right" data-html="设置在<strong style='color:red'>单个节点</strong>上面同时可执行多少个任务，针对某些任务执行时间很长，但两次任务执行间隔较短时比较有用" data-variation="wide"></i>
         </div>
       </div>
     </div>

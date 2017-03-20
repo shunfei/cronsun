@@ -87,7 +87,7 @@ func getPageSize(ps string) int {
 
 func getTime(t string) time.Time {
 	t = strings.TrimSpace(t)
-	time, _ := time.Parse("2006-01-02", t)
+	time, _ := time.ParseInLocation("2006-01-02", t, time.Local)
 	return time
 }
 
