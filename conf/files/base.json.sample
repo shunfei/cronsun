@@ -14,6 +14,8 @@
     "ProcTtl": 600,
     "#ProcReq": "记录任务执行中的信息的执行时间阀值，单位秒，0 为不限制",
     "ProcReq": 5,
+    "#LockTtl": "单机任务锁过期时间，单位秒,默认 300",
+    "LockTtl": 300,
     "Log": "@extend:log.json",
     "Etcd": "@extend:etcd.json",
     "Mgo": "@extend:db.json",

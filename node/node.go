@@ -218,13 +218,7 @@ func (n *Node) addCmd(cmd *models.Cmd, notice bool) {
 		c = cmd
 	}
 
-	if err := n.Cron.AddJob(c.JobRule.Timer, c); err != nil {
-		msg := fmt.Sprintf("job[%s] rule[%s] timer[%s] parse err: %s", c.Job.ID, c.JobRule.ID, c.JobRule.Timer, err.Error())
-		log.Warn(msg)
-		c.Fail(time.Now(), msg)
-		return
-	}
-
+	n.Cron.Schedule(c.JobRule.Schedule, c)
 	if !ok {
 		n.cmds[c.GetID()] = c
 	}

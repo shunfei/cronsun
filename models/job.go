@@ -20,6 +20,7 @@ import (
 
 	"sunteng/commons/log"
 	"sunteng/cronsun/conf"
+	"sunteng/cronsun/node/cron"
 )
 
 const (
@@ -54,6 +55,8 @@ type Job struct {
 	// 任务类型
 	// 0: 普通任务
 	// 1: 单机任务
+	// 如果为单机任务，node 加载任务的时候 Parallels 设置 1
+	// 只支持 1 个 JobRule
 	Kind int `json:"kind"`
 	// 平均执行时间，单位 ms
 	AvgTime int64 `json:"avg_time"`
@@ -72,6 +75,8 @@ type JobRule struct {
 	GroupIDs       []string `json:"gids"`
 	NodeIDs        []string `json:"nids"`
 	ExcludeNodeIDs []string `json:"exclude_nids"`
+
+	Schedule cron.Schedule `json:"-"`
 }
 
 type Cmd struct {
@@ -121,6 +126,26 @@ func (j *JobRule) included(nid string, gs map[string]*Group) bool {
 	}
 
 	return false
+}
+
+// 验证 timer 字段
+func (j *JobRule) Valid() error {
+	// 注意 interface nil 的比较
+	if j.Schedule != nil {
+		return nil
+	}
+
+	if len(j.Timer) == 0 {
+		return ErrNilRule
+	}
+
+	sch, err := cron.Parse(j.Timer)
+	if err != nil {
+		return fmt.Errorf("invalid JobRule[%s], parse err: %s", j.Timer, err.Error())
+	}
+
+	j.Schedule = sch
+	return nil
 }
 
 func GetJob(group, id string) (job *Job, err error) {
@@ -176,6 +201,7 @@ func GetJobs() (jobs map[string]*Job, err error) {
 			continue
 		}
 
+		job.alone()
 		jobs[job.ID] = job
 	}
 	return
@@ -193,11 +219,18 @@ func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
 	}
 
 	err = job.Valid()
+	job.alone()
 	return
 }
 
 func (j *Job) RunOn(n string) {
 	j.runOn = n
+}
+
+func (j *Job) alone() {
+	if j.Kind == KindAlone {
+		j.Parallels = 1
+	}
 }
 
 func (j *Job) splitCmd() {
@@ -232,6 +265,18 @@ func (j *Job) unlimit() {
 		return
 	}
 	atomic.AddInt64(&j.count, -1)
+}
+
+func (j *Job) lockTtl() int64 {
+	if len(j.Rules) == 0 {
+		return 0
+	}
+
+	now := time.Now()
+	prev := j.Rules[0].Schedule.Next(now)
+	ttl := int64(j.Rules[0].Schedule.Next(prev).Sub(prev) / time.Second)
+
+	return ttl
 }
 
 func (j *Job) lock() bool {
@@ -455,6 +500,10 @@ func (j *Job) Valid() error {
 		j.splitCmd()
 	}
 
+	if err := j.ValidRules(); err != nil {
+		return err
+	}
+
 	security := conf.Config.Security
 	if !security.Open {
 		return nil
@@ -494,4 +543,13 @@ func (j *Job) validCmd() bool {
 		}
 	}
 	return false
+}
+
+func (j *Job) ValidRules() error {
+	for _, r := range j.Rules {
+		if err := r.Valid(); err != nil {
+			return err
+		}
+	}
+	return nil
 }

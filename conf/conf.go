@@ -57,6 +57,9 @@ type Conf struct {
 	// 记录任务执行中的信息的执行时间阀值，单位秒
 	// 0 为不限制
 	ProcReq int64
+	// 单机任务锁过期时间，单位秒
+	// 默认 300
+	LockTtl int64
 
 	Log  *log.Config
 	Etcd client.Config
@@ -107,6 +110,9 @@ func (c *Conf) parse() error {
 	}
 	if c.Ttl <= 0 {
 		c.Ttl = 10
+	}
+	if c.LockTtl <= 0 {
+		c.LockTtl = 300
 	}
 	log.InitConf(c.Log)
 

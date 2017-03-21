@@ -16,4 +16,5 @@ var (
 
 	ErrSecurityInvalidCmd  = errors.New("Security error: the suffix of script file is not on the whitelist.")
 	ErrSecurityInvalidUser = errors.New("Security error: the user is not on the whitelist.")
+	ErrNilRule             = errors.New("invalid job rule, empty timer.")
 )
