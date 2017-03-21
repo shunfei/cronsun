@@ -111,7 +111,7 @@ func (c *Conf) parse() error {
 	if c.Ttl <= 0 {
 		c.Ttl = 10
 	}
-	if c.LockTtl <= 0 {
+	if c.LockTtl < 2 {
 		c.LockTtl = 300
 	}
 	log.InitConf(c.Log)

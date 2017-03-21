@@ -92,12 +92,12 @@ func (c *Client) KeepAliveOnce(id client.LeaseID) (*client.LeaseKeepAliveRespons
 	return c.Client.KeepAliveOnce(ctx, id)
 }
 
-func (c *Client) GetLock(key string) (bool, error) {
+func (c *Client) GetLock(key string, id client.LeaseID) (bool, error) {
 	key = conf.Config.Lock + key
 	ctx, cancel := context.WithTimeout(context.Background(), c.reqTimeout)
 	resp, err := DefalutClient.Txn(ctx).
 		If(client.Compare(client.CreateRevision(key), "=", 0)).
-		Then(client.OpPut(key, "")).
+		Then(client.OpPut(key, "", client.WithLease(id))).
 		Commit()
 	cancel()
 
