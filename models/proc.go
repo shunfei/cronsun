@@ -134,7 +134,7 @@ type Process struct {
 
 	running bool
 	hasPut  bool
-	timer   *time.Timer
+	wg      sync.WaitGroup
 	done    chan struct{}
 }
 
@@ -216,17 +216,17 @@ func (p *Process) Start() {
 		return
 	}
 
-	p.timer = time.NewTimer(time.Duration(conf.Config.ProcReq) * time.Second)
 	p.done = make(chan struct{})
-
+	p.wg.Add(1)
 	go func() {
 		select {
 		case <-p.done:
-		case <-p.timer.C:
+		case <-time.After(time.Duration(conf.Config.ProcReq) * time.Second):
 			if err := p.put(); err != nil {
 				log.Warnf("proc put err: %s", err.Error())
 			}
 		}
+		p.wg.Done()
 	}()
 }
 
@@ -240,10 +240,7 @@ func (p *Process) Stop() error {
 		close(p.done)
 	}
 
-	if p.timer != nil {
-		p.timer.Stop()
-	}
-
+	p.wg.Wait()
 	err := p.del()
 	p.hasPut = false
 	return err
