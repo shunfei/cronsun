@@ -10,6 +10,29 @@
       </div>
       <em v-if="job.id">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ID# {{job.id}}</em>
     </h3>
+    <div class="inline fields" ref="kind">
+      <label>任务类型</label>
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input type="radio" v-model="job.kind" name="kind" value="0" tabindex="0" class="hidden"/>
+          <label>普通任务</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input type="radio" v-model="job.kind" name="kind" value="1" tabindex="0" class="hidden"/>
+          <label title="同一时间只有一个任务进程在某个节点上面执行">单机单进程
+            <i class="help circle link icon" data-position="top right" data-html="同一时间只有一个任务进程在某个节点上面执行" data-variation="wide"></i>
+          </label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input type="radio" v-model="job.kind" name="kind" value="2" tabindex="0" class="hidden"/>
+          <label>一个任务执行间隔内允许执行一次</label>
+        </div>
+      </div>
+    </div>
     <div class="two fields">
       <div class="field">
         <label>任务名称</label>
@@ -40,7 +63,7 @@
         <label>并行数设置（0 表示不限制）</label>
         <div class="ui icon input">
           <input type="number" ref="parallels" v-model:value="job.parallels" placeholder="任务执行超时时间">
-          <i ref="parallelstip" class="large help circle link icon" data-position="top right" data-html="设置在<strong style='color:red'>单个节点</strong>上面同时可执行多少个任务，针对某些任务执行时间很长，但两次任务执行间隔较短时比较有用" data-variation="wide"></i>
+          <i class="large help circle link icon" data-position="top right" data-html="设置在<strong style='color:red'>单个节点</strong>上面同时可执行多少个任务，针对某些任务执行时间很长，但两次任务执行间隔较短时比较有用" data-variation="wide"></i>
         </div>
       </div>
     </div>
@@ -52,12 +75,6 @@
       <div class="field">
         <label>失败重试间隔（0 表示立即执行）</label>
         <input type="number" ref="interval" v-model:value="job.interval" placeholder="任务失败后多长时间再次执行">
-      </div>
-    </div>
-    <div class="field">
-      <div class="ui checkbox" ref="kind">
-        <input type="checkbox" class="hidden" v-bind:checked="job.kind==1">
-        <label>单机任务（同一时间只会在一个节点执行）</label>
       </div>
     </div>
     <div class="field">
@@ -89,7 +106,7 @@ export default {
         allowSuffixsTip: '',
         job: {
           id: '',
-          kind: 0, // 0 == 普通任务，1 == 单机任务
+          kind: 2, // 0 == 普通任务，1 == 单机任务
           name:  '',
           oldGroup: '',
           group: '',
@@ -192,13 +209,13 @@ export default {
       }
     });
 
-    $(this.$refs.kind).checkbox({
+    $(this.$refs.kind).find('.checkbox').checkbox({
       onChange: function(){
-        vm.job.kind = vm.job.kind === 1 ? 0 : 1;
+        vm.job.kind = +$(vm.$refs.kind).find('input[type=radio]:checked').val();
       }
-    })
+    });
 
-    $(this.$refs.parallelstip).popup();
+    $(this.$el).find('i.help.icon').popup();
   },
 
   components: {
