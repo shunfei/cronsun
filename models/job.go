@@ -163,6 +163,8 @@ func (j *Job) limit() bool {
 		return false
 	}
 
+	// 更精确的控制是加锁
+	// 两次运行时间极为接近的任务才可能出现控制不精确的情况
 	count := atomic.LoadInt64(&j.count)
 	if j.Parallels <= count {
 		j.Fail(time.Now(), fmt.Sprintf("job[%s] running on[%s] running:[%d]", j.Key(), j.runOn, count))
