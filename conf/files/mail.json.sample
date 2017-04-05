@@ -1,0 +1,12 @@
+{
+    "Enable": true,
+    "#Keepalive": "如果此时间段内没有邮件发送，则关闭 SMTP 连接，单位/秒",
+    "Keepalive": 30,
+    "#doc": "https://godoc.org/github.com/go-gomail/gomail#Dialer",
+    "Host": "smtp.exmail.qq.com",
+    "Port": 25,
+    "Username": "sendmail@nb.com",
+    "Password": "nbhh",
+    "SSL": false,
+    "LocalName": "sendmail@nb.com"
+}

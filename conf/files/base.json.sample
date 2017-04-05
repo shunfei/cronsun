@@ -19,5 +19,6 @@
     "Log": "@extend:log.json",
     "Etcd": "@extend:etcd.json",
     "Mgo": "@extend:db.json",
+    "Mail": "@extend:mail.json",
     "Security": "@extend:security.json"
 }

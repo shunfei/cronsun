@@ -7,6 +7,7 @@ import (
 
 	client "github.com/coreos/etcd/clientv3"
 	"github.com/fsnotify/fsnotify"
+	"github.com/go-gomail/gomail"
 
 	"sunteng/commons/confutil"
 	"sunteng/commons/db/imgo"
@@ -65,6 +66,7 @@ type Conf struct {
 	Etcd client.Config
 	Mgo  *imgo.Config
 	Web  webConfig
+	Mail *MailConf
 
 	Security *Security
 }
@@ -72,6 +74,13 @@ type Conf struct {
 type webConfig struct {
 	BindAddr string
 	UIDir    string
+}
+
+type MailConf struct {
+	Enable bool
+	// 如果此时间段内没有邮件发送，则关闭 SMTP 连接，单位/秒
+	Keepalive int64
+	gomail.Dialer
 }
 
 type Security struct {
@@ -113,6 +122,9 @@ func (c *Conf) parse() error {
 	}
 	if c.LockTtl < 2 {
 		c.LockTtl = 300
+	}
+	if c.Mail.Keepalive <= 0 {
+		c.Mail.Keepalive = 30
 	}
 	log.InitConf(c.Log)
 

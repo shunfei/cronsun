@@ -60,6 +60,8 @@ type Job struct {
 	Kind int `json:"kind"`
 	// 平均执行时间，单位 ms
 	AvgTime int64 `json:"avg_time"`
+	// 执行失败发送通知
+	FailNotify bool `json:"fail_notify"`
 
 	// 执行任务的结点，用于记录 job log
 	runOn string
