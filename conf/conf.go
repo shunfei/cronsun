@@ -43,12 +43,13 @@ func Init() error {
 }
 
 type Conf struct {
-	Node  string // node 进程路径
-	Proc  string // 当前执行任务路径
-	Cmd   string // cmd 路径
-	Once  string // 马上执行任务路径
-	Lock  string // job lock 路径
-	Group string // 节点分组
+	Node    string // node 进程路径
+	Proc    string // 当前执行任务路径
+	Cmd     string // cmd 路径
+	Once    string // 马上执行任务路径
+	Lock    string // job lock 路径
+	Group   string // 节点分组
+	Noticer string // 通知
 
 	Ttl        int64 // 节点超时时间，单位秒
 	ReqTimeout int   // 请求超时时间，单位秒
@@ -128,10 +129,13 @@ func (c *Conf) parse() error {
 	}
 	log.InitConf(c.Log)
 
-	c.Cmd = cleanKeyPrefix(c.Cmd)
 	c.Node = cleanKeyPrefix(c.Node)
 	c.Proc = cleanKeyPrefix(c.Proc)
+	c.Cmd = cleanKeyPrefix(c.Cmd)
+	c.Once = cleanKeyPrefix(c.Once)
+	c.Lock = cleanKeyPrefix(c.Lock)
 	c.Group = cleanKeyPrefix(c.Group)
+	c.Noticer = cleanKeyPrefix(c.Noticer)
 
 	return nil
 }
@@ -185,7 +189,7 @@ func (c *Conf) reload() {
 	}
 
 	// etcd key 选项需要重启
-	cf.Node, cf.Proc, cf.Cmd, cf.Once, cf.Lock, cf.Group = c.Node, c.Proc, c.Cmd, c.Once, c.Lock, c.Group
+	cf.Node, cf.Proc, cf.Cmd, cf.Once, cf.Lock, cf.Group, cf.Noticer = c.Node, c.Proc, c.Cmd, c.Once, c.Lock, c.Group, c.Noticer
 
 	*c = *cf
 	log.Noticef("config file[%s] reload success", *confFile)

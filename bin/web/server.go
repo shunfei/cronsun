@@ -2,6 +2,7 @@ package main
 
 import (
 	"net"
+	"time"
 
 	"github.com/cockroachdb/cmux"
 
@@ -32,6 +33,13 @@ func main() {
 		log.Error(err.Error())
 		return
 	}
+
+	noticer, err := models.NewMail(10 * time.Second)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	go models.StartNoticer(noticer)
 
 	go func() {
 		err := httpServer.Serve(httpL)

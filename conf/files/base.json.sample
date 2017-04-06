@@ -6,6 +6,7 @@
     "Once": "/cronsun/once/",
     "Lock": "/cronsun/lock/",
     "Group": "/cronsun/group/",
+    "Noticer": "/cronsun/noticer/",
     "#Ttl": "节点超时时间，单位秒",
     "Ttl": 10,
     "#ReqTimeout": "etcd 请求超时时间，单位秒",

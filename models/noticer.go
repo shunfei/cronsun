@@ -1,8 +1,11 @@
 package models
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 
+	client "github.com/coreos/etcd/clientv3"
 	"github.com/go-gomail/gomail"
 
 	"sunteng/commons/log"
@@ -28,9 +31,25 @@ type Mail struct {
 	msgChan chan *Message
 }
 
-func NewMail() (m *Mail, err error) {
-	cf := conf.Config.Mail
-	sc, err := cf.Dialer.Dial()
+func NewMail(timeout time.Duration) (m *Mail, err error) {
+	var (
+		sc   gomail.SendCloser
+		done = make(chan struct{})
+		cf   = conf.Config.Mail
+	)
+
+	// qq 邮箱的 Auth 出错后， 501 命令超时 2min 才能退出
+	go func() {
+		sc, err = cf.Dialer.Dial()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(timeout):
+		err = fmt.Errorf("connect to smtp timeout")
+	}
+
 	if err != nil {
 		return
 	}
@@ -47,6 +66,7 @@ func NewMail() (m *Mail, err error) {
 
 func (m *Mail) Serve() {
 	var err error
+	sm := gomail.NewMessage()
 	for {
 		select {
 		case msg := <-m.msgChan:
@@ -59,7 +79,7 @@ func (m *Mail) Serve() {
 				m.open = true
 			}
 
-			sm := gomail.NewMessage()
+			sm.Reset()
 			sm.SetHeader("From", m.cf.Username)
 			sm.SetHeader("To", msg.To...)
 			sm.SetHeader("Subject", msg.Subject)
@@ -76,6 +96,29 @@ func (m *Mail) Serve() {
 				}
 			}
 			m.timer.Reset(time.Duration(m.cf.Keepalive) * time.Second)
+		}
+	}
+}
+
+func (m *Mail) Send(msg *Message) {
+	m.msgChan <- msg
+}
+
+func StartNoticer(n Noticer) {
+	go n.Serve()
+	rch := DefalutClient.Watch(conf.Config.Noticer, client.WithPrefix())
+	var err error
+	for wresp := range rch {
+		for _, ev := range wresp.Events {
+			switch {
+			case ev.IsCreate(), ev.IsModify():
+				msg := new(Message)
+				if err = json.Unmarshal(ev.Kv.Value, msg); err != nil {
+					log.Warnf("msg[%s] umarshal err: %s", string(ev.Kv.Value), err.Error())
+					continue
+				}
+				n.Send(msg)
+			}
 		}
 	}
 }
