@@ -4,11 +4,15 @@
   </div>
   <form v-else class="ui form" v-bind:class="{loading:loading}" v-on:submit.prevent>
     <h3 class="ui header">{{action == 'CREATE' ? '添加' : '更新'}}任务&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <em v-if="job.id">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ID# {{job.id}}</em>
       <div class="ui toggle checkbox" ref="pause">
         <input type="checkbox" class="hidden" v-bind:checked="!job.pause">
-        <label v-bind:style="{color: (job.pause?'red':'green')+' !important'}">{{job.pause ? '任务已暂停' : '开启'}}</label>
+        <label v-bind:style="{color: (job.pause?'red':'green')+' !important'}">{{job.pause ? '任务暂停' : '任务开启'}}</label>
+      </div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <div class="ui toggle checkbox" ref="fail_notify" v-if="$appConfig.alarm">
+        <input type="checkbox" class="hidden" v-bind:checked="job.fail_notify">
+        <label>{{job.fail_notify ? '开启报警' : '关闭报警'}}</label>
       </div>
-      <em v-if="job.id">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ID# {{job.id}}</em>
     </h3>
     <div class="inline fields" ref="kind">
       <label>任务类型</label>
@@ -53,6 +57,10 @@
         <Dropdown v-if="$appConfig.security.open" title="指定执行用户" v-bind:items="$appConfig.security.users" v-bind:selected="job.user" v-on:change="changeUser"></Dropdown>
         <input v-else type="text" v-model="job.user" placeholder="指定执行用户">
       </div>
+    </div>
+    <div class="field" v-if="$appConfig.alarm && job.fail_notify">
+      <label>指定报警额外接受人</label>
+      <Dropdown title="邮件地址" v-bind:items="alarmReceivers" v-bind:selected="job.to" v-on:change="changeAlarmReceiver" v-bind:multiple="true" v-bind:allowAdditions="true"/>
     </div>
     <div class="two fields">
       <div class="field">
@@ -102,6 +110,7 @@ export default {
       return {
         action: 'CREATE',
         groups: [],
+        alarmReceivers: [],
         loading: false,
         allowSuffixsTip: '',
         job: {
@@ -117,7 +126,9 @@ export default {
           timeout: 0,
           interval: 0,
           retry: 0,
-          rules: []
+          rules: [],
+          fail_notify: false,
+          to: []
         },
         error: ''
       }
@@ -143,6 +154,10 @@ export default {
 
     changeUser: function(val, text){
       this.job.user = val;
+    },
+
+    changeAlarmReceiver: function(val, text){
+      this.job.to = val.split(',');
     },
 
     removeRule: function(index){
@@ -185,6 +200,7 @@ export default {
       this.$rest.GET('job/'+this.$route.params.group+'-'+this.$route.params.id).
         onsucceed(200, (resp)=>{
           vm.job = resp;
+          vm.alarmReceivers = resp.to;
           vm.job.oldGroup = resp.group;
           if (vm.job.rules) {
             for (var i in vm.job.rules) {
@@ -206,6 +222,12 @@ export default {
     $(this.$refs.pause).checkbox({
       onChange: function(){
         vm.job.pause = !vm.job.pause;
+      }
+    });
+
+    $(this.$refs.fail_notify).checkbox({
+      onChange: function(){
+        vm.job.fail_notify = !vm.job.fail_notify;
       }
     });
 

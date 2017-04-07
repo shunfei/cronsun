@@ -63,7 +63,7 @@ type Job struct {
 	// 执行失败发送通知
 	FailNotify bool `json:"fail_notify"`
 	// 发送通知地址
-	To []string
+	To []string `json:"to"`
 
 	// 执行任务的结点，用于记录 job log
 	runOn string
