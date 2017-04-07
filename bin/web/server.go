@@ -35,10 +35,17 @@ func main() {
 	}
 
 	if conf.Config.Mail.Enable {
-		noticer, err := models.NewMail(10 * time.Second)
-		if err != nil {
-			log.Error(err.Error())
-			return
+		var noticer models.Noticer
+
+		if len(conf.Config.Mail.HttpAPI) > 0 {
+			noticer = &models.HttpAPI{}
+		} else {
+			mailer, err := models.NewMail(10 * time.Second)
+			if err != nil {
+				log.Error(err.Error())
+				return
+			}
+			noticer = mailer
 		}
 		go models.StartNoticer(noticer)
 	}
