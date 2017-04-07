@@ -62,6 +62,8 @@ type Job struct {
 	AvgTime int64 `json:"avg_time"`
 	// 执行失败发送通知
 	FailNotify bool `json:"fail_notify"`
+	// 发送通知地址
+	To []string
 
 	// 执行任务的结点，用于记录 job log
 	runOn string
@@ -537,7 +539,43 @@ func (j *Job) Success(t time.Time, out string) {
 }
 
 func (j *Job) Fail(t time.Time, msg string) {
+	j.Notify(t, msg)
 	CreateJobLog(j, t, msg, false)
+}
+
+func (j *Job) Notify(t time.Time, msg string) {
+	if !conf.Config.Mail.Enable || !j.FailNotify {
+		return
+	}
+
+	ts := t.Format(time.RFC3339)
+	body := "job: " + j.Key() + "\n" +
+		"node: " + j.runOn + "\n" +
+		"time: " + ts + "\n" +
+		"err: " + msg
+
+	m := Message{
+		Subject: "node[" + j.runOn + "] job[" + j.ID + "] time[" + ts + " exec failed",
+		Body:    body,
+	}
+	if len(conf.Config.Mail.To) > 0 {
+		m.To = append(m.To, conf.Config.Mail.To...)
+	}
+	if len(j.To) > 0 {
+		m.To = append(m.To, j.To...)
+	}
+
+	data, err := json.Marshal(m)
+	if err != nil {
+		log.Warnf("job[%s] send notice fail, err: %s", j.Key(), err.Error())
+		return
+	}
+
+	_, err = DefalutClient.Put(conf.Config.Noticer+"/"+j.runOn, string(data))
+	if err != nil {
+		log.Warnf("job[%s] send notice fail, err: %s", j.Key(), err.Error())
+		return
+	}
 }
 
 func (j *Job) Avg(t, et time.Time) {

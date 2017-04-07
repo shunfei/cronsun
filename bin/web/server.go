@@ -34,12 +34,14 @@ func main() {
 		return
 	}
 
-	noticer, err := models.NewMail(10 * time.Second)
-	if err != nil {
-		log.Error(err.Error())
-		return
+	if conf.Config.Mail.Enable {
+		noticer, err := models.NewMail(10 * time.Second)
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		go models.StartNoticer(noticer)
 	}
-	go models.StartNoticer(noticer)
 
 	go func() {
 		err := httpServer.Serve(httpL)
