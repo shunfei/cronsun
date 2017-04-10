@@ -103,6 +103,7 @@
 <script>
 import JobEditRule from './JobEditRule.vue';
 import Dropdown from './basic/Dropdown.vue';
+import {split} from '../libraries/functions';
 
 export default {
   name: 'job-edit',
@@ -157,7 +158,7 @@ export default {
     },
 
     changeAlarmReceiver: function(val, text){
-      this.job.to = val.split(',');
+      this.job.to = split(val, ',');
     },
 
     removeRule: function(index){
