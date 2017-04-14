@@ -557,12 +557,7 @@ func (j *Job) Notify(t time.Time, msg string) {
 	m := Message{
 		Subject: "node[" + j.runOn + "] job[" + j.ID + "] time[" + ts + "] exec failed",
 		Body:    body,
-	}
-	if len(conf.Config.Mail.To) > 0 {
-		m.To = append(m.To, conf.Config.Mail.To...)
-	}
-	if len(j.To) > 0 {
-		m.To = append(m.To, j.To...)
+		To:      j.To,
 	}
 
 	data, err := json.Marshal(m)

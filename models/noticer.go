@@ -146,6 +146,8 @@ func (h *HttpAPI) Send(msg *Message) {
 
 func StartNoticer(n Noticer) {
 	go n.Serve()
+	go monitorNodes(n)
+
 	rch := DefalutClient.Watch(conf.Config.Noticer, client.WithPrefix())
 	var err error
 	for wresp := range rch {
@@ -157,7 +159,40 @@ func StartNoticer(n Noticer) {
 					log.Warnf("msg[%s] umarshal err: %s", string(ev.Kv.Value), err.Error())
 					continue
 				}
+
+				if len(conf.Config.Mail.To) > 0 {
+					msg.To = append(msg.To, conf.Config.Mail.To...)
+				}
 				n.Send(msg)
+			}
+		}
+	}
+}
+
+func monitorNodes(n Noticer) {
+	var (
+		err error
+		ok  bool
+		id  string
+	)
+	rch := WatchNode()
+
+	for wresp := range rch {
+		for _, ev := range wresp.Events {
+			switch {
+			case ev.Type == client.EventTypeDelete:
+				id = GetIDFromKey(string(ev.Kv.Key))
+				ok, err = ISNodeFault(id)
+				if err != nil {
+					log.Warnf("query node[%s] err: %s", id, err.Error())
+					continue
+				}
+
+				if ok {
+					n.Send(&Message{
+						Subject: "node[" + id + "] fault at time[" + time.Now().Format(time.RFC3339) + "]",
+					})
+				}
 			}
 		}
 	}

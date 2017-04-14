@@ -74,11 +74,26 @@ func (n *Node) Exist() (pid int, err error) {
 }
 
 func GetNodes() (nodes []*Node, err error) {
+	return GetNodesBy(nil)
+}
+
+func GetNodesBy(query interface{}) (nodes []*Node, err error) {
 	err = mgoDB.WithC(Coll_Node, func(c *mgo.Collection) error {
-		return c.Find(nil).All(&nodes)
+		return c.Find(query).All(&nodes)
 	})
 
 	return
+}
+
+func ISNodeFault(id string) (bool, error) {
+	n := 0
+	err := mgoDB.WithC(Coll_Node, func(c *mgo.Collection) error {
+		var e error
+		n, e = c.Find(bson.M{"_id": id, "alived": true}).Count()
+		return e
+	})
+
+	return n > 0, err
 }
 
 func GetNodeGroups() (list []*Group, err error) {
@@ -99,6 +114,10 @@ func GetNodeGroups() (list []*Group, err error) {
 	}
 
 	return
+}
+
+func WatchNode() client.WatchChan {
+	return DefalutClient.Watch(conf.Config.Node, client.WithPrefix())
 }
 
 // On 结点实例启动后，在 mongoDB 中记录存活信息
