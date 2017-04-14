@@ -443,7 +443,7 @@ func (j *Job) Run() bool {
 	cmd.Stdout = &b
 	cmd.Stderr = &b
 	if err := cmd.Start(); err != nil {
-		j.Fail(t, fmt.Sprintf("%s", err.Error()))
+		j.Fail(t, fmt.Sprintf("%s\n%s", b.String(), err.Error()))
 		return false
 	}
 
@@ -458,7 +458,7 @@ func (j *Job) Run() bool {
 	defer proc.Stop()
 
 	if err := cmd.Wait(); err != nil {
-		j.Fail(t, fmt.Sprintf("%s", err.Error()))
+		j.Fail(t, fmt.Sprintf("%s\n%s", b.String(), err.Error()))
 		return false
 	}
 
@@ -555,7 +555,7 @@ func (j *Job) Notify(t time.Time, msg string) {
 		"err: " + msg
 
 	m := Message{
-		Subject: "node[" + j.runOn + "] job[" + j.ID + "] time[" + ts + " exec failed",
+		Subject: "node[" + j.runOn + "] job[" + j.ID + "] time[" + ts + "] exec failed",
 		Body:    body,
 	}
 	if len(conf.Config.Mail.To) > 0 {
