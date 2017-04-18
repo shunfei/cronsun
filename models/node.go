@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"syscall"
+	"time"
 
 	client "github.com/coreos/etcd/clientv3"
 	mgo "gopkg.in/mgo.v2"
@@ -24,6 +25,10 @@ const (
 type Node struct {
 	ID  string `bson:"_id" json:"id"`  // ip
 	PID string `bson:"pid" json:"pid"` // 进程 pid
+
+	Version  string    `bson:"version" json:"version"`
+	UpTime   time.Time `bson:"up" json:"up"`     // 启动时间
+	DownTime time.Time `bson:"down" json:"down"` // 上次关闭时间
 
 	Alived    bool `bson:"alived" json:"alived"` // 是否可用
 	Connected bool `bson:"-" json:"connected"`   // 当 Alived 为 true 时有效，表示心跳是否正常
@@ -122,7 +127,7 @@ func WatchNode() client.WatchChan {
 
 // On 结点实例启动后，在 mongoDB 中记录存活信息
 func (n *Node) On() {
-	n.Alived = true
+	n.Alived, n.Version, n.UpTime = true, Version, time.Now()
 	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
 		log.Error(err.Error())
 	}
@@ -130,7 +135,7 @@ func (n *Node) On() {
 
 // On 结点实例停用后，在 mongoDB 中去掉存活信息
 func (n *Node) Down() {
-	n.Alived = false
+	n.Alived, n.DownTime = false, time.Now()
 	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
 		log.Error(err.Error())
 	}
