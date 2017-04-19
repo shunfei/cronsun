@@ -7,7 +7,12 @@ import (
 	"github.com/gorilla/mux"
 
 	"sunteng/cronsun/conf"
+	"sunteng/cronsun/models"
 )
+
+func GetVersion(w http.ResponseWriter, r *http.Request) {
+	outJSON(w, models.Version)
+}
 
 func InitRouters() (s *http.Server, err error) {
 	jobHandler := &Job{}
@@ -18,6 +23,7 @@ func InitRouters() (s *http.Server, err error) {
 
 	r := mux.NewRouter()
 	subrouter := r.PathPrefix("/v1").Subrouter()
+	subrouter.Handle("/version", BaseHandler{Handle: GetVersion}).Methods("GET")
 
 	// get job list
 	h := BaseHandler{Handle: jobHandler.GetList}
