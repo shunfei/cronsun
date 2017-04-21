@@ -16,15 +16,15 @@
   <div>
     <div class="clearfix">
       <router-link class="ui right floated primary button" to="/node/group"><i class="cubes icon"></i> 管理分组</router-link>
-      <div class="ui label" title="正常运行的节点"><i class="green cube icon"></i> {{runningCount}} 正常节点</div>
-      <div class="ui label" title="手动下线/维护中的"><i class="cube icon"></i> {{offlineCount}} 离线节点</div>
-      <div class="ui label" title="因自身或网络等原因未检测到节点存活"><i class="red cube icon"></i> {{faultCount}} 故障节点</div>
+      <div class="ui label" title="正常运行的节点"><i class="green cube icon"></i> {{items[2].nodes.length}} 正常节点</div>
+      <div class="ui label" title="手动下线/维护中的"><i class="cube icon"></i> {{items[1].nodes.length}} 离线节点</div>
+      <div class="ui label" title="因自身或网络等原因未检测到节点存活"><i class="red cube icon"></i> {{items[0].nodes.length}} 故障节点</div>
       （总 {{count}} 个节点）
       <div class="ui label" title="当前版本号"> {{version}} </div>
     </div>
     <div class="ui relaxed list" v-for="item in items">
       <h4 v-if="item.nodes.length > 0" class="ui horizontal divider header"><i class="cube icon" v-bind:class="item.css"></i> {{item.name}} {{item.nodes.length}}</h4>
-      <div v-for="node in item.nodes" class="node" v-bind:class="[(node.version == version) ? '' : 'notice']" v-bind:title="node.version">{{node.id}}</div>
+      <div v-for="node in item.nodes" class="node" v-bind:class="[(node.version == version) ? '' : 'notice']" v-bind:title="node.title">{{node.id}}</div>
     </div>
   </div>
 </template>
@@ -62,6 +62,7 @@ export default {
       });
       for (var i in resp) {
         var n = resp[i];
+        n.title = n.version + "\nstarted at: " + n.up
         if (n.alived && n.connected) {
           vm.items[2].nodes.push(n);
         } else if (n.alived && !n.connected) {
