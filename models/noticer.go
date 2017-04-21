@@ -191,6 +191,7 @@ func monitorNodes(n Noticer) {
 				if ok {
 					n.Send(&Message{
 						Subject: "node[" + id + "] fault at time[" + time.Now().Format(time.RFC3339) + "]",
+						To:      conf.Config.Mail.To,
 					})
 				}
 			}

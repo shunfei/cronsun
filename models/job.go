@@ -550,12 +550,14 @@ func (j *Job) Notify(t time.Time, msg string) {
 
 	ts := t.Format(time.RFC3339)
 	body := "job: " + j.Key() + "\n" +
+		"job name: " + j.Name + "\n" +
+		"job cmd: " + j.Command + "\n" +
 		"node: " + j.runOn + "\n" +
 		"time: " + ts + "\n" +
 		"err: " + msg
 
 	m := Message{
-		Subject: "node[" + j.runOn + "] job[" + j.ID + "] time[" + ts + "] exec failed",
+		Subject: "node[" + j.runOn + "] job[" + j.ShortName() + "] time[" + ts + "] exec failed",
 		Body:    body,
 		To:      j.To,
 	}
@@ -682,4 +684,17 @@ func (j *Job) ValidRules() error {
 		}
 	}
 	return nil
+}
+
+func (j *Job) ShortName() string {
+	if len(j.Name) <= 10 {
+		return j.Name
+	}
+
+	names := []rune(j.Name)
+	if len(names) <= 10 {
+		return j.Name
+	}
+
+	return string(names[:10]) + "..."
 }
