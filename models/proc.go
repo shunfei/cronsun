@@ -174,6 +174,9 @@ func (j *Job) CountRunning() (int64, error) {
 	return resp.Count, nil
 }
 
+// put 出错也进行 del 操作
+// 有可能某种原因，put 命令已经发送到 etcd server
+// 目前已知的 deadline 会出现此情况
 func (p *Process) put() (err error) {
 	if atomic.LoadInt32(&p.running) != 1 {
 		return
@@ -182,13 +185,6 @@ func (p *Process) put() (err error) {
 	if !atomic.CompareAndSwapInt32(&p.hasPut, 0, 1) {
 		return
 	}
-
-	defer func() {
-		// 如果是超时，值可能已经写入 etcd
-		if err != nil && !strings.Contains(err.Error(), "deadline") {
-			atomic.SwapInt32(&p.hasPut, 0)
-		}
-	}()
 
 	id := lID.get()
 	if id < 0 {
@@ -240,9 +236,13 @@ func (p *Process) Start() {
 	}()
 }
 
-func (p *Process) Stop() error {
-	if p == nil || atomic.LoadInt32(&p.running) != 1 {
-		return nil
+func (p *Process) Stop() {
+	if p == nil {
+		return
+	}
+
+	if !atomic.CompareAndSwapInt32(&p.running, 1, 0) {
+		return
 	}
 
 	if p.done != nil {
@@ -250,6 +250,7 @@ func (p *Process) Stop() error {
 	}
 	p.wg.Wait()
 
-	err := p.del()
-	return err
+	if err := p.del(); err != nil {
+		log.Warnf("proc del[%s] err: %s", p.Key(), err.Error())
+	}
 }
