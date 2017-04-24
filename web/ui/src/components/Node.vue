@@ -24,7 +24,9 @@
     </div>
     <div class="ui relaxed list" v-for="item in items">
       <h4 v-if="item.nodes.length > 0" class="ui horizontal divider header"><i class="cube icon" v-bind:class="item.css"></i> {{item.name}} {{item.nodes.length}}</h4>
-      <div v-for="node in item.nodes" class="node" v-bind:class="[(node.version == version) ? '' : 'notice']" v-bind:title="node.title">{{node.id}}</div>
+      <div v-for="node in item.nodes" class="node" v-bind:title="node.title">
+        <router-link class="item" v-bind:class="[(node.version == version) ? '' : 'notice']" :to="'/job?node='+node.id">{{node.id}}</router-link>
+      </div>
     </div>
   </div>
 </template>
