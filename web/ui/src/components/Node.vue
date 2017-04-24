@@ -16,9 +16,10 @@
   <div>
     <div class="clearfix">
       <router-link class="ui right floated primary button" to="/node/group"><i class="cubes icon"></i> 管理分组</router-link>
-      <div class="ui label" title="正常运行的节点"><i class="green cube icon"></i> {{items[2].nodes.length}} 正常节点</div>
-      <div class="ui label" title="手动下线/维护中的"><i class="cube icon"></i> {{items[1].nodes.length}} 离线节点</div>
-      <div class="ui label" title="因自身或网络等原因未检测到节点存活"><i class="red cube icon"></i> {{items[0].nodes.length}} 故障节点</div>
+      <div class="ui label" 
+      <div class="ui label" v-for="item in items" v-bind:title="item.title">
+        <i class="cube icon" v-bind:class="item.css"></i> {{item.nodes.length}} {{item.name}}
+      </div>
       （总 {{count}} 个节点）
       <div class="ui label" title="当前版本号"> {{version}} </div>
     </div>
@@ -37,9 +38,9 @@ export default {
   data: function(){
     return {
       items: [
-        {nodes:[],name:'故障节点',css:'red'},
-        {nodes:[],name:'离线节点',css:''},
-        {nodes:[],name:'正常节点',css:'green'}
+        {nodes:[],name:'故障节点',title:'因自身或网络等原因未检测到节点存活',css:'red'},
+        {nodes:[],name:'离线节点',title:'手动下线/维护中的',css:''},
+        {nodes:[],name:'正常节点',title:'正常运行的节点',css:'green'}
       ],
       count: 0,
       version: ''
