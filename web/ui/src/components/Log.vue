@@ -95,14 +95,7 @@ export default {
   },
 
   mounted: function(to, from, next){
-      this.names = this.$route.query.names || '';
-      this.ids = this.$route.query.ids || '';
-      this.nodes = this.$route.query.nodes || '';
-      this.begin = this.$route.query.begin || '';
-      this.end = this.$route.query.end || '';
-      this.page = this.$route.query.page || 1;
-      this.latest = this.$route.query.latest ? true : false;
-      this.failedOnly = this.$route.query.failedOnly ? true : false;
+      this.fillParams();
       this.fetchList(this.buildQuery());
 
       var vm = this;
@@ -112,6 +105,13 @@ export default {
 
   watch: {
     '$route': function(){
+      this.fillParams();
+      this.fetchList(this.buildQuery());
+    }
+  },
+
+  methods: {
+    fillParams(){
       this.names = this.$route.query.names || '';
       this.ids = this.$route.query.ids || '';
       this.nodes = this.$route.query.nodes || '';
@@ -120,11 +120,8 @@ export default {
       this.page = this.$route.query.page || 1;
       this.latest = this.$route.query.latest == 'true' ? true : false;
       this.failedOnly = this.$route.query.failedOnly ? true : false;
-      this.fetchList(this.buildQuery());
-    }
-  },
+    },
 
-  methods: {
     fetchList(query){
       this.loading = true;
       var vm = this;

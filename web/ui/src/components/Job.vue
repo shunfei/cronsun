@@ -12,11 +12,11 @@
       <div class="two fields">
         <div class="field">
           <label>任务分组</label>
-          <Dropdown title="选择分组" v-bind:items="groups" v-on:change="changeGroup" selected="group"/>
+          <Dropdown title="选择分组" v-bind:items="groups" v-on:change="changeGroup" :selected="group"/>
         </div>
         <div class="field">
           <label>节点过滤</label>
-          <Dropdown title="选择节点" v-bind:items="nodes" v-on:change="changeNode" selected="node"/>
+          <Dropdown title="选择节点" v-bind:items="nodes" v-on:change="changeNode" :selected="node"/>
         </div>
       </div>
     </form>
@@ -85,8 +85,8 @@ export default {
   },
   
   mounted: function(){
+    this.fillParams();
     var vm = this;
-    this.group = this.$route.query.group || '';
 
     this.$rest.GET('job/groups').onsucceed(200, (resp)=>{
       !resp.includes('default') && resp.unshift('default');
@@ -105,12 +105,17 @@ export default {
 
   watch: {
     '$route': function(){
-      this.group = this.$route.query.group || '';
+      this.fillParams();
       this.fetchList(this.buildQuery());
     }
   },
 
   methods: {
+    fillParams: function(){
+      this.group = this.$route.query.group || '';
+      this.node = this.$route.query.node || '';
+    },
+
     changeGroup: function(val, text){
       var vm = this;
       this.group = val;
