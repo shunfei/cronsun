@@ -108,9 +108,9 @@ export default {
       new Chart($(vm.$refs.job), {
         type: 'pie',
         data: {
-          labels: ["成功", "失败"],
+          labels: ["成功:"+dailySuccessed, "失败:"+(dailytotal-dailySuccessed)],
           datasets: [{
-          data: [dailySuccessed, dailytotal - dailySuccessed],
+            data: [dailySuccessed, dailytotal - dailySuccessed],
             backgroundColor: ["#21BA45", "#DB2828"],
             hoverBackgroundColor: ["#39DE60", "#D64848"]
           }]
@@ -136,9 +136,9 @@ export default {
       new Chart($(vm.$refs.node), {
         type: 'pie',
         data: {
-          labels: ["在线", "离线", "故障"],
+          labels: ["在线:"+online, "离线:"+offline, "故障:"+damaged],
           datasets: [{
-          data: [online, offline, damaged],
+            data: [online, offline, damaged],
             backgroundColor: ["#21BA45", "#333", "#DB2828"],
             hoverBackgroundColor: ["#39DE60", "#555", "#D64848"]
           }]
