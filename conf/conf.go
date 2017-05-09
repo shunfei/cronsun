@@ -9,10 +9,11 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-gomail/gomail"
 
-	"sunteng/commons/confutil"
 	"sunteng/commons/db/imgo"
 	"sunteng/commons/event"
 	"sunteng/commons/log"
+
+	"github.com/shunfei/cronsun/utils"
 )
 
 var (
@@ -113,7 +114,7 @@ func cleanKeyPrefix(p string) string {
 }
 
 func (c *Conf) parse() error {
-	err := confutil.LoadExtendConf(*confFile, c)
+	err := utils.LoadExtendConf(*confFile, c)
 	if err != nil {
 		return err
 	}
