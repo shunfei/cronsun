@@ -9,7 +9,7 @@ import (
 	"github.com/coreos/etcd/mvcc/mvccpb"
 
 	"sunteng/commons/log"
-	"sunteng/cronsun/conf"
+	"github.com/shunfei/cronsun/conf"
 )
 
 // 结点类型分组

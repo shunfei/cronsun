@@ -13,7 +13,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"sunteng/commons/log"
-	"sunteng/cronsun/conf"
+	"github.com/shunfei/cronsun/conf"
 )
 
 const (

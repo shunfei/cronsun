@@ -3,7 +3,7 @@ package web
 import (
 	"net/http"
 
-	"sunteng/cronsun/conf"
+	"github.com/shunfei/cronsun/conf"
 )
 
 type Configuration struct{}

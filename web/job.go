@@ -10,8 +10,8 @@ import (
 	"github.com/gorilla/mux"
 
 	"sunteng/commons/log"
-	"sunteng/cronsun/conf"
-	"sunteng/cronsun/models"
+	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/models"
 	"time"
 )
 

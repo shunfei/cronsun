@@ -9,9 +9,9 @@ import (
 	"sunteng/commons/event"
 	"sunteng/commons/log"
 
-	"sunteng/cronsun/conf"
-	"sunteng/cronsun/models"
-	"sunteng/cronsun/node"
+	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/models"
+	"github.com/shunfei/cronsun/node"
 )
 
 var (

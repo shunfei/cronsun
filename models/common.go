@@ -2,7 +2,7 @@ package models
 
 import (
 	"sunteng/commons/db/imgo"
-	"sunteng/cronsun/conf"
+	"github.com/shunfei/cronsun/conf"
 )
 
 var (

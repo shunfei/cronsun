@@ -3,7 +3,7 @@ package models
 import (
 	client "github.com/coreos/etcd/clientv3"
 
-	"sunteng/cronsun/conf"
+	"github.com/shunfei/cronsun/conf"
 )
 
 // 马上执行 job 任务

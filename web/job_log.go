@@ -10,7 +10,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"math"
-	"sunteng/cronsun/models"
+	"github.com/shunfei/cronsun/models"
 )
 
 type JobLog struct{}

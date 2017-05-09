@@ -10,7 +10,7 @@ import (
 
 	"strings"
 	"sunteng/commons/log"
-	"sunteng/cronsun/conf"
+	"github.com/shunfei/cronsun/conf"
 )
 
 var (

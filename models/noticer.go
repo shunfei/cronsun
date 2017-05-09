@@ -12,7 +12,7 @@ import (
 	"github.com/go-gomail/gomail"
 
 	"sunteng/commons/log"
-	"sunteng/cronsun/conf"
+	"github.com/shunfei/cronsun/conf"
 )
 
 type Noticer interface {

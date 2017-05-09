@@ -19,8 +19,8 @@ import (
 	"github.com/coreos/etcd/mvcc/mvccpb"
 
 	"sunteng/commons/log"
-	"sunteng/cronsun/conf"
-	"sunteng/cronsun/node/cron"
+	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/node/cron"
 )
 
 const (

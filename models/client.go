@@ -8,7 +8,7 @@ import (
 
 	client "github.com/coreos/etcd/clientv3"
 
-	"sunteng/cronsun/conf"
+	"github.com/shunfei/cronsun/conf"
 )
 
 var (

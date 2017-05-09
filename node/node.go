@@ -10,9 +10,9 @@ import (
 
 	"sunteng/commons/log"
 	"sunteng/commons/util"
-	"sunteng/cronsun/conf"
-	"sunteng/cronsun/models"
-	"sunteng/cronsun/node/cron"
+	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/models"
+	"github.com/shunfei/cronsun/node/cron"
 )
 
 // Node 执行 cron 命令服务的结构体

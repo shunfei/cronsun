@@ -6,8 +6,8 @@ import (
 
 	v3 "github.com/coreos/etcd/clientv3"
 
-	"sunteng/cronsun/conf"
-	"sunteng/cronsun/models"
+	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/models"
 )
 
 type Info struct{}

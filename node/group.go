@@ -1,7 +1,7 @@
 package node
 
 import (
-	"sunteng/cronsun/models"
+	"github.com/shunfei/cronsun/models"
 )
 
 type Groups map[string]*models.Group
