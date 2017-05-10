@@ -9,10 +9,11 @@ import (
 	client "github.com/coreos/etcd/clientv3"
 
 	"sunteng/commons/log"
-	"sunteng/commons/util"
+
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/models"
 	"github.com/shunfei/cronsun/node/cron"
+	"github.com/shunfei/cronsun/utils"
 )
 
 // Node 执行 cron 命令服务的结构体
@@ -35,7 +36,7 @@ type Node struct {
 }
 
 func NewNode(cfg *conf.Conf) (n *Node, err error) {
-	ip, err := util.GetLocalIP()
+	ip, err := utils.LocalIP()
 	if err != nil {
 		return
 	}
