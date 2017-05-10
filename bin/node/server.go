@@ -6,10 +6,10 @@ import (
 	"flag"
 	"runtime"
 
-	"sunteng/commons/event"
 	"sunteng/commons/log"
 
 	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/event"
 	"github.com/shunfei/cronsun/models"
 	"github.com/shunfei/cronsun/node"
 )

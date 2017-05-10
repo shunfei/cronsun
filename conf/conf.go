@@ -10,9 +10,9 @@ import (
 	"github.com/go-gomail/gomail"
 
 	"sunteng/commons/db/imgo"
-	"sunteng/commons/event"
 	"sunteng/commons/log"
 
+	"github.com/shunfei/cronsun/event"
 	"github.com/shunfei/cronsun/utils"
 )
 
