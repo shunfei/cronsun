@@ -9,10 +9,10 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-gomail/gomail"
 
-	"sunteng/commons/db/imgo"
 	"sunteng/commons/log"
 
 	"github.com/shunfei/cronsun/event"
+	"github.com/shunfei/cronsun/models/db"
 	"github.com/shunfei/cronsun/utils"
 )
 
@@ -66,7 +66,7 @@ type Conf struct {
 
 	Log  *log.Config
 	Etcd client.Config
-	Mgo  *imgo.Config
+	Mgo  *db.Config
 	Web  webConfig
 	Mail *MailConf
 
@@ -130,6 +130,11 @@ func (c *Conf) parse() error {
 	}
 	if c.Mail.Keepalive <= 0 {
 		c.Mail.Keepalive = 30
+	}
+	if c.Mgo.Timeout <= 0 {
+		c.Mgo.Timeout = 10 * time.Second
+	} else {
+		c.Mgo.Timeout *= time.Second
 	}
 	log.InitConf(c.Log)
 

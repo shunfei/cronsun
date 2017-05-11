@@ -1,4 +1,8 @@
 {
-  "Host": "192.168.11.16:3000",
-  "Database": "cronsun"
+  "Hosts": [
+    "192.168.11.16:3000"
+  ],
+  "Database": "cronsun",
+  "#Timeout": "connect timeout duration/second",
+  "Timeout": 15
 }

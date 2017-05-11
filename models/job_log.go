@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	"sunteng/commons/log"
@@ -139,11 +139,11 @@ type StatExecuted struct {
 }
 
 func JobLogStat() (s *StatExecuted, err error) {
-	err = mgoDB.One(Coll_Stat, bson.M{"name": "job"}, &s)
+	err = mgoDB.FindOne(Coll_Stat, bson.M{"name": "job"}, &s)
 	return
 }
 
 func JobLogDayStat(day time.Time) (s *StatExecuted, err error) {
-	err = mgoDB.One(Coll_Stat, bson.M{"name": "job-day", "date": day.Format("2006-01-02")}, &s)
+	err = mgoDB.FindOne(Coll_Stat, bson.M{"name": "job-day", "date": day.Format("2006-01-02")}, &s)
 	return
 }

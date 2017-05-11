@@ -1,13 +1,13 @@
 package models
 
 import (
-	"sunteng/commons/db/imgo"
+	"github.com/shunfei/cronsun/models/db"
 )
 
 var (
-	mgoDB *imgo.Mdb
+	mgoDB *db.Mdb
 )
 
-func GetDb() *imgo.Mdb {
+func GetDb() *db.Mdb {
 	return mgoDB
 }

@@ -1,8 +1,8 @@
 package models
 
 import (
-	"sunteng/commons/db/imgo"
 	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/models/db"
 )
 
 var (
@@ -30,7 +30,9 @@ func Init() (err error) {
 	}
 
 	// init mongoDB
-	mgoDB = imgo.NewMdbWithConf(conf.Config.Mgo)
+	if mgoDB, err = db.NewMdb(conf.Config.Mgo); err != nil {
+		return
+	}
 
 	initialized = true
 	return
