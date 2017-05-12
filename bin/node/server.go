@@ -4,7 +4,10 @@ package main
 
 import (
 	"flag"
-	"runtime"
+	slog "log"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/shunfei/cronsun"
 	"github.com/shunfei/cronsun/conf"
@@ -14,14 +17,20 @@ import (
 )
 
 var (
-	gomax = flag.Int("gomax",
-		4, "GOMAXPROCS: the max number of operating system threads that can execute")
+	level = flag.Int("l", -2, "log level, -1:debug, -2:info, -3:warn, -4:error")
 )
 
 func main() {
 	flag.Parse()
-	//set cpu usage
-	runtime.GOMAXPROCS(*gomax)
+
+	lcf := zap.NewDevelopmentConfig()
+	lcf.Level.SetLevel(zapcore.Level(*level))
+	lcf.Development = false
+	logger, err := lcf.Build()
+	if err != nil {
+		slog.Fatalln("new log err:", err.Error())
+	}
+	log.SetLogger(logger.Sugar())
 
 	if err := cronsun.Init(); err != nil {
 		log.Errorf(err.Error())
