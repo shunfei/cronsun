@@ -11,8 +11,8 @@ import (
 	client "github.com/coreos/etcd/clientv3"
 	"github.com/go-gomail/gomail"
 
-	"sunteng/commons/log"
 	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/log"
 )
 
 type Noticer interface {

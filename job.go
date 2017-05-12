@@ -18,8 +18,8 @@ import (
 	client "github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 
-	"sunteng/commons/log"
 	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/log"
 	"github.com/shunfei/cronsun/node/cron"
 )
 
@@ -244,13 +244,13 @@ func (c *Cmd) lock() *locker {
 
 	resp, err := DefalutClient.Grant(lk.ttl)
 	if err != nil {
-		log.Noticef("job[%s] didn't get a lock, err: %s", c.Job.Key(), err.Error())
+		log.Infof("job[%s] didn't get a lock, err: %s", c.Job.Key(), err.Error())
 		return nil
 	}
 
 	ok, err := DefalutClient.GetLock(c.Job.ID, resp.ID)
 	if err != nil {
-		log.Noticef("job[%s] didn't get a lock, err: %s", c.Job.Key(), err.Error())
+		log.Infof("job[%s] didn't get a lock, err: %s", c.Job.Key(), err.Error())
 		return nil
 	}
 

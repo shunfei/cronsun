@@ -8,10 +8,9 @@ import (
 
 	client "github.com/coreos/etcd/clientv3"
 
-	"sunteng/commons/log"
-
-	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun"
+	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/log"
 	"github.com/shunfei/cronsun/node/cron"
 	"github.com/shunfei/cronsun/utils"
 )
@@ -112,7 +111,7 @@ func (n *Node) keepAlive() {
 			if err := n.set(); err != nil {
 				log.Warnf("%s set lid err: %s, try to reset after %d seconds...", n.String(), err.Error(), n.ttl)
 			} else {
-				log.Noticef("%s set lid[%x] success", n.String(), n.lID)
+				log.Infof("%s set lid[%x] success", n.String(), n.lID)
 			}
 			timer.Reset(duration)
 		}
@@ -225,7 +224,7 @@ func (n *Node) addCmd(cmd *cronsun.Cmd, notice bool) {
 	}
 
 	if notice {
-		log.Noticef("job[%s] rule[%s] timer[%s] has added", c.Job.ID, c.JobRule.ID, c.JobRule.Timer)
+		log.Infof("job[%s] rule[%s] timer[%s] has added", c.Job.ID, c.JobRule.ID, c.JobRule.Timer)
 	}
 	return
 }
@@ -233,7 +232,7 @@ func (n *Node) addCmd(cmd *cronsun.Cmd, notice bool) {
 func (n *Node) delCmd(cmd *cronsun.Cmd) {
 	delete(n.cmds, cmd.GetID())
 	n.Cron.DelJob(cmd)
-	log.Noticef("job[%s] rule[%s] timer[%s] has deleted", cmd.Job.ID, cmd.JobRule.ID, cmd.JobRule.Timer)
+	log.Infof("job[%s] rule[%s] timer[%s] has deleted", cmd.Job.ID, cmd.JobRule.ID, cmd.JobRule.Timer)
 }
 
 func (n *Node) addGroup(g *cronsun.Group) {

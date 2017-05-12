@@ -9,10 +9,9 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-gomail/gomail"
 
-	"sunteng/commons/log"
-
-	"github.com/shunfei/cronsun/event"
 	"github.com/shunfei/cronsun/db"
+	"github.com/shunfei/cronsun/event"
+	"github.com/shunfei/cronsun/log"
 	"github.com/shunfei/cronsun/utils"
 )
 
@@ -64,7 +63,6 @@ type Conf struct {
 	// 默认 300
 	LockTtl int64
 
-	Log  *log.Config
 	Etcd client.Config
 	Mgo  *db.Config
 	Web  webConfig
@@ -136,7 +134,6 @@ func (c *Conf) parse() error {
 	} else {
 		c.Mgo.Timeout *= time.Second
 	}
-	log.InitConf(c.Log)
 
 	c.Node = cleanKeyPrefix(c.Node)
 	c.Proc = cleanKeyPrefix(c.Proc)
@@ -193,7 +190,7 @@ func (c *Conf) watch() error {
 func (c *Conf) reload() {
 	cf := new(Conf)
 	if err := cf.parse(); err != nil {
-		log.Warn("config file reload err:", err.Error())
+		log.Warnf("config file reload err: %s", err.Error())
 		return
 	}
 
@@ -201,7 +198,7 @@ func (c *Conf) reload() {
 	cf.Node, cf.Proc, cf.Cmd, cf.Once, cf.Lock, cf.Group, cf.Noticer = c.Node, c.Proc, c.Cmd, c.Once, c.Lock, c.Group, c.Noticer
 
 	*c = *cf
-	log.Noticef("config file[%s] reload success", *confFile)
+	log.Infof("config file[%s] reload success", *confFile)
 	return
 }
 

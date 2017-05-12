@@ -17,7 +17,6 @@
     "ProcReq": 5,
     "#LockTtl": "任务锁最大过期时间，单位秒,默认 600",
     "LockTtl": 600,
-    "Log": "@extend:log.json",
     "Etcd": "@extend:etcd.json",
     "Mgo": "@extend:db.json",
     "Mail": "@extend:mail.json",

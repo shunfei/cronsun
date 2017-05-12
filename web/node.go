@@ -2,16 +2,16 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
 	v3 "github.com/coreos/etcd/clientv3"
 	"github.com/gorilla/mux"
 
-	"fmt"
-	"sunteng/commons/log"
-	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun"
+	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/log"
 )
 
 type Node struct{}
@@ -92,7 +92,7 @@ func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	gresp, err := cronsun.DefalutClient.Get(conf.Config.Cmd, v3.WithPrefix())
 	if err != nil {
 		errstr := fmt.Sprintf("failed to fetch jobs from etcd after deleted node group[%s]: %s", groupId, err.Error())
-		log.Error(errstr)
+		log.Errorf(errstr)
 		outJSONWithCode(w, http.StatusInternalServerError, errstr)
 		return
 	}

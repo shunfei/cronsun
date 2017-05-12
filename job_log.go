@@ -6,7 +6,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"sunteng/commons/log"
+	"github.com/shunfei/cronsun/log"
 )
 
 const (
@@ -103,7 +103,7 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 		EndTime:   et,
 	}
 	if err := mgoDB.Insert(Coll_JobLog, jl); err != nil {
-		log.Error(err.Error())
+		log.Errorf(err.Error())
 	}
 
 	latestLog := &JobLatestLog{
@@ -112,7 +112,7 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 	}
 	latestLog.Id = ""
 	if err := mgoDB.Upsert(Coll_JobLatestLog, bson.M{"node": jl.Node, "jobId": jl.JobId, "jobGroup": jl.JobGroup}, latestLog); err != nil {
-		log.Error(err.Error())
+		log.Errorf(err.Error())
 	}
 
 	var inc = bson.M{"total": 1}
@@ -124,11 +124,11 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 
 	err := mgoDB.Upsert(Coll_Stat, bson.M{"name": "job-day", "date": time.Now().Format("2006-01-02")}, bson.M{"$inc": inc})
 	if err != nil {
-		log.Error("increase stat.job ", err.Error())
+		log.Errorf("increase stat.job %s", err.Error())
 	}
 	err = mgoDB.Upsert(Coll_Stat, bson.M{"name": "job"}, bson.M{"$inc": inc})
 	if err != nil {
-		log.Error("increase stat.job ", err.Error())
+		log.Errorf("increase stat.job %s", err.Error())
 	}
 }
 

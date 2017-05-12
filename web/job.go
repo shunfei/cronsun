@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/gorilla/mux"
 
-	"sunteng/commons/log"
-	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun"
-	"time"
+	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/log"
 )
 
 type Job struct{}
@@ -206,7 +206,7 @@ func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
 
 	m, err := cronsun.GetJobLatestLogListByJobIds(jobIds)
 	if err != nil {
-		log.Error("GetJobLatestLogListByJobIds error:", err.Error())
+		log.Errorf("GetJobLatestLogListByJobIds error: %s", err.Error())
 	} else {
 		for i := range jobList {
 			jobList[i].LatestStatus = m[jobList[i].ID]
@@ -289,7 +289,7 @@ func (j *Job) GetExecutingJob(w http.ResponseWriter, r *http.Request) {
 	for i := range gresp.Kvs {
 		proc, err := cronsun.GetProcFromKey(string(gresp.Kvs[i].Key))
 		if err != nil {
-			log.Error("Failed to unmarshal Proc from key: ", err.Error())
+			log.Errorf("Failed to unmarshal Proc from key: %s", err.Error())
 			continue
 		}
 

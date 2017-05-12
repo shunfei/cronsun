@@ -2,15 +2,15 @@ package cronsun
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	client "github.com/coreos/etcd/clientv3"
 
-	"strings"
-	"sunteng/commons/log"
 	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/log"
 )
 
 var (
@@ -115,7 +115,7 @@ func (l *leaseID) keepAlive() {
 			if err := l.set(); err != nil {
 				log.Warnf("proc lease id set err: %s, try to reset after %d seconds...", err.Error(), l.ttl)
 			} else {
-				log.Noticef("proc set lease id[%x] success", l.get())
+				log.Infof("proc set lease id[%x] success", l.get())
 			}
 			timer.Reset(duration)
 		}

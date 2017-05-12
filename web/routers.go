@@ -6,8 +6,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun"
+	"github.com/shunfei/cronsun/conf"
 )
 
 func GetVersion(w http.ResponseWriter, r *http.Request) {

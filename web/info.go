@@ -6,15 +6,15 @@ import (
 
 	v3 "github.com/coreos/etcd/clientv3"
 
-	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun"
+	"github.com/shunfei/cronsun/conf"
 )
 
 type Info struct{}
 
 func (inf *Info) Overview(w http.ResponseWriter, r *http.Request) {
 	var overview = struct {
-		TotalJobs        int64                `json:"totalJobs"`
+		TotalJobs        int64                 `json:"totalJobs"`
 		JobExecuted      *cronsun.StatExecuted `json:"jobExecuted"`
 		JobExecutedDaily *cronsun.StatExecuted `json:"jobExecutedDaily"`
 	}{}

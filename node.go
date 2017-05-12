@@ -9,11 +9,11 @@ import (
 	"time"
 
 	client "github.com/coreos/etcd/clientv3"
-	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"sunteng/commons/log"
 	"github.com/shunfei/cronsun/conf"
+	"github.com/shunfei/cronsun/log"
 )
 
 const (
@@ -129,7 +129,7 @@ func WatchNode() client.WatchChan {
 func (n *Node) On() {
 	n.Alived, n.Version, n.UpTime = true, Version, time.Now()
 	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
-		log.Error(err.Error())
+		log.Errorf(err.Error())
 	}
 }
 
@@ -137,6 +137,6 @@ func (n *Node) On() {
 func (n *Node) Down() {
 	n.Alived, n.DownTime = false, time.Now()
 	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
-		log.Error(err.Error())
+		log.Errorf(err.Error())
 	}
 }

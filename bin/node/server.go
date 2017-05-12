@@ -6,11 +6,10 @@ import (
 	"flag"
 	"runtime"
 
-	"sunteng/commons/log"
-
 	"github.com/shunfei/cronsun"
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/event"
+	"github.com/shunfei/cronsun/log"
 	"github.com/shunfei/cronsun/node"
 )
 
@@ -25,18 +24,18 @@ func main() {
 	runtime.GOMAXPROCS(*gomax)
 
 	if err := cronsun.Init(); err != nil {
-		log.Error(err.Error())
+		log.Errorf(err.Error())
 		return
 	}
 
 	n, err := node.NewNode(conf.Config)
 	if err != nil {
-		log.Error(err.Error())
+		log.Errorf(err.Error())
 		return
 	}
 
 	if err = n.Register(); err != nil {
-		log.Error(err.Error())
+		log.Errorf(err.Error())
 		return
 	}
 
@@ -45,11 +44,11 @@ func main() {
 	}
 
 	if err = n.Run(); err != nil {
-		log.Error(err.Error())
+		log.Errorf(err.Error())
 		return
 	}
 
-	log.Noticef("cronsun %s service started, Ctrl+C or send kill sign to exit", n.String())
+	log.Infof("cronsun %s service started, Ctrl+C or send kill sign to exit", n.String())
 	// 注册退出事件
 	event.On(event.EXIT, n.Stop, conf.Exit, cronsun.Exit)
 	// 注册监听配置更新事件
@@ -58,5 +57,5 @@ func main() {
 	event.Wait()
 	// 处理退出事件
 	event.Emit(event.EXIT, nil)
-	log.Notice("exit success")
+	log.Infof("exit success")
 }

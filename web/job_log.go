@@ -1,6 +1,7 @@
 package web
 
 import (
+	"math"
 	"net/http"
 	"strings"
 	"time"
@@ -9,7 +10,6 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"math"
 	"github.com/shunfei/cronsun"
 )
 
@@ -89,7 +89,7 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var pager struct {
-		Total int              `json:"total"`
+		Total int               `json:"total"`
 		List  []*cronsun.JobLog `json:"list"`
 	}
 	var err error
