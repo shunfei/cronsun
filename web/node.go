@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"sunteng/commons/log"
 	"github.com/shunfei/cronsun/conf"
-	"github.com/shunfei/cronsun/models"
+	"github.com/shunfei/cronsun"
 )
 
 type Node struct{}
@@ -19,7 +19,7 @@ type Node struct{}
 var ngKeyDeepLen = len(conf.Config.Group)
 
 func (n *Node) UpdateGroup(w http.ResponseWriter, r *http.Request) {
-	g := models.Group{}
+	g := cronsun.Group{}
 	de := json.NewDecoder(r.Body)
 	var err error
 	if err = de.Decode(&g); err != nil {
@@ -32,7 +32,7 @@ func (n *Node) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	g.ID = strings.TrimSpace(g.ID)
 	if len(g.ID) == 0 {
 		successCode = http.StatusCreated
-		g.ID = models.NextID()
+		g.ID = cronsun.NextID()
 	}
 
 	if err = g.Check(); err != nil {
@@ -51,7 +51,7 @@ func (n *Node) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (n *Node) GetGroups(w http.ResponseWriter, r *http.Request) {
-	list, err := models.GetNodeGroups()
+	list, err := cronsun.GetNodeGroups()
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
@@ -62,7 +62,7 @@ func (n *Node) GetGroups(w http.ResponseWriter, r *http.Request) {
 
 func (n *Node) GetGroupByGroupId(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	g, err := models.GetGroupById(vars["id"])
+	g, err := cronsun.GetGroupById(vars["id"])
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
@@ -83,13 +83,13 @@ func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := models.DeleteGroupById(groupId)
+	_, err := cronsun.DeleteGroupById(groupId)
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	gresp, err := models.DefalutClient.Get(conf.Config.Cmd, v3.WithPrefix())
+	gresp, err := cronsun.DefalutClient.Get(conf.Config.Cmd, v3.WithPrefix())
 	if err != nil {
 		errstr := fmt.Sprintf("failed to fetch jobs from etcd after deleted node group[%s]: %s", groupId, err.Error())
 		log.Error(errstr)
@@ -99,7 +99,7 @@ func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 
 	// update rule's node group
 	for i := range gresp.Kvs {
-		job := models.Job{}
+		job := cronsun.Job{}
 		err = json.Unmarshal(gresp.Kvs[i].Value, &job)
 		key := string(gresp.Kvs[i].Key)
 		if err != nil {
@@ -127,7 +127,7 @@ func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 				log.Errorf("failed to marshal job[%s]: %s", key, err.Error())
 				continue
 			}
-			_, err = models.DefalutClient.PutWithModRev(key, string(v), gresp.Kvs[i].ModRevision)
+			_, err = cronsun.DefalutClient.PutWithModRev(key, string(v), gresp.Kvs[i].ModRevision)
 			if err != nil {
 				log.Errorf("failed to update job[%s]: %s", key, err.Error())
 				continue
@@ -139,13 +139,13 @@ func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (n *Node) GetNodes(w http.ResponseWriter, r *http.Request) {
-	nodes, err := models.GetNodes()
+	nodes, err := cronsun.GetNodes()
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	gresp, err := models.DefalutClient.Get(conf.Config.Node, v3.WithPrefix(), v3.WithKeysOnly())
+	gresp, err := cronsun.DefalutClient.Get(conf.Config.Node, v3.WithPrefix(), v3.WithKeysOnly())
 	if err == nil {
 		connecedMap := make(map[string]bool, gresp.Count)
 		for i := range gresp.Kvs {

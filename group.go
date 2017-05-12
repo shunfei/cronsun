@@ -1,4 +1,4 @@
-package models
+package cronsun
 
 import (
 	"encoding/json"

@@ -8,9 +8,9 @@ import (
 
 	"sunteng/commons/log"
 
+	"github.com/shunfei/cronsun"
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/event"
-	"github.com/shunfei/cronsun/models"
 	"github.com/shunfei/cronsun/node"
 )
 
@@ -24,7 +24,7 @@ func main() {
 	//set cpu usage
 	runtime.GOMAXPROCS(*gomax)
 
-	if err := models.Init(); err != nil {
+	if err := cronsun.Init(); err != nil {
 		log.Error(err.Error())
 		return
 	}
@@ -40,7 +40,7 @@ func main() {
 		return
 	}
 
-	if err = models.StartProc(); err != nil {
+	if err = cronsun.StartProc(); err != nil {
 		log.Warnf("[process key will not timeout]proc lease id set err: %s", err.Error())
 	}
 
@@ -51,9 +51,9 @@ func main() {
 
 	log.Noticef("cronsun %s service started, Ctrl+C or send kill sign to exit", n.String())
 	// 注册退出事件
-	event.On(event.EXIT, n.Stop, conf.Exit, models.Exit)
+	event.On(event.EXIT, n.Stop, conf.Exit, cronsun.Exit)
 	// 注册监听配置更新事件
-	event.On(event.WAIT, models.Reload)
+	event.On(event.WAIT, cronsun.Reload)
 	// 监听退出信号
 	event.Wait()
 	// 处理退出事件

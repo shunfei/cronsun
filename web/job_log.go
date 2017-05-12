@@ -10,7 +10,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"math"
-	"github.com/shunfei/cronsun/models"
+	"github.com/shunfei/cronsun"
 )
 
 type JobLog struct{}
@@ -28,7 +28,7 @@ func (jl *JobLog) GetDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logDetail, err := models.GetJobLogById(bson.ObjectIdHex(id))
+	logDetail, err := cronsun.GetJobLogById(bson.ObjectIdHex(id))
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if err == mgo.ErrNotFound {
@@ -90,18 +90,18 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 
 	var pager struct {
 		Total int              `json:"total"`
-		List  []*models.JobLog `json:"list"`
+		List  []*cronsun.JobLog `json:"list"`
 	}
 	var err error
 	if r.FormValue("latest") == "true" {
-		var latestLogList []*models.JobLatestLog
-		latestLogList, pager.Total, err = models.GetJobLatestLogList(query, page, pageSize, sort)
+		var latestLogList []*cronsun.JobLatestLog
+		latestLogList, pager.Total, err = cronsun.GetJobLatestLogList(query, page, pageSize, sort)
 		for i := range latestLogList {
 			latestLogList[i].JobLog.Id = bson.ObjectIdHex(latestLogList[i].RefLogId)
 			pager.List = append(pager.List, &latestLogList[i].JobLog)
 		}
 	} else {
-		pager.List, pager.Total, err = models.GetJobLogList(query, page, pageSize, sort)
+		pager.List, pager.Total, err = cronsun.GetJobLogList(query, page, pageSize, sort)
 	}
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())

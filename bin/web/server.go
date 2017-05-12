@@ -10,12 +10,12 @@ import (
 
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/event"
-	"github.com/shunfei/cronsun/models"
+	"github.com/shunfei/cronsun"
 	"github.com/shunfei/cronsun/web"
 )
 
 func main() {
-	if err := models.Init(); err != nil {
+	if err := cronsun.Init(); err != nil {
 		log.Error(err.Error())
 		return
 	}
@@ -36,19 +36,19 @@ func main() {
 	}
 
 	if conf.Config.Mail.Enable {
-		var noticer models.Noticer
+		var noticer cronsun.Noticer
 
 		if len(conf.Config.Mail.HttpAPI) > 0 {
-			noticer = &models.HttpAPI{}
+			noticer = &cronsun.HttpAPI{}
 		} else {
-			mailer, err := models.NewMail(10 * time.Second)
+			mailer, err := cronsun.NewMail(10 * time.Second)
 			if err != nil {
 				log.Error(err.Error())
 				return
 			}
 			noticer = mailer
 		}
-		go models.StartNoticer(noticer)
+		go cronsun.StartNoticer(noticer)
 	}
 
 	go func() {

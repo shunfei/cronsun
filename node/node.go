@@ -11,20 +11,20 @@ import (
 	"sunteng/commons/log"
 
 	"github.com/shunfei/cronsun/conf"
-	"github.com/shunfei/cronsun/models"
+	"github.com/shunfei/cronsun"
 	"github.com/shunfei/cronsun/node/cron"
 	"github.com/shunfei/cronsun/utils"
 )
 
 // Node 执行 cron 命令服务的结构体
 type Node struct {
-	*models.Client
-	*models.Node
+	*cronsun.Client
+	*cronsun.Node
 	*cron.Cron
 
 	jobs   Jobs // 和结点相关的任务
 	groups Groups
-	cmds   map[string]*models.Cmd
+	cmds   map[string]*cronsun.Cmd
 
 	link
 	// 删除的 job id，用于 group 更新
@@ -42,15 +42,15 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 	}
 
 	n = &Node{
-		Client: models.DefalutClient,
-		Node: &models.Node{
+		Client: cronsun.DefalutClient,
+		Node: &cronsun.Node{
 			ID:  ip.String(),
 			PID: strconv.Itoa(os.Getpid()),
 		},
 		Cron: cron.New(),
 
 		jobs: make(Jobs, 8),
-		cmds: make(map[string]*models.Cmd),
+		cmds: make(map[string]*cronsun.Cmd),
 
 		link:   newLink(8),
 		delIDs: make(map[string]bool, 8),
@@ -120,11 +120,11 @@ func (n *Node) keepAlive() {
 }
 
 func (n *Node) loadJobs() (err error) {
-	if n.groups, err = models.GetGroups(""); err != nil {
+	if n.groups, err = cronsun.GetGroups(""); err != nil {
 		return
 	}
 
-	jobs, err := models.GetJobs()
+	jobs, err := cronsun.GetJobs()
 	if err != nil {
 		return
 	}
@@ -141,7 +141,7 @@ func (n *Node) loadJobs() (err error) {
 	return
 }
 
-func (n *Node) addJob(job *models.Job, notice bool) {
+func (n *Node) addJob(job *cronsun.Job, notice bool) {
 	n.link.addJob(job)
 	if job.IsRunOn(n.ID, n.groups) {
 		n.jobs[job.ID] = job
@@ -180,7 +180,7 @@ func (n *Node) delJob(id string) {
 	return
 }
 
-func (n *Node) modJob(job *models.Job) {
+func (n *Node) modJob(job *cronsun.Job) {
 	oJob, ok := n.jobs[job.ID]
 	// 之前此任务没有在当前结点执行，直接增加任务
 	if !ok {
@@ -205,7 +205,7 @@ func (n *Node) modJob(job *models.Job) {
 	n.link.addJob(oJob)
 }
 
-func (n *Node) addCmd(cmd *models.Cmd, notice bool) {
+func (n *Node) addCmd(cmd *cronsun.Cmd, notice bool) {
 	c, ok := n.cmds[cmd.GetID()]
 	if ok {
 		sch := c.JobRule.Timer
@@ -230,13 +230,13 @@ func (n *Node) addCmd(cmd *models.Cmd, notice bool) {
 	return
 }
 
-func (n *Node) delCmd(cmd *models.Cmd) {
+func (n *Node) delCmd(cmd *cronsun.Cmd) {
 	delete(n.cmds, cmd.GetID())
 	n.Cron.DelJob(cmd)
 	log.Noticef("job[%s] rule[%s] timer[%s] has deleted", cmd.Job.ID, cmd.JobRule.ID, cmd.JobRule.Timer)
 }
 
-func (n *Node) addGroup(g *models.Group) {
+func (n *Node) addGroup(g *cronsun.Group) {
 	n.groups[g.ID] = g
 }
 
@@ -261,7 +261,7 @@ func (n *Node) delGroup(id string) {
 	return
 }
 
-func (n *Node) modGroup(g *models.Group) {
+func (n *Node) modGroup(g *cronsun.Group) {
 	oGroup, ok := n.groups[g.ID]
 	if !ok {
 		n.addGroup(g)
@@ -285,7 +285,7 @@ func (n *Node) modGroup(g *models.Group) {
 	return
 }
 
-func (n *Node) groupAddNode(g *models.Group) {
+func (n *Node) groupAddNode(g *cronsun.Group) {
 	n.groups[g.ID] = g
 	jls := n.link[g.ID]
 	if len(jls) == 0 {
@@ -302,7 +302,7 @@ func (n *Node) groupAddNode(g *models.Group) {
 				continue
 			}
 
-			if job, err = models.GetJob(jl.gname, jid); err != nil {
+			if job, err = cronsun.GetJob(jl.gname, jid); err != nil {
 				log.Warnf("get job[%s][%s] err: %s", jl.gname, jid, err.Error())
 				n.link.delGroupJob(g.ID, jid)
 				continue
@@ -317,7 +317,7 @@ func (n *Node) groupAddNode(g *models.Group) {
 	return
 }
 
-func (n *Node) groupRmNode(g, og *models.Group) {
+func (n *Node) groupRmNode(g, og *cronsun.Group) {
 	jls := n.link[g.ID]
 	if len(jls) == 0 {
 		n.groups[g.ID] = g
@@ -351,12 +351,12 @@ func (n *Node) groupRmNode(g, og *models.Group) {
 }
 
 func (n *Node) watchJobs() {
-	rch := models.WatchJobs()
+	rch := cronsun.WatchJobs()
 	for wresp := range rch {
 		for _, ev := range wresp.Events {
 			switch {
 			case ev.IsCreate():
-				job, err := models.GetJobFromKv(ev.Kv)
+				job, err := cronsun.GetJobFromKv(ev.Kv)
 				if err != nil {
 					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
 					continue
@@ -365,7 +365,7 @@ func (n *Node) watchJobs() {
 				job.RunOn(n.ID)
 				n.addJob(job, true)
 			case ev.IsModify():
-				job, err := models.GetJobFromKv(ev.Kv)
+				job, err := cronsun.GetJobFromKv(ev.Kv)
 				if err != nil {
 					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
 					continue
@@ -374,7 +374,7 @@ func (n *Node) watchJobs() {
 				job.RunOn(n.ID)
 				n.modJob(job)
 			case ev.Type == client.EventTypeDelete:
-				n.delJob(models.GetIDFromKey(string(ev.Kv.Key)))
+				n.delJob(cronsun.GetIDFromKey(string(ev.Kv.Key)))
 			default:
 				log.Warnf("unknown event type[%v] from job[%s]", ev.Type, string(ev.Kv.Key))
 			}
@@ -383,12 +383,12 @@ func (n *Node) watchJobs() {
 }
 
 func (n *Node) watchGroups() {
-	rch := models.WatchGroups()
+	rch := cronsun.WatchGroups()
 	for wresp := range rch {
 		for _, ev := range wresp.Events {
 			switch {
 			case ev.IsCreate():
-				g, err := models.GetGroupFromKv(ev.Kv)
+				g, err := cronsun.GetGroupFromKv(ev.Kv)
 				if err != nil {
 					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
 					continue
@@ -396,7 +396,7 @@ func (n *Node) watchGroups() {
 
 				n.addGroup(g)
 			case ev.IsModify():
-				g, err := models.GetGroupFromKv(ev.Kv)
+				g, err := cronsun.GetGroupFromKv(ev.Kv)
 				if err != nil {
 					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
 					continue
@@ -404,7 +404,7 @@ func (n *Node) watchGroups() {
 
 				n.modGroup(g)
 			case ev.Type == client.EventTypeDelete:
-				n.delGroup(models.GetIDFromKey(string(ev.Kv.Key)))
+				n.delGroup(cronsun.GetIDFromKey(string(ev.Kv.Key)))
 			default:
 				log.Warnf("unknown event type[%v] from group[%s]", ev.Type, string(ev.Kv.Key))
 			}
@@ -413,7 +413,7 @@ func (n *Node) watchGroups() {
 }
 
 func (n *Node) watchOnce() {
-	rch := models.WatchOnce()
+	rch := cronsun.WatchOnce()
 	for wresp := range rch {
 		for _, ev := range wresp.Events {
 			switch {
@@ -422,7 +422,7 @@ func (n *Node) watchOnce() {
 					continue
 				}
 
-				job, ok := n.jobs[models.GetIDFromKey(string(ev.Kv.Key))]
+				job, ok := n.jobs[cronsun.GetIDFromKey(string(ev.Kv.Key))]
 				if !ok || !job.IsRunOn(n.ID, n.groups) {
 					continue
 				}

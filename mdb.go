@@ -1,7 +1,7 @@
-package models
+package cronsun
 
 import (
-	"github.com/shunfei/cronsun/models/db"
+	"github.com/shunfei/cronsun/db"
 )
 
 var (

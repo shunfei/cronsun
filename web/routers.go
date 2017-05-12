@@ -7,11 +7,11 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/shunfei/cronsun/conf"
-	"github.com/shunfei/cronsun/models"
+	"github.com/shunfei/cronsun"
 )
 
 func GetVersion(w http.ResponseWriter, r *http.Request) {
-	outJSON(w, models.Version)
+	outJSON(w, cronsun.Version)
 }
 
 func InitRouters() (s *http.Server, err error) {

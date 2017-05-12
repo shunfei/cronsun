@@ -1,10 +1,10 @@
 package node
 
 import (
-	"github.com/shunfei/cronsun/models"
+	"github.com/shunfei/cronsun"
 )
 
-type Groups map[string]*models.Group
+type Groups map[string]*cronsun.Group
 
 type jobLink struct {
 	gname string
@@ -39,7 +39,7 @@ func (l link) add(gid, jid, rid, gname string) {
 	j.rules[rid] = true
 }
 
-func (l link) addJob(job *models.Job) {
+func (l link) addJob(job *cronsun.Job) {
 	for _, r := range job.Rules {
 		for _, gid := range r.GroupIDs {
 			l.add(gid, job.ID, r.ID, job.Group)
@@ -64,7 +64,7 @@ func (l link) del(gid, jid, rid string) {
 	}
 }
 
-func (l link) delJob(job *models.Job) {
+func (l link) delJob(job *cronsun.Job) {
 	for _, r := range job.Rules {
 		for _, gid := range r.GroupIDs {
 			l.delGroupJob(gid, job.ID)

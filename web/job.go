@@ -11,7 +11,7 @@ import (
 
 	"sunteng/commons/log"
 	"github.com/shunfei/cronsun/conf"
-	"github.com/shunfei/cronsun/models"
+	"github.com/shunfei/cronsun"
 	"time"
 )
 
@@ -19,10 +19,10 @@ type Job struct{}
 
 func (j *Job) GetJob(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	job, err := models.GetJob(vars["group"], vars["id"])
+	job, err := cronsun.GetJob(vars["group"], vars["id"])
 	var statusCode int
 	if err != nil {
-		if err == models.ErrNotFound {
+		if err == cronsun.ErrNotFound {
 			statusCode = http.StatusNotFound
 		} else {
 			statusCode = http.StatusInternalServerError
@@ -36,7 +36,7 @@ func (j *Job) GetJob(w http.ResponseWriter, r *http.Request) {
 
 func (j *Job) DeleteJob(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	_, err := models.DeleteJob(vars["group"], vars["id"])
+	_, err := cronsun.DeleteJob(vars["group"], vars["id"])
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
@@ -46,7 +46,7 @@ func (j *Job) DeleteJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func (j *Job) ChangeJobStatus(w http.ResponseWriter, r *http.Request) {
-	job := &models.Job{}
+	job := &cronsun.Job{}
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&job)
 	if err != nil {
@@ -56,7 +56,7 @@ func (j *Job) ChangeJobStatus(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 
 	vars := mux.Vars(r)
-	originJob, rev, err := models.GetJobAndRev(vars["group"], vars["id"])
+	originJob, rev, err := cronsun.GetJobAndRev(vars["group"], vars["id"])
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
@@ -69,7 +69,7 @@ func (j *Job) ChangeJobStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = models.DefalutClient.PutWithModRev(originJob.Key(), string(b), rev)
+	_, err = cronsun.DefalutClient.PutWithModRev(originJob.Key(), string(b), rev)
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
@@ -80,7 +80,7 @@ func (j *Job) ChangeJobStatus(w http.ResponseWriter, r *http.Request) {
 
 func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 	var job = &struct {
-		*models.Job
+		*cronsun.Job
 		OldGroup string `json:"oldGroup"`
 	}{}
 
@@ -101,11 +101,11 @@ func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 	var successCode = http.StatusOK
 	if len(job.ID) == 0 {
 		successCode = http.StatusCreated
-		job.ID = models.NextID()
+		job.ID = cronsun.NextID()
 	} else {
 		job.OldGroup = strings.TrimSpace(job.OldGroup)
 		if job.OldGroup != job.Group {
-			deleteOldKey = models.JobKey(job.OldGroup, job.ID)
+			deleteOldKey = cronsun.JobKey(job.OldGroup, job.ID)
 		}
 	}
 
@@ -115,7 +115,7 @@ func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = models.DefalutClient.Put(job.Key(), string(b))
+	_, err = cronsun.DefalutClient.Put(job.Key(), string(b))
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
@@ -123,7 +123,7 @@ func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 
 	// remove old key
 	if len(deleteOldKey) > 0 {
-		if _, err = models.DefalutClient.Delete(deleteOldKey); err != nil {
+		if _, err = cronsun.DefalutClient.Delete(deleteOldKey); err != nil {
 			log.Errorf("failed to remove old job key[%s], err: %s.", deleteOldKey, err.Error())
 		}
 	}
@@ -132,7 +132,7 @@ func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func (j *Job) GetGroups(w http.ResponseWriter, r *http.Request) {
-	resp, err := models.DefalutClient.Get(conf.Config.Cmd, clientv3.WithPrefix(), clientv3.WithKeysOnly())
+	resp, err := cronsun.DefalutClient.Get(conf.Config.Cmd, clientv3.WithPrefix(), clientv3.WithKeysOnly())
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
@@ -164,24 +164,24 @@ func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type jobStatus struct {
-		*models.Job
-		LatestStatus *models.JobLatestLog `json:"latestStatus"`
+		*cronsun.Job
+		LatestStatus *cronsun.JobLatestLog `json:"latestStatus"`
 	}
 
-	resp, err := models.DefalutClient.Get(prefix, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
+	resp, err := cronsun.DefalutClient.Get(prefix, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	var nodeGroupMap map[string]*models.Group
+	var nodeGroupMap map[string]*cronsun.Group
 	if len(node) > 0 {
-		nodeGrouplist, err := models.GetNodeGroups()
+		nodeGrouplist, err := cronsun.GetNodeGroups()
 		if err != nil {
 			outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		nodeGroupMap = map[string]*models.Group{}
+		nodeGroupMap = map[string]*cronsun.Group{}
 		for i := range nodeGrouplist {
 			nodeGroupMap[nodeGrouplist[i].ID] = nodeGrouplist[i]
 		}
@@ -190,7 +190,7 @@ func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
 	var jobIds []string
 	var jobList = make([]*jobStatus, 0, resp.Count)
 	for i := range resp.Kvs {
-		job := models.Job{}
+		job := cronsun.Job{}
 		err = json.Unmarshal(resp.Kvs[i].Value, &job)
 		if err != nil {
 			outJSONWithCode(w, http.StatusInternalServerError, err.Error())
@@ -204,7 +204,7 @@ func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
 		jobIds = append(jobIds, job.ID)
 	}
 
-	m, err := models.GetJobLatestLogListByJobIds(jobIds)
+	m, err := cronsun.GetJobLatestLogListByJobIds(jobIds)
 	if err != nil {
 		log.Error("GetJobLatestLogListByJobIds error:", err.Error())
 	} else {
@@ -218,10 +218,10 @@ func (j *Job) GetList(w http.ResponseWriter, r *http.Request) {
 
 func (j *Job) GetJobNodes(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	job, err := models.GetJob(vars["group"], vars["id"])
+	job, err := cronsun.GetJob(vars["group"], vars["id"])
 	var statusCode int
 	if err != nil {
-		if err == models.ErrNotFound {
+		if err == cronsun.ErrNotFound {
 			statusCode = http.StatusNotFound
 		} else {
 			statusCode = http.StatusInternalServerError
@@ -232,7 +232,7 @@ func (j *Job) GetJobNodes(w http.ResponseWriter, r *http.Request) {
 
 	var nodes []string
 	var exNodes []string
-	groups, err := models.GetGroups("")
+	groups, err := cronsun.GetGroups("")
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
@@ -263,7 +263,7 @@ func (j *Job) JobExecute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	node := getStringVal("node", r)
-	err := models.PutOnce(group, id, node)
+	err := cronsun.PutOnce(group, id, node)
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
@@ -279,15 +279,15 @@ func (j *Job) GetExecutingJob(w http.ResponseWriter, r *http.Request) {
 		JobIds:  getStringArrayFromQuery("jobs", ",", r),
 	}
 
-	gresp, err := models.DefalutClient.Get(conf.Config.Proc, clientv3.WithPrefix())
+	gresp, err := cronsun.DefalutClient.Get(conf.Config.Proc, clientv3.WithPrefix())
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	var list = make([]*models.Process, 0, 8)
+	var list = make([]*cronsun.Process, 0, 8)
 	for i := range gresp.Kvs {
-		proc, err := models.GetProcFromKey(string(gresp.Kvs[i].Key))
+		proc, err := cronsun.GetProcFromKey(string(gresp.Kvs[i].Key))
 		if err != nil {
 			log.Error("Failed to unmarshal Proc from key: ", err.Error())
 			continue
@@ -310,7 +310,7 @@ type ProcFetchOptions struct {
 	JobIds  []string
 }
 
-func (opt *ProcFetchOptions) Match(proc *models.Process) bool {
+func (opt *ProcFetchOptions) Match(proc *cronsun.Process) bool {
 	if len(opt.Groups) > 0 && !InStringArray(proc.Group, opt.Groups) {
 		return false
 	}
@@ -327,7 +327,7 @@ func (opt *ProcFetchOptions) Match(proc *models.Process) bool {
 	return true
 }
 
-type ByProcTime []*models.Process
+type ByProcTime []*cronsun.Process
 
 func (a ByProcTime) Len() int           { return len(a) }
 func (a ByProcTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }

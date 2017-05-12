@@ -12,7 +12,7 @@ import (
 	"sunteng/commons/log"
 
 	"github.com/shunfei/cronsun/event"
-	"github.com/shunfei/cronsun/models/db"
+	"github.com/shunfei/cronsun/db"
 	"github.com/shunfei/cronsun/utils"
 )
 
