@@ -2,6 +2,8 @@
 
 `cronsun` 是一个分布式任务系统，单个结点和 `*nix` 机器上的 `crontab` 近似。支持界面管理机器上的任务，支持任务失败邮件提醒，安装简单，使用方便，是替换 `crontab` 一个不错的选择。
 
+`cronsun`是为了解决多台`*nix` 机器上`crontab`任务管理不方便的问题，同时提供任务高可用的支持（当某个节点死机的时候可以自动调度到正常的节点执行）。`cronsun`和[Azkaban](https://azkaban.github.io/)、[Chronos](https://mesos.github.io/chronos/)、[Airflow](https://airflow.incubator.apache.org/) 这些不是同一类型的。
+
 ## 架构
 
 ```
@@ -18,6 +20,28 @@
           [send mail]<-----------------------------------------(job exec result)
 
 ```
+
+
+## 安全性
+
+`cronsun`是在管理后台添加任务的，所以一旦管理后台泄露出去了，则存在一定的危险性，所以`cronsun`支持`security.json`的安全设置：
+
+```json
+{
+    "open": true,
+    "#users": "允许选择运行脚本的用户",
+    "users": [
+        "www", "db"
+    ],
+    "#ext": "允许添加以下扩展名结束的脚本",
+    "ext": [
+        ".cron.sh", ".cron.py"
+    ]
+}
+```
+
+如上设置开启安全限制，则添加和执行任务的时候只允许选择配置里面指定的用户来执行脚本，并且脚本的扩展名要在配置的脚本扩展名限制列表里面。
+
 
 ## Getting started
 
