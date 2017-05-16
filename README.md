@@ -2,7 +2,7 @@
 
 `cronsun` 是一个分布式任务系统，单个结点和 `*nix` 机器上的 `crontab` 近似。支持界面管理机器上的任务，支持任务失败邮件提醒，安装简单，使用方便，是替换 `crontab` 一个不错的选择。
 
-`cronsun`是为了解决多台`*nix` 机器上`crontab`任务管理不方便的问题，同时提供任务高可用的支持（当某个节点死机的时候可以自动调度到正常的节点执行）。`cronsun`和[Azkaban](https://azkaban.github.io/)、[Chronos](https://mesos.github.io/chronos/)、[Airflow](https://airflow.incubator.apache.org/) 这些不是同一类型的。
+`cronsun` 是为了解决多台 `*nix` 机器上`crontab` 任务管理不方便的问题，同时提供任务高可用的支持（当某个节点死机的时候可以自动调度到正常的节点执行）。`cronsun` 和 [Azkaban](https://azkaban.github.io/)、[Chronos](https://mesos.github.io/chronos/)、[Airflow](https://airflow.incubator.apache.org/) 这些不是同一类型的。
 
 ## 架构
 
@@ -45,21 +45,24 @@
 
 ## Getting started
 
-### Building the source
+### Setup / installation
+
+Building with the source
 
 ```
-cd $GOPATH/src
-git clone https://github.com/shunfei/cronsun.git
-cd cronsun
+go get -u github.com/shunfei/cronsun
+cd $GOPATH/src/github.com/shunfei/cronsun
 sh ./build.sh
 ```
+
+Or install with the binary [releases](https://github.com/shunfei/cronsun/releases)
 
 执行文件和配置文件在 `dist` 文件夹
 
 ### Run
 
 1. 安装 [MongoDB](http://docs.mongodb.org/manual/installation/)
-2. 安装 [etcd](https://github.com/coreos/etcd)
+2. 安装 [etcd3](https://github.com/coreos/etcd)
 3. 修改 `conf` 相关的配置
 4. 在任务结点启动 `./cronnode -conf conf/base.json`，在管理结点启动 `./cronweb -conf conf/base.json`
 5. 访问管理界面 `http://127.0.0.1:7079/ui/`
@@ -83,3 +86,7 @@ sh ./build.sh
 **Node**:
 
 ![](doc/img/node.png)
+
+## Credits
+
+cron is base on [robfig/cron](https://github.com/robfig/cron)
