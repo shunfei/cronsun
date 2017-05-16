@@ -61,7 +61,7 @@ sh ./build.sh
 1. 安装 [MongoDB](http://docs.mongodb.org/manual/installation/)
 2. 安装 [etcd](https://github.com/coreos/etcd)
 3. 修改 `conf` 相关的配置
-4. 在任务结点启动 `./node -conf conf/base.json`，在管理结点启动 `./web -conf conf/base.json`
+4. 在任务结点启动 `./cronnode -conf conf/base.json`，在管理结点启动 `./cronweb -conf conf/base.json`
 5. 访问管理界面 `http://127.0.0.1:7079/ui/`
 
 ## Screenshot

@@ -13,10 +13,12 @@ echo "build file to ./$out"
 
 mkdir -p "$out/conf"
 
-go build -o ./$out/node ./bin/node/server.go
+go build -o ./$out/cronnode ./bin/node/server.go
 check_code
-go build -o ./$out/web ./bin/web/server.go
+go build -o ./$out/cronweb ./bin/web/server.go
 check_code
+
+cp -r web/ui/dist "$out/ui"
 
 sources=`find ./conf/files -name "*.json.sample"`
 check_code
