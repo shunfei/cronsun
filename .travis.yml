@@ -1,0 +1,15 @@
+language: go
+go:
+- 1.6.4
+- 1.7.5
+- 1.8.1
+install:
+- go get github.com/coreos/etcd/clientv3
+- go get github.com/coreos/etcd/mvcc/mvccpb
+- go get github.com/rogpeppe/fastuuid
+- go get golang.org/x/net/context
+- go get gopkg.in/mgo.v2
+before_script:
+- go vet -x ./...
+script:
+- go test -v -race ./...
