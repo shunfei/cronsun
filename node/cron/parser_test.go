@@ -186,7 +186,7 @@ func TestParse(t *testing.T) {
 			t.Errorf("%s => unexpected error %v", c.expr, err)
 		}
 		if !reflect.DeepEqual(actual, c.expected) {
-			t.Errorf("%s => expected %b, got %b", c.expr, c.expected, actual)
+			t.Errorf("%s => expected %v, got %v", c.expr, c.expected, actual)
 		}
 	}
 }
@@ -224,7 +224,7 @@ func TestStandardSpecSchedule(t *testing.T) {
 			t.Errorf("%s => unexpected error %v", c.expr, err)
 		}
 		if !reflect.DeepEqual(actual, c.expected) {
-			t.Errorf("%s => expected %b, got %b", c.expr, c.expected, actual)
+			t.Errorf("%s => expected %v, got %v", c.expr, c.expected, actual)
 		}
 	}
 }

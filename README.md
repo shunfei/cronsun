@@ -47,7 +47,7 @@
 
 ### Setup / installation
 
-Building with the source
+Building with the source, require go >= 1.7+
 
 ```
 go get -u github.com/shunfei/cronsun
