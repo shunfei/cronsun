@@ -2,7 +2,9 @@ package cron
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -25,6 +27,10 @@ func TestFuncPanicRecovery(t *testing.T) {
 }
 
 type DummyJob struct{}
+
+func (d DummyJob) GetID() string {
+	return fmt.Sprintf("pointer[%v]", reflect.ValueOf(&d).Pointer())
+}
 
 func (d DummyJob) Run() {
 	panic("YOLO")
@@ -115,12 +121,12 @@ func TestAddWhileRunningWithDelay(t *testing.T) {
 	cron.Start()
 	defer cron.Stop()
 	time.Sleep(5 * time.Second)
-	var calls = 0
-	cron.AddFunc("* * * * * *", func() { calls += 1 })
+	var calls int32 = 0
+	cron.AddFunc("* * * * * *", func() { atomic.AddInt32(&calls, 1) })
 
 	<-time.After(ONE_SECOND)
-	if calls != 1 {
-		fmt.Printf("called %d times, expected 1\n", calls)
+	if atomic.LoadInt32(&calls) != 1 {
+		fmt.Printf("called %d times, expected 1\n", atomic.LoadInt32(&calls))
 		t.Fail()
 	}
 }
@@ -274,6 +280,10 @@ func TestStopWithoutStart(t *testing.T) {
 type testJob struct {
 	wg   *sync.WaitGroup
 	name string
+}
+
+func (t testJob) GetID() string {
+	return t.name
 }
 
 func (t testJob) Run() {

@@ -52,7 +52,7 @@ Building with the source
 ```
 go get -u github.com/shunfei/cronsun
 cd $GOPATH/src/github.com/shunfei/cronsun
-sh ./build.sh
+sh build.sh
 ```
 
 Or install with the binary [releases](https://github.com/shunfei/cronsun/releases)
