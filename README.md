@@ -8,8 +8,8 @@
 
 ## Purpose
 
-The goal of this project is to make more easily to manage jobs on lots of machines and make jobs more availabe.
-`cronsun` and [Azkaban](https://azkaban.github.io/), [Chronos](https://mesos.github.io/chronos/), [Airflow](https://airflow.incubator.apache.org/)  are different.
+The goal of this project is to make it much easier to manage jobs on lots of machines and provides high availability.
+`cronsun` is different from [Azkaban](https://azkaban.github.io/), [Chronos](https://mesos.github.io/chronos/), [Airflow](https://airflow.incubator.apache.org/).
 
 ## Features
 
@@ -57,15 +57,15 @@ The goal of this project is to make more easily to manage jobs on lots of machin
 
 ### Setup / installation
 
-Build from source, require go >= 1.7+
+Install from binary [releases](https://github.com/shunfei/cronsun/releases), download and unzip.
+
+Or build from source, require `go >= 1.7+`
 
 ```
 go get -u github.com/shunfei/cronsun
 cd $GOPATH/src/github.com/shunfei/cronsun
 sh build.sh
 ```
-
-Or install from binary [releases](https://github.com/shunfei/cronsun/releases)
 
 ### Run
 

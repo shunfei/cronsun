@@ -47,16 +47,15 @@
 
 ### 安装
 
-从源码编译, 要求 `go >= 1.7+`
+直接下载执行文件 [releases](https://github.com/shunfei/cronsun/releases)，解压后即可运行。
+
+如果你熟悉 `Go`，也可以从源码编译, 要求 `go >= 1.7+`
 
 ```
 go get -u github.com/shunfei/cronsun
 cd $GOPATH/src/github.com/shunfei/cronsun
 sh build.sh
 ```
-
-或者直接下载执行文件 [releases](https://github.com/shunfei/cronsun/releases)
-
 
 ### 运行
 
@@ -65,6 +64,10 @@ sh build.sh
 3. 修改 `conf` 相关的配置
 4. 在任务结点启动 `./cronnode -conf conf/base.json`，在管理结点启动 `./cronweb -conf conf/base.json`
 5. 访问管理界面 `http://127.0.0.1:7079/ui/`
+
+### 关于后台权限
+
+目前没权限管理，可以考虑用 [aproxy](https://github.com/shunfei/aproxy) 做权限控制，相关介绍见 [aProxy: 带认证授权和权限控制的反向代理](http://www.cnblogs.com/QLeelulu/p/aproxy.html).
 
 ## 截图
 
