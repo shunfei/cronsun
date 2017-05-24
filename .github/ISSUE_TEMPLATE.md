@@ -1,24 +1,22 @@
-- [ ] Defect(问题)
-- [ ] Feature Request or Change Proposal(增加特性/建议)
+Please answer these questions before submitting your issue. Thanks!
+在你提交 issue 前，请先回答以下问题，谢谢！
 
-## Defects(问题)
+1. What version of Go and cronsun version are you using?
+你用的是哪个版本的 Go 和 哪个版本的 cronsun？
 
-- [ ] node(任务结点)
-- [ ] web(管理后台)
+2. What operating system and processor architecture are you using (`go env`)?
+你用的是哪个操作系统，什么架构的？
 
-#### Versions of `cronsun`(版本):
 
-#### OS environment(系统环境) `go env`:
+3. What did you do?
+If possible, provide a recipe for reproducing the error.
+A complete runnable program is good.
+你做了什么，遇到了什么问题？尽可能描述清楚问题，最好把操作步骤写下来，按这些步骤操作后能重现你的问题。
 
-#### Steps or code to reproduce the issue(重现问题的代码/步骤):
 
-#### Expected result(期望结果):
+4. What did you expect to see?
+你期望得到什么样的结果？
 
-#### Actual result(实际结果):
 
- 
-## Feature Requests(增加特性/建议)
-
-#### Use Case(使用场景):
-
-#### Proposed Change(修改建议):
+5. What did you see instead?
+现在你得到的结果是什么样的？
