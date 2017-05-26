@@ -3,11 +3,11 @@
     <div class="ui icon buttons">
       <router-link :to="pageURL(_startPage-1)" class="ui button" :class="{disabled: _startPage<=1}"><i class="angle left icon"></i></router-link>
       <router-link :to="pageURL(_startPage + n - 1)" v-for="n in _pageBtnNum" class="ui button" :class="{blue: _startPage+n-1 == _current}">{{_startPage + n-1}}</router-link>
-      <a class="ui button disabled">共 {{_current}}/{{total}} 页</a>
+      <a class="ui button disabled">{{_current}}/{{total}}</a>
       <router-link :to="pageURL(_startPage+length)" class="ui button" :class="{disabled: _startPage+length>total}"><i class="angle right icon"></i></router-link>
     </div>
     <div class="ui action input">
-      <input type="text" ref="gopage" style="width: 70px;" placeholder="跳转">
+      <input type="text" ref="gopage" style="width: 70px;">
       <button class="ui icon button" v-on:click="go">
         <i class="arrow right icon"></i>
       </button>

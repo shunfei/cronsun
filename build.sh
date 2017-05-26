@@ -23,7 +23,7 @@ cp -r web/ui/dist "$out/ui"
 sources=`find ./conf/files -name "*.json.sample"`
 check_code
 for source in $sources;do
-	yes | echo $source|sed "s/.*\/\(\w*\.json\).*/cp -f & .\/$out\/conf\/\1/"|bash
+	yes | echo $source|sed "s/.*\/\(.*\.json\).*/cp -f & .\/$out\/conf\/\1/"|bash
 	check_code
 done
 

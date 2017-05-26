@@ -1,13 +1,13 @@
 <template>
   <div class="ui modal">
     <i class="close icon"></i>
-    <div class="header">执行任务 {{jobName}}</div>
+    <div class="header">{{$L('executing job: {job}', jobName)}}</div>
     <div class="content">
-      <Dropdown title="选择执行的节点" :items="nodes" v-on:change="changeNode"></Dropdown>
+      <Dropdown :title="$L('node')" :items="nodes" v-on:change="changeNode"></Dropdown>
     </div>
     <div class="actions">
-      <div class="ui deny button">取消</div>
-      <div class="ui positive right labeled icon button">立刻执行任务 <i class="checkmark icon"></i></div>
+      <div class="ui deny button">{{$L('cancel')}}</div>
+      <div class="ui positive right labeled icon button">{{$L('execute now')}} <i class="checkmark icon"></i></div>
     </div>
   </div>
 </template>

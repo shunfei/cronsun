@@ -20,7 +20,7 @@
 <template>
   <div>
     <div class="clearfix">
-      <router-link class="ui right floated primary button" to="/node/group/create"><i class="add icon"></i> 新分组</router-link>
+      <router-link class="ui right floated primary button" to="/node/group/create"><i class="add icon"></i> {{$L('create group')}}</router-link>
       <button class="ui right floated icon button" v-on:click="refresh"><i class="refresh icon"></i></button>
     </div>
     <div v-if="error != ''" class="header"><i class="attention icon"></i> {{error}}</div>

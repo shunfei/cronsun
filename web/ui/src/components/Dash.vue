@@ -22,7 +22,7 @@
           <div class="ui fluid card">
             <div class="content">
               <div class="header number">{{totalJobs}}</div>
-              <div class="header title">任务总数</div>
+              <div class="header title">{{$L('total number of jobs')}}</div>
             </div>
           </div>
         </div>
@@ -30,7 +30,7 @@
           <div class="ui fluid card">
             <div class="content">
               <div class="header number">{{totalExecuted}}</div>
-              <div class="header title">执行任务总次数</div>
+              <div class="header title">{{$L('total number of executeds')}}</div>
             </div>
           </div>
         </div>
@@ -38,7 +38,7 @@
           <div class="ui fluid card">
             <div class="content">
               <div class="header number">{{todayExecuted}}</div>
-              <div class="header title">今日执行任务次数</div>
+              <div class="header title">{{$L('total number of executeds(today)')}}</div>
             </div>
           </div>
         </div>
@@ -48,7 +48,7 @@
           <div class="ui fluid card">
             <div class="content">
               <div class="header number">{{totalNodes}}</div>
-              <div class="header title">节点总数</div>
+              <div class="header title">{{$L('total number of nodes')}}</div>
             </div>
           </div>
         </div>
@@ -58,7 +58,7 @@
     <div id="charts">
       <div class="ui card">
         <div class="content">
-          <h4 class="header"><router-link to="node">当前节点状态</router-link></h4>
+          <h4 class="header"><router-link to="node">{{$L('node stat')}}</router-link></h4>
           <div class="description">
             <canvas ref="node"></canvas>
           </div>
@@ -67,7 +67,7 @@
 
       <div class="ui card">
         <div class="content">
-          <h4 class="header"><router-link :to="'log?begin='+today+'&end='+today">今日任务概况</router-link></h4>
+          <h4 class="header"><router-link :to="'log?begin='+today+'&end='+today">{{$L('executed stat(today)')}}</router-link></h4>
           <div class="description">
             <canvas ref="job"></canvas>
           </div>
@@ -108,7 +108,7 @@ export default {
       new Chart($(vm.$refs.job), {
         type: 'pie',
         data: {
-          labels: ["成功:"+dailySuccessed, "失败:"+(dailytotal-dailySuccessed)],
+          labels: [vm.$L("{n} successed", dailySuccessed), vm.$L("{n} failed", dailytotal-dailySuccessed)],
           datasets: [{
             data: [dailySuccessed, dailytotal - dailySuccessed],
             backgroundColor: ["#21BA45", "#DB2828"],
@@ -136,7 +136,7 @@ export default {
       new Chart($(vm.$refs.node), {
         type: 'pie',
         data: {
-          labels: ["在线:"+online, "离线:"+offline, "故障:"+damaged],
+          labels: [vm.$L("{n} online", online), vm.$L("{n} offline", offline), vm.$L("{n} damaged", damaged)],
           datasets: [{
             data: [online, offline, damaged],
             backgroundColor: ["#21BA45", "#333", "#DB2828"],

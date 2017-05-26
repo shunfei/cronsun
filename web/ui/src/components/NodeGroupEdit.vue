@@ -3,19 +3,19 @@
     <div class="header"><i class="attention icon"></i> {{error}}</div>
   </div>
   <form v-else class="ui form" v-bind:class="{loading:loading}" v-on:submit.prevent>
-    <h3 class="ui header">{{action == 'CREATE' ? '添加' : '更新'}}节点分组</h3>
+    <h3 class="ui header">{{$L((action == 'CREATE' ? 'create' : 'update')+' node group')}}</h3>
     <div class="field">
-      <input type="text" ref="name" v-model:value="group.name" placeholder="分组名称">
+      <input type="text" ref="name" v-model:value="group.name" :placeholder="$L('group name')">
     </div>
     <div class="field">
-      <label>分组节点</label>
-      <Dropdown title="选择节点" multiple="true" v-bind:items="allNodes" v-bind:selected="group.nids" v-on:change="changeGroup"/>
+      <label>{{$L('include nodes')}}</label>
+      <Dropdown :title="$L('select nodes')" multiple="true" v-bind:items="allNodes" v-bind:selected="group.nids" v-on:change="changeGroup"/>
     </div>
     <div class="field">
-      <button class="fluid blue ui button" type="button" v-on:click="submit"><i class="upload icon"></i> 保存分组</button>
+      <button class="fluid blue ui button" type="button" v-on:click="submit"><i class="upload icon"></i> {{$L('save group')}}</button>
     </div>
     <div class="field">
-      <button class="fluid red ui button" type="button" v-on:click="remove"><i class="remove icon"></i> 删除分组</button>
+      <button class="fluid red ui button" type="button" v-on:click="remove"><i class="remove icon"></i> {{$L('delete group')}}</button>
     </div>
   </form>
 </template>
@@ -86,7 +86,7 @@ export default {
     },
 
     remove(){
-      if (!confirm('确定删除该分组 ' + this.group.name + '?')) return;
+      if (!confirm(this.$L('are you sure to delete the group {name}?', this.group.name))) return;
       var vm = this;
       this.$rest.DELETE('node/group/'+this.group.id)
         .onsucceed(204, ()=>{vm.$router.push('/node/group')})

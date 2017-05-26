@@ -5,6 +5,12 @@ require('semantic-ui/dist/semantic.min.css');
 import Vue from 'vue';
 Vue.config.debug = true;
 
+import Lang from './i18n/language';
+Vue.use((Vue)=>{
+  Vue.prototype.$L = Lang.L
+  Vue.prototype.$Lang = Lang
+});
+
 // global restful client
 import Rest from './libraries/rest-client.js';
 var restApi = new Rest('/v1/');

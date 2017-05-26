@@ -12,6 +12,7 @@
   "dependencies": {
     "chart.js": "^2.5.0",
     "jquery": "^3.1.1",
+    "jquery.cookie": "^1.4.1",
     "semantic-ui": "^2.2.7",
     "vue": "^2.1.0",
     "vue-router": "^2.2.1"

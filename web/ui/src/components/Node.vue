@@ -8,25 +8,25 @@
   background: #e8e8e8;
   text-align: center;
 }
-.notice {
-  color: red;
-}
 </style>
 <template>
   <div>
     <div class="clearfix">
-      <router-link class="ui right floated primary button" to="/node/group"><i class="cubes icon"></i> 管理分组</router-link>
+      <router-link class="ui right floated primary button" to="/node/group"><i class="cubes icon"></i> {{$L('group manager')}}</router-link>
       <div class="ui label" 
-      <div class="ui label" v-for="item in items" v-bind:title="item.title">
-        <i class="cube icon" v-bind:class="item.css"></i> {{item.nodes.length}} {{item.name}}
+      <div class="ui label" v-for="item in items" v-bind:title="$L(item.title)">
+        <i class="cube icon" v-bind:class="item.css"></i> {{item.nodes.length}} {{$L(item.name)}}
       </div>
-      （总 {{count}} 个节点）
-      <div class="ui label" title="当前版本号"> {{version}} </div>
+      {{$L('(total {n} nodes)', count)}}
+      <div class="ui label" :title="$L('currently version')"> {{version}} </div>
     </div>
     <div class="ui relaxed list" v-for="item in items">
-      <h4 v-if="item.nodes.length > 0" class="ui horizontal divider header"><i class="cube icon" v-bind:class="item.css"></i> {{item.name}} {{item.nodes.length}}</h4>
+      <h4 v-if="item.nodes.length > 0" class="ui horizontal divider header"><i class="cube icon" v-bind:class="item.css"></i> {{$L(item.name)}} {{item.nodes.length}}</h4>
       <div v-for="node in item.nodes" class="node" v-bind:title="node.title">
-        <router-link class="item" v-bind:class="[(node.version == version) ? '' : 'notice']" :to="'/job?node='+node.id">{{node.id}}</router-link>
+        <router-link class="item" :to="'/job?node='+node.id">
+          <i class="red icon fork" v-if="node.version !== version" :title="$L('version inconsistent, node: {version}', node.version)"></i>
+          {{node.id}}
+        </router-link>
       </div>
     </div>
   </div>
@@ -38,9 +38,9 @@ export default {
   data: function(){
     return {
       items: [
-        {nodes:[],name:'故障节点',title:'因自身或网络等原因未检测到节点存活',css:'red'},
-        {nodes:[],name:'离线节点',title:'手动下线/维护中的',css:''},
-        {nodes:[],name:'正常节点',title:'正常运行的节点',css:'green'}
+        {nodes:[],name:'node damaged',title:'node can not be deceted due to itself or network etc.',css:'red'},
+        {nodes:[],name:'node offline',title:'node is in maintenance or is shutdown manually',css:''},
+        {nodes:[],name:'node normaly',title:'node is running',css:'green'}
       ],
       count: 0,
       version: ''

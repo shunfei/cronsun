@@ -4,35 +4,35 @@
 <template>
   <div>
     <div class="clearfix" style="margin-bottom: 20px;">
-      <router-link class="ui left floated button" to="/job">查看任务列表</router-link>
+      <router-link class="ui left floated button" to="/job">{{$L('view job list')}}</router-link>
       <button class="ui left floated icon button" v-on:click="refresh"><i class="refresh icon"></i></button>
-      <router-link class="ui right floated primary button" to="/job/create"><i class="add to calendar icon"></i> 新任务</router-link>
+      <router-link class="ui right floated primary button" to="/job/create"><i class="add to calendar icon"></i> {{$L('create job')}}</router-link>
     </div>
     <form class="ui form" v-bind:class="{loading:loading}" v-on:submit.prevent>
       <div class="field">
-        <label>任务 ID</label>
-        <input type="text" ref="ids" v-model:value="ids" placeholder="多个 ID 使用英文逗号分隔"/>
+        <label>{{$L('job ID')}}</label>
+        <input type="text" ref="ids" v-model:value="ids" :placeholder="$L('multiple IDs can separated by commas')"/>
       </div>
       <div class="field">
-        <label>选择分组</label>
-        <Dropdown title="选择分组" v-bind:items="prefetchs.groups" v-on:change="changeGroup" :selected="groups" :multiple="true"/>
+        <label>{{$L('select group')}}</label>
+        <Dropdown :title="$L('select group')" v-bind:items="prefetchs.groups" v-on:change="changeGroup" :selected="groups" :multiple="true"/>
       </div>
       <div class="field">
-        <label>选择节点</label>
-        <Dropdown title="选择节点" v-bind:items="prefetchs.nodes" v-on:change="changeNodes" :selected="nodes" :multiple="true"/>
+        <label>{{$L('select nodes')}}</label>
+        <Dropdown :title="$L('select nodes')" v-bind:items="prefetchs.nodes" v-on:change="changeNodes" :selected="nodes" :multiple="true"/>
       </div>
       <div class="field">
-        <button class="fluid ui button" type="button" v-on:click="submit">查询</button>
+        <button class="fluid ui button" type="button" v-on:click="submit">{{$L('submit query')}}</button>
       </div>
     </form>
     <table class="ui hover blue table" v-if="executings.length > 0">
       <thead>
         <tr>
-          <th class="center aligned">任务ID</th>
-          <th width="200px" class="center aligned">分组</th>
-          <th class="center aligned">节点</th>
-          <th class="center aligned">进程ID</th>
-          <th class="center aligned">开始时间</th>
+          <th class="center aligned">{{$L('job ID')}}</th>
+          <th width="200px" class="center aligned">{{$L('job group')}}</th>
+          <th class="center aligned">{{$L('node')}}</th>
+          <th class="center aligned">{{$L('process ID')}}</th>
+          <th class="center aligned">{{$L('starting time')}}</th>
         </tr>
       </thead>
       <tbody>

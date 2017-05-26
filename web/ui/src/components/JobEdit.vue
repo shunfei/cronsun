@@ -3,98 +3,97 @@
     <div class="header"><i class="attention icon"></i> {{error}}</div>
   </div>
   <form v-else class="ui form" v-bind:class="{loading:loading}" v-on:submit.prevent>
-    <h3 class="ui header">{{action == 'CREATE' ? '添加' : '更新'}}任务&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <h3 class="ui header">{{$L(action == 'CREATE' ? 'create job' : 'update job')}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <em v-if="job.id">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ID# {{job.id}}</em>
       <div class="ui toggle checkbox" ref="pause">
         <input type="checkbox" class="hidden" v-bind:checked="!job.pause">
-        <label v-bind:style="{color: (job.pause?'red':'green')+' !important'}">{{job.pause ? '任务暂停' : '任务开启'}}</label>
+        <label v-bind:style="{color: (job.pause?'red':'green')+' !important'}">{{$L(job.pause ? 'pause' : 'open')}}</label>
       </div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <div class="ui toggle checkbox" ref="fail_notify" v-if="$appConfig.alarm">
         <input type="checkbox" class="hidden" v-bind:checked="job.fail_notify">
-        <label>{{job.fail_notify ? '开启报警' : '关闭报警'}}</label>
+        <label>{{$L(job.fail_notify ? 'warning on' : 'warning off')}}</label>
       </div>
     </h3>
     <div class="inline fields" ref="kind">
-      <label>任务类型</label>
+      <label>{{$L('job type')}}</label>
       <div class="field">
         <div class="ui radio checkbox">
           <input type="radio" v-model="job.kind" name="kind" value="0" tabindex="0" class="hidden"/>
-          <label>普通任务</label>
+          <label>{{$L('common job')}}</label>
         </div>
       </div>
       <div class="field">
         <div class="ui radio checkbox">
           <input type="radio" v-model="job.kind" name="kind" value="1" tabindex="0" class="hidden"/>
-          <label title="同一时间只有一个任务进程在某个节点上面执行">单机单进程
-            <i class="help circle link icon" data-position="top right" data-html="同一时间只有一个任务进程在某个节点上面执行" data-variation="wide"></i>
+          <label>{{$L('single node single process')}}
+            <i class="help circle link icon" data-position="top right" :data-html="$L('at the same time only one job process is executed on one of node')" data-variation="wide"></i>
           </label>
         </div>
       </div>
       <div class="field">
         <div class="ui radio checkbox">
           <input type="radio" v-model="job.kind" name="kind" value="2" tabindex="0" class="hidden"/>
-          <label>一个任务执行间隔内允许执行一次</label>
+          <label>{{$L('group level common')}}
+            <i class="help circle link icon" data-position="top right" :data-html="$L('group level common help')" data-variation="wide"></i>
+          </label>
         </div>
       </div>
     </div>
     <div class="two fields">
       <div class="field">
-        <label>任务名称</label>
-        <input type="text" ref="name" v-bind:value="job.name" v-on:input="updateValue($event.target.value)" placeholder="任务名称">
+        <label>{{$L('job name')}}</label>
+        <input type="text" ref="name" v-bind:value="job.name" v-on:input="updateValue($event.target.value)" :placeholder="$L('job name')">
       </div>
       <div class="field">
-        <label>任务分组</label>
-        <Dropdown title="选择分组" v-bind:allowAdditions="true" v-bind:items="groups" v-bind:selected="job.group" v-on:change="changeGroup"></Dropdown>
+        <label>{{$L('job group')}}</label>
+        <Dropdown :title="$L('select a group')" v-bind:allowAdditions="true" v-bind:items="groups" v-bind:selected="job.group" v-on:change="changeGroup"></Dropdown>
       </div>
     </div>
     <div class="fields">
       <div class="twelve wide field">
-        <label>任务脚本 {{allowSuffixsTip}}</label>
-        <input type="text" v-model="job.cmd" placeholder="任务脚本">
+        <label>{{$L('script path')}} {{allowSuffixsTip}}</label>
+        <input type="text" v-model="job.cmd" :placeholder="$L('script path')">
       </div>
       <div class="four wide field">
-        <label>用户({{$appConfig.security.open ? '必选' : '可选'}})</label>
-        <Dropdown v-if="$appConfig.security.open" title="指定执行用户" v-bind:items="$appConfig.security.users" v-bind:selected="job.user" v-on:change="changeUser"></Dropdown>
-        <input v-else type="text" v-model="job.user" placeholder="指定执行用户">
+        <label>{{$L($appConfig.security.open ? 'user(required)' : 'user(optional)')}}</label>
+        <Dropdown v-if="$appConfig.security.open" :title="$L('the user which to execute the command')" v-bind:items="$appConfig.security.users" v-bind:selected="job.user" v-on:change="changeUser"></Dropdown>
+        <input v-else type="text" v-model="job.user" :placeholder="$L('the user which to execute the command')">
       </div>
     </div>
     <div class="field" v-if="$appConfig.alarm && job.fail_notify">
-      <label>指定报警额外接受人</label>
-      <Dropdown title="邮件地址" v-bind:items="alarmReceivers" v-bind:selected="job.to" v-on:change="changeAlarmReceiver" v-bind:multiple="true" v-bind:allowAdditions="true"/>
+      <label>{{$L('warning receiver')}}</label>
+      <Dropdown :title="$L('e-mail address')" v-bind:items="alarmReceivers" v-bind:selected="job.to" v-on:change="changeAlarmReceiver" v-bind:multiple="true" v-bind:allowAdditions="true"/>
     </div>
     <div class="two fields">
       <div class="field">
-        <label>超时设置（单位“秒”，0 表示不限制）</label>
-        <input type="number" ref="timeout" v-model:value="job.timeout" placeholder="任务执行超时时间">
+        <label>{{$L('timeout(in seconds, 0 for no limits)')}}</label>
+        <input type="number" ref="timeout" v-model:value="job.timeout">
       </div>
-      <div class="field">
-        <label>并行数设置（0 表示不限制）</label>
-        <div class="ui icon input">
-          <input type="number" ref="parallels" v-model:value="job.parallels" placeholder="任务执行超时时间">
-          <i class="large help circle link icon" data-position="top right" data-html="设置在<strong style='color:red'>单个节点</strong>上面同时可执行多少个任务，针对某些任务执行时间很长，但两次任务执行间隔较短时比较有用" data-variation="wide"></i>
-        </div>
+      <div class="field" v-show="job.kind === 0">
+        <label>{{$L('parallel number in one node(0 for no limits)')}}</label>
+        <input type="number" ref="parallels" v-model:value="job.parallels">
       </div>
     </div>
     <div class="two fields">
       <div class="field">
-        <label>失败重试次数（0 表示不重试）</label>
-        <input type="number" ref="retry" v-model:value="job.retry" placeholder="任务失败后重试的次数">
+        <label>{{$L('retries(number of retries when failed, 0 means no retry)')}}</label>
+        <input type="number" ref="retry" v-model:value="job.retry">
       </div>
       <div class="field">
-        <label>失败重试间隔（0 表示立即执行）</label>
-        <input type="number" ref="interval" v-model:value="job.interval" placeholder="任务失败后多长时间再次执行">
+        <label>{{$L('retry interval(in seconds)')}}</label>
+        <input type="number" ref="interval" v-model:value="job.interval">
       </div>
     </div>
     <div class="field">
-      <span v-if="!job.rules || job.rules.length == 0"><i class="warning circle icon"></i>当前任务没有定时器，点击下面按钮来添加定时器</span>
+      <span v-if="!job.rules || job.rules.length == 0"><i class="warning circle icon"></i>{{$L('the job dose not have a timer currently, please click the button below to add a timer')}}</span>
     </div>
     <JobEditRule v-for="(rule, index) in job.rules" :key="rule.id" v-bind:rule="rule" :index="index" v-on:remove="removeRule" v-on:change="changeRule"/>
     <div class="two fields">
       <div class="field">
-        <button class="fluid ui button" v-on:click="addNewTimer" type="button"><i class="history icon"></i> 添加定时器</button>
+        <button class="fluid ui button" v-on:click="addNewTimer" type="button"><i class="history icon"></i> {{$L('add timer')}}</button>
       </div>
       <div class="field">
-        <button class="fluid blue ui button" type="button" v-on:click="submit"><i class="upload icon"></i> 保存任务</button>
+        <button class="fluid blue ui button" type="button" v-on:click="submit"><i class="upload icon"></i> {{$L('save job')}}</button>
       </div>
     </div>
   </form>
@@ -116,7 +115,7 @@ export default {
         allowSuffixsTip: '',
         job: {
           id: '',
-          kind: 2, // 0 == 普通任务，1 == 单机任务
+          kind: 0, // 0 == 普通任务，1 == 单机任务
           name:  '',
           oldGroup: '',
           group: '',
@@ -190,7 +189,7 @@ export default {
     var secCnf = this.$appConfig.security;
     if (secCnf.open) {
       if (secCnf.ext && secCnf.ext.length > 0) {
-        this.allowSuffixsTip = '（当前限制只允许添加此类后缀脚本：' + secCnf.ext.join(' ') + '）';
+        this.allowSuffixsTip = this.$L('(only [{.suffixs}] files can be allowed)', secCnf.ext.join(' '));
       }
     }
 

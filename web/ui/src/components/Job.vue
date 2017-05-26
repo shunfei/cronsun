@@ -4,32 +4,32 @@
 <template>
   <div>
     <div class="clearfix" style="margin-bottom: 20px;">
-      <router-link class="ui left floated button" to="/job/executing">查看执行中的任务</router-link>
+      <router-link class="ui left floated button" to="/job/executing">{{$L('view executing jobs')}}</router-link>
       <button class="ui left floated icon button" v-on:click="refresh"><i class="refresh icon"></i></button>
-      <router-link class="ui right floated primary button" to="/job/create"><i class="add to calendar icon"></i> 新任务</router-link>
+      <router-link class="ui right floated primary button" to="/job/create"><i class="add to calendar icon"></i> {{$L('create job')}}</router-link>
     </div>
     <form class="ui form">
       <div class="two fields">
         <div class="field">
-          <label>任务分组</label>
-          <Dropdown title="选择分组" v-bind:items="groups" v-on:change="changeGroup" :selected="group"/>
+          <label>{{$L('group filter')}}</label>
+          <Dropdown :title="$L('select a group')" v-bind:items="groups" v-on:change="changeGroup" :selected="group"/>
         </div>
         <div class="field">
-          <label>节点过滤</label>
-          <Dropdown title="选择节点" v-bind:items="nodes" v-on:change="changeNode" :selected="node"/>
+          <label>{{$L('node filter')}}</label>
+          <Dropdown :title="$L('select a node')" v-bind:items="nodes" v-on:change="changeNode" :selected="node"/>
         </div>
       </div>
     </form>
     <table class="ui hover blue table" v-if="jobs.length > 0">
       <thead>
         <tr>
-          <th class="collapsing center aligned">操作</th>
-          <th class="collapsing center aligned">状态</th>
-          <th width="200px" class="center aligned">分组</th>
-          <th class="center aligned">用户</th>
-          <th class="center aligned">名称</th>
-          <th class="center aligned">最近执行时间</th>
-          <th class="center aligned">执行结果</th>
+          <th class="collapsing center aligned">{{$L('operation')}}</th>
+          <th class="collapsing center aligned">{{$L('status')}}</th>
+          <th width="200px" class="center aligned">{{$L('group')}}</th>
+          <th class="center aligned">{{$L('user')}}</th>
+          <th class="center aligned">{{$L('name')}}</th>
+          <th class="center aligned">{{$L('latest executed')}}</th>
+          <th class="center aligned">{{$L('executing result')}}</th>
         </tr>
       </thead>
       <tbody>
@@ -38,11 +38,11 @@
             <div class="ui icon dropdown">
               <i class="content icon"></i>
               <div class="menu">
-                <div class="item" v-on:click="$router.push('/job/edit/'+job.group+'/'+job.id)">编辑</div>
-                <div class="item" v-if="job.pause" v-on:click="changeStatus(job.group, job.id, index, !job.pause)">开启</div>
-                <div class="item" v-if="!job.pause" v-on:click="changeStatus(job.group, job.id, index, !job.pause)">暂停</div>
+                <div class="item" v-on:click="$router.push('/job/edit/'+job.group+'/'+job.id)">{{$L('edit')}}</div>
+                <div class="item" v-if="job.pause" v-on:click="changeStatus(job.group, job.id, index, !job.pause)">{{$L('open')}}</div>
+                <div class="item" v-if="!job.pause" v-on:click="changeStatus(job.group, job.id, index, !job.pause)">{{$L('pause')}}</div>
                 <div class="divider"></div>
-                <div class="item" style="color:red;" v-on:click="removeJob(job.group, job.id, index)">删除</div>
+                <div class="item" style="color:red;" v-on:click="removeJob(job.group, job.id, index)">{{$L('delete')}}</div>
               </div>
             </div>
           </td>
@@ -56,14 +56,14 @@
           </td>
           <td :class="{error: job.latestStatus && !job.latestStatus.success}">
             <span v-if="!job.latestStatus">-</span>
-            <router-link v-else :to="'/log/'+job.latestStatus.refLogId">{{job.latestStatus.success ? '成功' : '失败'}}</router-link> |
+            <router-link v-else :to="'/log/'+job.latestStatus.refLogId">{{$L(job.latestStatus.success ? 'successed' : 'failed')}}</router-link> |
             <router-link :to="{path: 'log', query: {latest:true, ids: job.id}}">latest</router-link> |
-            <a href="#" title="点此选择节点重新执行任务" v-on:click.prevent="showExecuteJobModal(job.name, job.group, job.id)"><i class="icon repeat"></i></a>
+            <a href="#" :title="$L('click to select a node and re-execute job')" v-on:click.prevent="showExecuteJobModal(job.name, job.group, job.id)"><i class="icon repeat"></i></a>
           </td>
         </tr>
       </tbody>
     </table>
-    <ExecuteJob ref="executeJobModal">
+    <ExecuteJob ref="executeJobModal"/>
   </div>
 </template>
 
@@ -90,13 +90,13 @@ export default {
 
     this.$rest.GET('job/groups').onsucceed(200, (resp)=>{
       !resp.includes('default') && resp.unshift('default');
-      resp.unshift({value: '', name: '所有分组'});
+      resp.unshift({value: '', name: vm.$L('all groups')});
       vm.groups = resp;
       this.fetchList(this.buildQuery());
     }).do();
 
     this.$rest.GET('nodes').onsucceed(200, (resp)=>{
-      vm.nodes.push({name: '所有节点', value: ''});
+      vm.nodes.push({name: vm.$L('all nodes'), value: ''});
       for (var i in resp) {
         vm.nodes.push(resp[i].id);
       }
@@ -169,7 +169,7 @@ export default {
     },
 
     formatLatest: function(latest){
-      return formatTime(latest.beginTime, latest.endTime)+'，于 '+latest.node+' 耗时 '+formatDuration(latest.beginTime, latest.endTime);
+      return this.$L('{begin ~ end}, on {node} took {times}', formatTime(latest.beginTime, latest.endTime), latest.node, formatDuration(latest.beginTime, latest.endTime))
     },
 
     showExecuteJobModal: function(jobName, jobGroup, jobId){

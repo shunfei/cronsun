@@ -19,7 +19,9 @@ export default {
   },
 
   mounted: function() {
-    if (!this.title || this.title.length === 0) this.title = '选择分组';
+    if (!this.title || this.title.length === 0) {
+      this.title = this.$L(multiple ? 'select groups' : 'select a group');
+    }
 
     var vm = this;
     $(this.$el).dropdown({
