@@ -59,6 +59,10 @@ var language = {
   '{begin ~ end}, on {node} took {times}': '{0}, on {1} took {2}',
   'create job': 'Create job',
   'update job': 'Update job',
+  'output': 'Output',
+  'command': 'Command',
+  'spend time': 'Spend time',
+  'result': 'Result',
 
   'job type': 'Job type',
   'common job': 'Common',

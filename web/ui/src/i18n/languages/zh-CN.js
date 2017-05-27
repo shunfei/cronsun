@@ -61,6 +61,10 @@ var language = {
   '{begin ~ end}, on {node} took {times}': '{0}, 于 {1} 耗时 {2}',
   'create job': '新建任务',
   'update job': '更新任务',
+  'output': '输出',
+  'command': '执行的命令',
+  'spend time': '耗时',
+  'result': '结果',
 
   'job type': '任务类型',
   'common job': '普通任务',
