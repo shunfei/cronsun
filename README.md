@@ -1,7 +1,5 @@
 # cronsun [![Build Status](https://travis-ci.org/shunfei/cronsun.svg?branch=master)](https://travis-ci.org/shunfei/cronsun)
 
-*Note: The UI is in Chinese, English may be in the future.*
-
 `cronsun` is a distributed cron-style job system. It's similar with `crontab` on stand-alone `*nix`.
 
 [简体中文](README_ZH.md)
@@ -16,6 +14,7 @@ The goal of this project is to make it much easier to manage jobs on lots of mac
 - Easy manage jobs on multiple machines
 - Managemant panel
 - Mail service
+- Multi-language support
 
 ## Architecture
 
