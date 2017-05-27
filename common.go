@@ -1,12 +1,16 @@
 package cronsun
 
 import (
+	"os"
+
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/db"
 )
 
 var (
 	initialized bool
+
+	_Uid int
 )
 
 func Init() (err error) {
@@ -33,6 +37,8 @@ func Init() (err error) {
 	if mgoDB, err = db.NewMdb(conf.Config.Mgo); err != nil {
 		return
 	}
+
+	_Uid = os.Getuid()
 
 	initialized = true
 	return

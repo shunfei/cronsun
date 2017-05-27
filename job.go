@@ -421,12 +421,14 @@ func (j *Job) Run() bool {
 			j.Fail(t, "not support run with user on windows")
 			return false
 		}
-		gid, _ := strconv.Atoi(u.Gid)
-		sysProcAttr = &syscall.SysProcAttr{
-			Credential: &syscall.Credential{
-				Uid: uint32(uid),
-				Gid: uint32(gid),
-			},
+		if uid != _Uid {
+			gid, _ := strconv.Atoi(u.Gid)
+			sysProcAttr = &syscall.SysProcAttr{
+				Credential: &syscall.Credential{
+					Uid: uint32(uid),
+					Gid: uint32(gid),
+				},
+			}
 		}
 	}
 
