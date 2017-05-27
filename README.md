@@ -78,21 +78,22 @@ sh build.sh
 
 **Brief**:
 
-![](doc/img/brief.png)
+![](doc/img/Cronsun_dashboard_en.png)
 
 **Exec result**:
 
-![](doc/img/log.png)
+![](doc/img/Cronsun_log_list_en.png)
+![](doc/img/Cronsun_log_item_en.png)
 
 **Job**:
 
-![](doc/img/job.png)
+![](doc/img/Cronsun_job_list_en.png)
 
-![](doc/img/new_job.png)
+![](doc/img/Cronsun_job_new_en.png)
 
 **Node**:
 
-![](doc/img/node.png)
+![](doc/img/Cronsun_node_en.png)
 
 ## Credits
 
