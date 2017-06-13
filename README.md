@@ -36,7 +36,7 @@ The goal of this project is to make it much easier to manage jobs on lots of mac
 
 ## Security
 
-`cronsun` support security with `security.json` config. When `opne=true`， job command is only allow local files with special extension on the node.
+`cronsun` support security with `security.json` config. When `open=true`， job command is only allow local files with special extension on the node.
 
 ```json
 {

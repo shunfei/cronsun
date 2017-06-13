@@ -193,7 +193,7 @@ func (n *Node) modJob(job *cronsun.Job) {
 	cmds := oJob.Cmds(n.ID, n.groups)
 
 	for id, cmd := range cmds {
-		n.addCmd(cmd, true)
+		n.modCmd(cmd, true)
 		delete(prevCmds, id)
 	}
 
@@ -205,34 +205,40 @@ func (n *Node) modJob(job *cronsun.Job) {
 }
 
 func (n *Node) addCmd(cmd *cronsun.Cmd, notice bool) {
-	c, ok := n.cmds[cmd.GetID()]
-	if ok {
-		sch := c.JobRule.Timer
-		*c = *cmd
+	n.Cron.Schedule(cmd.JobRule.Schedule, cmd)
+	n.cmds[cmd.GetID()] = cmd
 
-		// 节点执行时间不变，不用更新 cron
-		if c.JobRule.Timer == sch {
-			return
-		}
-	} else {
-		c = cmd
+	if notice {
+		log.Infof("job[%s] group[%s] rule[%s] timer[%s] has added", cmd.Job.ID, cmd.Job.Group, cmd.JobRule.ID, cmd.JobRule.Timer)
+	}
+	return
+}
+
+func (n *Node) modCmd(cmd *cronsun.Cmd, notice bool) {
+	c, ok := n.cmds[cmd.GetID()]
+	if !ok {
+		n.addCmd(cmd, notice)
+		return
 	}
 
-	n.Cron.Schedule(c.JobRule.Schedule, c)
-	if !ok {
-		n.cmds[c.GetID()] = c
+	sch := c.JobRule.Timer
+	*c = *cmd
+
+	// 节点执行时间改变，更新 cron
+	// 否则不用更新 cron
+	if c.JobRule.Timer != sch {
+		n.Cron.Schedule(c.JobRule.Schedule, c)
 	}
 
 	if notice {
-		log.Infof("job[%s] rule[%s] timer[%s] has added", c.Job.ID, c.JobRule.ID, c.JobRule.Timer)
+		log.Infof("job[%s] group[%s] rule[%s] timer[%s] has updated", c.Job.ID, c.Job.Group, c.JobRule.ID, c.JobRule.Timer)
 	}
-	return
 }
 
 func (n *Node) delCmd(cmd *cronsun.Cmd) {
 	delete(n.cmds, cmd.GetID())
 	n.Cron.DelJob(cmd)
-	log.Infof("job[%s] rule[%s] timer[%s] has deleted", cmd.Job.ID, cmd.JobRule.ID, cmd.JobRule.Timer)
+	log.Infof("job[%s] group[%s] rule[%s] timer[%s] has deleted", cmd.Job.ID, cmd.Job.Group, cmd.JobRule.ID, cmd.JobRule.Timer)
 }
 
 func (n *Node) addGroup(g *cronsun.Group) {

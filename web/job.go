@@ -115,17 +115,20 @@ func (j *Job) UpdateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// remove old key
+	// it should be before the put method
+	if len(deleteOldKey) > 0 {
+		if _, err = cronsun.DefalutClient.Delete(deleteOldKey); err != nil {
+			log.Errorf("failed to remove old job key[%s], err: %s.", deleteOldKey, err.Error())
+			outJSONWithCode(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
 	_, err = cronsun.DefalutClient.Put(job.Key(), string(b))
 	if err != nil {
 		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
 		return
-	}
-
-	// remove old key
-	if len(deleteOldKey) > 0 {
-		if _, err = cronsun.DefalutClient.Delete(deleteOldKey); err != nil {
-			log.Errorf("failed to remove old job key[%s], err: %s.", deleteOldKey, err.Error())
-		}
 	}
 
 	outJSONWithCode(w, successCode, nil)
