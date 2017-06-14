@@ -70,7 +70,7 @@ type Job struct {
 	// 用于存储分隔后的任务
 	cmd []string
 	// 控制同时执行任务数
-	count int64
+	Count *int64 `json:"-"`
 }
 
 type JobRule struct {
@@ -169,13 +169,13 @@ func (j *Job) limit() bool {
 
 	// 更精确的控制是加锁
 	// 两次运行时间极为接近的任务才可能出现控制不精确的情况
-	count := atomic.LoadInt64(&j.count)
+	count := atomic.LoadInt64(j.Count)
 	if j.Parallels <= count {
 		j.Fail(time.Now(), fmt.Sprintf("job[%s] running on[%s] running:[%d]", j.Key(), j.runOn, count))
 		return true
 	}
 
-	atomic.AddInt64(&j.count, 1)
+	atomic.AddInt64(j.Count, 1)
 	return false
 }
 
@@ -183,7 +183,12 @@ func (j *Job) unlimit() {
 	if j.Parallels == 0 {
 		return
 	}
-	atomic.AddInt64(&j.count, -1)
+	atomic.AddInt64(j.Count, -1)
+}
+
+func (j *Job) Init(n string) {
+	var c int64
+	j.Count, j.runOn = &c, n
 }
 
 func (c *Cmd) lockTtl() int64 {
@@ -375,10 +380,6 @@ func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
 	err = job.Valid()
 	job.alone()
 	return
-}
-
-func (j *Job) RunOn(n string) {
-	j.runOn = n
 }
 
 func (j *Job) alone() {

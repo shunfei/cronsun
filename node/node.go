@@ -133,7 +133,7 @@ func (n *Node) loadJobs() (err error) {
 	}
 
 	for _, job := range jobs {
-		job.RunOn(n.ID)
+		job.Init(n.ID)
 		n.addJob(job, false)
 	}
 
@@ -189,6 +189,8 @@ func (n *Node) modJob(job *cronsun.Job) {
 
 	n.link.delJob(oJob)
 	prevCmds := oJob.Cmds(n.ID, n.groups)
+
+	job.Count = oJob.Count
 	*oJob = *job
 	cmds := oJob.Cmds(n.ID, n.groups)
 
@@ -312,6 +314,7 @@ func (n *Node) groupAddNode(g *cronsun.Group) {
 				n.link.delGroupJob(g.ID, jid)
 				continue
 			}
+			job.Init(n.ID)
 		}
 
 		cmds := job.Cmds(n.ID, n.groups)
@@ -367,7 +370,7 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
-				job.RunOn(n.ID)
+				job.Init(n.ID)
 				n.addJob(job, true)
 			case ev.IsModify():
 				job, err := cronsun.GetJobFromKv(ev.Kv)
@@ -376,7 +379,7 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
-				job.RunOn(n.ID)
+				job.Init(n.ID)
 				n.modJob(job)
 			case ev.Type == client.EventTypeDelete:
 				n.delJob(cronsun.GetIDFromKey(string(ev.Kv.Key)))
