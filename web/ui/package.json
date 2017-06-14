@@ -14,7 +14,7 @@
     "jquery": "^3.1.1",
     "jquery.cookie": "^1.4.1",
     "semantic-ui": "^2.2.7",
-    "vue": "^2.1.0",
+    "vue": "^2.3.4",
     "vue-router": "^2.2.1"
   },
   "devDependencies": {
@@ -26,7 +26,7 @@
     "file-loader": "^0.9.0",
     "style-loader": "^0.13.1",
     "vue-loader": "^10.0.0",
-    "vue-template-compiler": "^2.1.0",
+    "vue-template-compiler": "^2.3.4",
     "webpack": "^2.1.0-beta.25",
     "webpack-dev-server": "^2.1.0-beta.9"
   }

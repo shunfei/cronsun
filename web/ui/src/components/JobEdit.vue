@@ -67,21 +67,21 @@
     <div class="two fields">
       <div class="field">
         <label>{{$L('timeout(in seconds, 0 for no limits)')}}</label>
-        <input type="number" ref="timeout" v-model:value="job.timeout">
+        <input type="number" ref="timeout" v-model.number="job.timeout">
       </div>
       <div class="field" v-show="job.kind === 0">
         <label>{{$L('parallel number in one node(0 for no limits)')}}</label>
-        <input type="number" ref="parallels" v-model:value="job.parallels">
+        <input type="number" ref="parallels" v-model.number="job.parallels">
       </div>
     </div>
     <div class="two fields">
       <div class="field">
         <label>{{$L('retries(number of retries when failed, 0 means no retry)')}}</label>
-        <input type="number" ref="retry" v-model:value="job.retry">
+        <input type="number" ref="retry" v-model.number="job.retry">
       </div>
       <div class="field">
         <label>{{$L('retry interval(in seconds)')}}</label>
-        <input type="number" ref="interval" v-model:value="job.interval">
+        <input type="number" ref="interval" v-model.number="job.interval">
       </div>
     </div>
     <div class="field">
