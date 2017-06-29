@@ -11,19 +11,24 @@ Vue.use((Vue)=>{
   Vue.prototype.$Lang = Lang
 });
 
-// global restful client
-import Rest from './libraries/rest-client.js';
-var restApi = new Rest('/v1/');
-const RestApi = (Vue, options)=>{
-  Vue.prototype.$rest = restApi;
-};
-Vue.use(RestApi);
-
 // global event bus
 var bus = new Vue();
 Vue.use((Vue)=>{
   Vue.prototype.$bus = bus;
 });
+
+// global restful client
+import Rest from './libraries/rest-client.js';
+var restApi = new Rest('/v1/', (msg) => {
+  bus.$emit('error', msg);
+}, (msg)=>{
+  bus.$emit('error', msg);
+}, {
+  401: (data, xhr) => {bus.$emit('goLogin')}
+});
+Vue.use((Vue, options)=>{
+  Vue.prototype.$rest = restApi;
+}, null);
 
 import VueRouter from 'vue-router';
 Vue.use(VueRouter);
@@ -38,6 +43,10 @@ import JobExecuting from './components/JobExecuting.vue';
 import Node from './components/Node.vue';
 import NodeGroup from './components/NodeGroup.vue';
 import NodeGroupEdit from './components/NodeGroupEdit.vue';
+import Account from './components/Account.vue';
+import AccountEdit from './components/AccountEdit.vue';
+import Profile from './components/Profile.vue';
+import Login from './components/Login.vue';
 
 var routes = [
   {path: '/', component: Dash},
@@ -50,37 +59,20 @@ var routes = [
   {path: '/node', component: Node},
   {path: '/node/group', component: NodeGroup},
   {path: '/node/group/create', component: NodeGroupEdit},
-  {path: '/node/group/:id', component: NodeGroupEdit}
+  {path: '/node/group/:id', component: NodeGroupEdit},
+  {path: '/admin/account/list', component: Account},
+  {path: '/admin/account/add', component: AccountEdit},
+  {path: '/admin/account/edit', component: AccountEdit},
+  {path: '/user/setpwd', component: Profile},
+  {path: '/login', component: Login}
 ];
 
 var router = new VueRouter({
   routes: routes
 });
 
-
-restApi.GET('configurations').onsucceed(200, (resp)=>{
-  const Config = (Vue, options)=>{
-    Vue.prototype.$appConfig = resp;
-  }
-  Vue.use(Config);
-
-  restApi.defaultExceptionHandler = (msg)=>{bus.$emit('error', msg)};
-  restApi.defaultFailedHandler = (msg)=>{bus.$emit('error', msg)};
-  
-  var app = new Vue({
-    el: '#app',
-    render: h => h(App),
-    router: router
-  });
-}).onfailed((data, xhr)=>{
-  var msg = data ? data : xhr.status+' '+xhr.statusText;
-  showInitialError('Failed to get global configurations('+xhr.responseURL+'): '+msg);
-}).onexception((msg)=>{
-  showInitialError('Failed to get global configurations('+xhr.responseURL+'): '+msg);
-}).do();
-
-function showInitialError(msg) {
-  var d = document.getElementById('app');
-  d.innerHTML = msg;
-  d.className = 'initial error';
-}
+var app = new Vue({
+  el: '#app',
+  render: h => h(App),
+  router: router
+});

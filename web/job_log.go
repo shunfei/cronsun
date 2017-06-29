@@ -15,16 +15,16 @@ import (
 
 type JobLog struct{}
 
-func (jl *JobLog) GetDetail(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+func (jl *JobLog) GetDetail(ctx *Context) {
+	vars := mux.Vars(ctx.R)
 	id := strings.TrimSpace(vars["id"])
 	if len(id) == 0 {
-		outJSONWithCode(w, http.StatusBadRequest, "empty log id.")
+		outJSONWithCode(ctx.W, http.StatusBadRequest, "empty log id.")
 		return
 	}
 
 	if !bson.IsObjectIdHex(id) {
-		outJSONWithCode(w, http.StatusBadRequest, "invalid ObjectId.")
+		outJSONWithCode(ctx.W, http.StatusBadRequest, "invalid ObjectId.")
 		return
 	}
 
@@ -35,24 +35,24 @@ func (jl *JobLog) GetDetail(w http.ResponseWriter, r *http.Request) {
 			statusCode = http.StatusNotFound
 			err = nil
 		}
-		outJSONWithCode(w, statusCode, err)
+		outJSONWithCode(ctx.W, statusCode, err)
 		return
 	}
 
-	outJSON(w, logDetail)
+	outJSON(ctx.W, logDetail)
 }
 
-func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
-	nodes := getStringArrayFromQuery("nodes", ",", r)
-	names := getStringArrayFromQuery("names", ",", r)
-	ids := getStringArrayFromQuery("ids", ",", r)
-	begin := getTime(r.FormValue("begin"))
-	end := getTime(r.FormValue("end"))
-	page := getPage(r.FormValue("page"))
-	failedOnly := r.FormValue("failedOnly") == "true"
-	pageSize := getPageSize(r.FormValue("pageSize"))
+func (jl *JobLog) GetList(ctx *Context) {
+	nodes := getStringArrayFromQuery("nodes", ",", ctx.R)
+	names := getStringArrayFromQuery("names", ",", ctx.R)
+	ids := getStringArrayFromQuery("ids", ",", ctx.R)
+	begin := getTime(ctx.R.FormValue("begin"))
+	end := getTime(ctx.R.FormValue("end"))
+	page := getPage(ctx.R.FormValue("page"))
+	failedOnly := ctx.R.FormValue("failedOnly") == "true"
+	pageSize := getPageSize(ctx.R.FormValue("pageSize"))
 	sort := "-beginTime"
-	if r.FormValue("sort") == "1" {
+	if ctx.R.FormValue("sort") == "1" {
 		sort = "beginTime"
 	}
 
@@ -93,7 +93,7 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 		List  []*cronsun.JobLog `json:"list"`
 	}
 	var err error
-	if r.FormValue("latest") == "true" {
+	if ctx.R.FormValue("latest") == "true" {
 		var latestLogList []*cronsun.JobLatestLog
 		latestLogList, pager.Total, err = cronsun.GetJobLatestLogList(query, page, pageSize, sort)
 		for i := range latestLogList {
@@ -104,10 +104,10 @@ func (jl *JobLog) GetList(w http.ResponseWriter, r *http.Request) {
 		pager.List, pager.Total, err = cronsun.GetJobLogList(query, page, pageSize, sort)
 	}
 	if err != nil {
-		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	pager.Total = int(math.Ceil(float64(pager.Total) / float64(pageSize)))
-	outJSON(w, pager)
+	outJSON(ctx.W, pager)
 }

@@ -15,7 +15,8 @@
     "jquery.cookie": "^1.4.1",
     "semantic-ui": "^2.2.7",
     "vue": "^2.3.4",
-    "vue-router": "^2.2.1"
+    "vue-router": "^2.2.1",
+    "vuex": "^2.3.1"
   },
   "devDependencies": {
     "babel-core": "^6.0.0",

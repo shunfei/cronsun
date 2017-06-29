@@ -47,7 +47,7 @@ func main() {
 	// Create a cmux.
 	m := cmux.New(l)
 	httpL := m.Match(cmux.HTTP1Fast())
-	httpServer, err := web.InitRouters()
+	httpServer, err := web.InitServer()
 	if err != nil {
 		log.Errorf(err.Error())
 		return

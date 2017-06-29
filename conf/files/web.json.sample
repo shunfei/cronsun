@@ -1,5 +1,13 @@
 {
     "BindAddr": ":7079",
     "#UIDir": "为空使用默认的后台界面",
-    "UIDir": "ui"
+    "UIDir": "ui",
+    "Auth": {
+		"Enabled": false
+	},
+    "Session": {
+        "StorePrefixPath": "/cronsun/sess/",
+        "CookieName": "uid",
+        "Expiration": 8640000
+    }
 }

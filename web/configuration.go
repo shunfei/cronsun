@@ -1,15 +1,11 @@
 package web
 
-import (
-	"net/http"
-
-	"github.com/shunfei/cronsun/conf"
-)
+import "github.com/shunfei/cronsun/conf"
 
 type Configuration struct{}
 
-func (cnf *Configuration) Configuratios(w http.ResponseWriter, r *http.Request) {
-	outJSON(w, struct {
+func (cnf *Configuration) Configuratios(ctx *Context) {
+	outJSON(ctx.W, struct {
 		Security *conf.Security `json:"security"`
 		Alarm    bool           `json:"alarm"`
 	}{

@@ -18,15 +18,15 @@ type Node struct{}
 
 var ngKeyDeepLen = len(conf.Config.Group)
 
-func (n *Node) UpdateGroup(w http.ResponseWriter, r *http.Request) {
+func (n *Node) UpdateGroup(ctx *Context) {
 	g := cronsun.Group{}
-	de := json.NewDecoder(r.Body)
+	de := json.NewDecoder(ctx.R.Body)
 	var err error
 	if err = de.Decode(&g); err != nil {
-		outJSONWithCode(w, http.StatusBadRequest, err.Error())
+		outJSONWithCode(ctx.W, http.StatusBadRequest, err.Error())
 		return
 	}
-	defer r.Body.Close()
+	defer ctx.R.Body.Close()
 
 	var successCode = http.StatusOK
 	g.ID = strings.TrimSpace(g.ID)
@@ -36,56 +36,56 @@ func (n *Node) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = g.Check(); err != nil {
-		outJSONWithCode(w, http.StatusBadRequest, err.Error())
+		outJSONWithCode(ctx.W, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// @TODO modRev
 	var modRev int64 = 0
 	if _, err = g.Put(modRev); err != nil {
-		outJSONWithCode(w, http.StatusBadRequest, err.Error())
+		outJSONWithCode(ctx.W, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	outJSONWithCode(w, successCode, nil)
+	outJSONWithCode(ctx.W, successCode, nil)
 }
 
-func (n *Node) GetGroups(w http.ResponseWriter, r *http.Request) {
+func (n *Node) GetGroups(ctx *Context) {
 	list, err := cronsun.GetNodeGroups()
 	if err != nil {
-		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	outJSON(w, list)
+	outJSON(ctx.W, list)
 }
 
-func (n *Node) GetGroupByGroupId(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+func (n *Node) GetGroupByGroupId(ctx *Context) {
+	vars := mux.Vars(ctx.R)
 	g, err := cronsun.GetGroupById(vars["id"])
 	if err != nil {
-		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	if g == nil {
-		outJSONWithCode(w, http.StatusNotFound, nil)
+		outJSONWithCode(ctx.W, http.StatusNotFound, nil)
 		return
 	}
-	outJSON(w, g)
+	outJSON(ctx.W, g)
 }
 
-func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+func (n *Node) DeleteGroup(ctx *Context) {
+	vars := mux.Vars(ctx.R)
 	groupId := strings.TrimSpace(vars["id"])
 	if len(groupId) == 0 {
-		outJSONWithCode(w, http.StatusBadRequest, "empty node ground id.")
+		outJSONWithCode(ctx.W, http.StatusBadRequest, "empty node ground id.")
 		return
 	}
 
 	_, err := cronsun.DeleteGroupById(groupId)
 	if err != nil {
-		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -93,7 +93,7 @@ func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errstr := fmt.Sprintf("failed to fetch jobs from etcd after deleted node group[%s]: %s", groupId, err.Error())
 		log.Errorf(errstr)
-		outJSONWithCode(w, http.StatusInternalServerError, errstr)
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, errstr)
 		return
 	}
 
@@ -135,13 +135,13 @@ func (n *Node) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	outJSONWithCode(w, http.StatusNoContent, nil)
+	outJSONWithCode(ctx.W, http.StatusNoContent, nil)
 }
 
-func (n *Node) GetNodes(w http.ResponseWriter, r *http.Request) {
+func (n *Node) GetNodes(ctx *Context) {
 	nodes, err := cronsun.GetNodes()
 	if err != nil {
-		outJSONWithCode(w, http.StatusInternalServerError, err.Error())
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -161,5 +161,5 @@ func (n *Node) GetNodes(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("failed to fetch key[%s] from etcd: %s", conf.Config.Node, err.Error())
 	}
 
-	outJSONWithCode(w, http.StatusOK, nodes)
+	outJSONWithCode(ctx.W, http.StatusOK, nodes)
 }

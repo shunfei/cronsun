@@ -1,7 +1,6 @@
 package web
 
 import (
-	"net/http"
 	"time"
 
 	v3 "github.com/coreos/etcd/clientv3"
@@ -12,7 +11,7 @@ import (
 
 type Info struct{}
 
-func (inf *Info) Overview(w http.ResponseWriter, r *http.Request) {
+func (inf *Info) Overview(ctx *Context) {
 	var overview = struct {
 		TotalJobs        int64                 `json:"totalJobs"`
 		JobExecuted      *cronsun.StatExecuted `json:"jobExecuted"`
@@ -27,5 +26,5 @@ func (inf *Info) Overview(w http.ResponseWriter, r *http.Request) {
 		overview.TotalJobs = gresp.Count
 	}
 
-	outJSON(w, overview)
+	outJSON(ctx.W, overview)
 }

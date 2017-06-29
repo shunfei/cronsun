@@ -9,6 +9,7 @@ type Logger interface {
 	Infof(format string, v ...interface{})
 	Warnf(format string, v ...interface{})
 	Errorf(format string, v ...interface{})
+	Fatalf(format string, v ...interface{})
 }
 
 func SetLogger(l Logger) {
@@ -36,5 +37,11 @@ func Warnf(format string, v ...interface{}) {
 func Errorf(format string, v ...interface{}) {
 	if DefaultLogger != nil {
 		DefaultLogger.Errorf(format, v...)
+	}
+}
+
+func Fatalf(format string, v ...interface{}) {
+	if DefaultLogger != nil {
+		DefaultLogger.Fatalf(format, v...)
 	}
 }

@@ -10,11 +10,102 @@ import (
 	"strings"
 	"time"
 
+	"github.com/shunfei/cronsun"
+	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/log"
+	"github.com/shunfei/cronsun/web/session"
 )
 
+var sessManager session.SessionManager
+
+func InitServer() (*http.Server, error) {
+	sessManager = session.NewEtcdStore(cronsun.DefalutClient, conf.Config.Web.Session)
+
+	var err error
+	if err = checkAuthBasicData(); err != nil {
+		return nil, err
+	}
+
+	return initRouters()
+}
+
+type Context struct {
+	Data    map[interface{}]interface{}
+	Session *session.Session
+	todos   []func()
+	R       *http.Request
+	W       http.ResponseWriter
+}
+
+func newContext(w http.ResponseWriter, r *http.Request) *Context {
+	return &Context{
+		R:     r,
+		W:     w,
+		todos: make([]func(), 0, 2),
+		Data:  make(map[interface{}]interface{}, 2),
+	}
+}
+
+func (ctx *Context) Todo(f func()) {
+	ctx.todos = append(ctx.todos, f)
+}
+
+func (ctx *Context) Done() {
+	n := len(ctx.todos) - 1
+	for i := n; i >= 0; i-- {
+		ctx.todos[i]()
+	}
+}
+
 type BaseHandler struct {
-	Handle func(w http.ResponseWriter, r *http.Request)
+	Ctx          map[string]interface{}
+	BeforeHandle func(ctx *Context) (abort bool)
+	Handle       func(ctx *Context)
+}
+
+func NewBaseHandler(f func(ctx *Context)) BaseHandler {
+	return BaseHandler{
+		BeforeHandle: authHandler(false),
+		Handle:       f,
+	}
+}
+
+func NewAuthHandler(f func(ctx *Context)) BaseHandler {
+	return BaseHandler{
+		BeforeHandle: authHandler(true),
+		Handle:       f,
+	}
+}
+
+func authHandler(needAuth bool) func(*Context) bool {
+	return func(ctx *Context) (abort bool) {
+		var err error
+		ctx.Session, err = sessManager.Get(ctx.W, ctx.R)
+		if ctx.Session != nil {
+			ctx.Todo(func() {
+				if err := sessManager.Store(ctx.Session); err != nil {
+					log.Errorf("Failed to store session: %s.", err.Error())
+				}
+			})
+		}
+
+		if err != nil {
+			outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+			abort = true
+			return
+		}
+
+		if !conf.Config.Web.Auth.Enabled || !needAuth {
+			return
+		}
+
+		if len(ctx.Session.Email) < 1 {
+			outJSONWithCode(ctx.W, http.StatusUnauthorized, "please login.")
+			abort = true
+			return
+		}
+		return
+	}
 }
 
 func (b BaseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -30,13 +121,22 @@ func (b BaseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		buf.Write(debug.Stack())
 		stack = buf.String()
 
-		outJSONWithCode(w, http.StatusInternalServerError, "Internal Server Error")
+		// outJSONWithCode(ctx.W, http.StatusInternalServerError, "Internal Server Error")
 
 		log.Errorf("%v\n\n%s\n", err_, stack)
 		return
 	}()
 
-	b.Handle(w, r)
+	ctx := newContext(w, r)
+	defer ctx.Done()
+
+	if b.BeforeHandle != nil {
+		abort := b.BeforeHandle(ctx)
+		if abort {
+			return
+		}
+	}
+	b.Handle(ctx)
 }
 
 func outJSONWithCode(w http.ResponseWriter, httpCode int, data interface{}) {

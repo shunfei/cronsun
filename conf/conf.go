@@ -65,7 +65,7 @@ type Conf struct {
 
 	Etcd client.Config
 	Mgo  *db.Config
-	Web  webConfig
+	Web  *webConfig
 	Mail *MailConf
 
 	Security *Security
@@ -74,6 +74,16 @@ type Conf struct {
 type webConfig struct {
 	BindAddr string
 	UIDir    string
+	Auth     struct {
+		Enabled bool
+	}
+	Session SessionConfig
+}
+
+type SessionConfig struct {
+	Expiration      int
+	CookieName      string
+	StorePrefixPath string
 }
 
 type MailConf struct {
