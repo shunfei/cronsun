@@ -83,6 +83,9 @@ func authHandler(needAuth bool) func(*Context) bool {
 		ctx.Session, err = sessManager.Get(ctx.W, ctx.R)
 		if ctx.Session != nil {
 			ctx.Todo(func() {
+				if ctx.Session.Email == "" {
+					return
+				}
 				if err := sessManager.Store(ctx.Session); err != nil {
 					log.Errorf("Failed to store session: %s.", err.Error())
 				}

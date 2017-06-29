@@ -18,7 +18,7 @@
         <label>{{$L('password')}}</label>
         <input type="password" v-model="password" placeholder:="$L('password')">
       </div>
-      <div class="field">
+      <div class="field" ref="remember">
         <div class="ui checkbox">
           <input type="checkbox" v-model="remember" tabindex="0" class="hidden">
           <label>{{$L('remember me')}}</label>
@@ -39,15 +39,24 @@ export default {
     return {
       email: '',
       password: '',
-      remember: false
+      remember: ''
     }
   },
 
+  mounted: function(){
+    var vm = this;
+    $(this.$refs.remember).find('.checkbox').checkbox({
+      onChange: function(){
+        vm.remember = $(vm.$refs.remember).find('input[type=checkbox]:checked').val();
+      }
+    });
+  },
+
   methods: {
-    onSubmit () {
+    onSubmit(){
       var vm = this;
 
-      this.$rest.GET('session?email='+this.email+'&password='+this.password).
+      this.$rest.GET('session?email='+this.email+'&password='+this.password+'&remember='+this.remember).
       onsucceed(200, (resp)=>{
         vm.$store.commit('setEmail', resp.email);
         vm.$store.commit('setRole', resp.role);
@@ -58,7 +67,7 @@ export default {
       do();
     },
 
-    getConfig() {
+    getConfig(){
       this.$rest.GET('configurations').onsucceed(200, (resp)=>{
         const Config = (Vue, options)=>{
           Vue.prototype.$appConfig = resp;

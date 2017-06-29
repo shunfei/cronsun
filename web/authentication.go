@@ -91,6 +91,7 @@ func (this *Authentication) GetAuthSession(ctx *Context) {
 
 	email := getStringVal("email", ctx.R)
 	password := getStringVal("password", ctx.R)
+	remember := getStringVal("remember", ctx.R) == "on"
 
 	u, err := cronsun.GetAccountByEmail(email)
 	if err != nil {
@@ -110,6 +111,14 @@ func (this *Authentication) GetAuthSession(ctx *Context) {
 	if u.Status != cronsun.UserActived {
 		outJSONWithCode(ctx.W, http.StatusForbidden, "Access deny.")
 		return
+	}
+
+	if !remember {
+		if c, err := ctx.R.Cookie(conf.Config.Web.Session.CookieName); err == nil {
+			c.MaxAge = 0
+			c.Path = "/"
+			http.SetCookie(ctx.W, c)
+		}
 	}
 
 	ctx.Session.Email = u.Email

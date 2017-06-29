@@ -70,7 +70,7 @@ func (this *EtcdStore) Get(w http.ResponseWriter, r *http.Request) (sess *Sessio
 
 	if c == nil {
 		sess.key = utils.RandString(32, cookieCharacters...)
-		cookie := &http.Cookie{
+		c = &http.Cookie{
 			Name:     this.conf.CookieName,
 			Value:    sess.key,
 			Path:     "/",
@@ -78,8 +78,9 @@ func (this *EtcdStore) Get(w http.ResponseWriter, r *http.Request) (sess *Sessio
 			Secure:   false,
 			MaxAge:   this.conf.Expiration,
 		}
-		http.SetCookie(w, cookie)
-		r.AddCookie(cookie)
+		http.SetCookie(w, c)
+		r.AddCookie(c)
+
 		return
 	}
 
