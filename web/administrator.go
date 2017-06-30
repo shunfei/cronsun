@@ -235,6 +235,8 @@ func (this *Administrator) UpdateAccount(ctx *Context) {
 	if ctx.Session.Email == originAccount.Email {
 		ctx.Session.Email = ""
 		delete(ctx.Session.Data, "role")
+		ctx.Session.Store()
+
 		outJSONWithCode(ctx.W, http.StatusUnauthorized, nil)
 		return
 	}

@@ -83,9 +83,6 @@ func authHandler(needAuth bool) func(*Context) bool {
 		ctx.Session, err = sessManager.Get(ctx.W, ctx.R)
 		if ctx.Session != nil {
 			ctx.Todo(func() {
-				if ctx.Session.Email == "" {
-					return
-				}
 				if err := sessManager.Store(ctx.Session); err != nil {
 					log.Errorf("Failed to store session: %s.", err.Error())
 				}
@@ -124,7 +121,7 @@ func (b BaseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		buf.Write(debug.Stack())
 		stack = buf.String()
 
-		// outJSONWithCode(ctx.W, http.StatusInternalServerError, "Internal Server Error")
+		outJSONWithCode(w, http.StatusInternalServerError, "Internal Server Error")
 
 		log.Errorf("%v\n\n%s\n", err_, stack)
 		return

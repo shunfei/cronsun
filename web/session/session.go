@@ -34,12 +34,20 @@ type storeData struct {
 }
 
 type Session struct {
+	m   SessionManager
 	key string
 	storeData
 }
 
 func (s *Session) ID() string {
 	return s.key
+}
+func (s *Session) Store() error {
+	err := s.m.Store(s)
+	if err != nil {
+		log.Errorf("Failed to store session[%s]: %s", s.key, err.Error())
+	}
+	return err
 }
 
 type EtcdStore struct {
@@ -63,6 +71,7 @@ func (this *EtcdStore) Get(w http.ResponseWriter, r *http.Request) (sess *Sessio
 	}
 
 	sess = &Session{
+		m: this,
 		storeData: storeData{
 			Data: make(map[interface{}]interface{}, 2),
 		},

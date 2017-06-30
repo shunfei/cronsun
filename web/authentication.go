@@ -123,6 +123,8 @@ func (this *Authentication) GetAuthSession(ctx *Context) {
 
 	ctx.Session.Email = u.Email
 	ctx.Session.Data["role"] = u.Role
+	ctx.Session.Store()
+
 	authInfo.Role = u.Role
 	authInfo.Email = u.Email
 
@@ -133,6 +135,8 @@ func (this *Authentication) GetAuthSession(ctx *Context) {
 func (this *Authentication) DeleteAuthSession(ctx *Context) {
 	ctx.Session.Email = ""
 	delete(ctx.Session.Data, "role")
+	ctx.Session.Store()
+
 	outJSONWithCode(ctx.W, http.StatusOK, nil)
 }
 
