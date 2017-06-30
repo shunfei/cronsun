@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	level = flag.Int("l", -2, "log level, -1:debug, -2:info, -3:warn, -4:error")
+	level = flag.Int("l", 0, "log level, -1:debug, 0:info, 1:warn, 2:error")
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 	lcf := zap.NewDevelopmentConfig()
 	lcf.Level.SetLevel(zapcore.Level(*level))
 	lcf.Development = false
-	logger, err := lcf.Build()
+	logger, err := lcf.Build(zap.AddCallerSkip(1))
 	if err != nil {
 		slog.Fatalln("new log err:", err.Error())
 	}
