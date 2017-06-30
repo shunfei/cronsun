@@ -7,6 +7,7 @@ var language = {
   'actived': 'Actived',
   'banned': 'Banned',
   'ban': 'Ban',
+  'active': 'Active',
   'remove session': 'Remove session',
   'added time': 'Added time',
   'add account': 'Add account',

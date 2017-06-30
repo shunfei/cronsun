@@ -7,6 +7,7 @@ var language = {
   'actived': '正常',
   'banned': '禁止登录',
   'ban': '禁止登录',
+  'active': '正常',
   'remove session': '移除登录状态',
   'added time': '添加时间',
   'add account': '添加账号',
