@@ -15,7 +15,7 @@ The goal of this project is to make it much easier to manage jobs on lots of mac
 - Managemant panel
 - Mail service
 - Multi-language support
-- Simple authentication and accounts manager
+- Simple authentication and accounts manager(default administrator email and password: admin@admin.com/admin)
 
 ## Architecture
 
