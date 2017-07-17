@@ -28,15 +28,12 @@ var sendXHR = function(opt) {
       data = xhr.response;
     }
 
-    if (opt.specialHandlers && typeof opt.specialHandlers[xhr.status] === 'function') {
-      opt.specialHandlers[xhr.status](data, xhr);
-      return
-    }
-
     if (xhr.status != opt.successCode) {
       typeof opt.onfailed == 'function' && opt.onfailed(data, xhr);
-    } else if (typeof opt.onsucceed == 'function') {
+    } else if (xhr.status === opt.successCode && typeof opt.onsucceed == 'function') {
       opt.onsucceed(data, xhr);
+    } else if (opt.specialHandlers && typeof opt.specialHandlers[xhr.status] === 'function') {
+      opt.specialHandlers[xhr.status](data, xhr);
     }
 
     typeof opt.onend == 'function' && opt.onend(xhr);
