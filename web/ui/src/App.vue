@@ -2,10 +2,10 @@
   <div id="app">
     <div class="ui blue inverted menu fixed">
       <div class="item">CRONSUN</div>
-      <router-link v-if="$store.getters.email" class="item" to="/" v-bind:class="{active: this.$route.path == '/'}"><i class="dashboard icon"></i> {{$L('dashboard')}}</router-link>
-      <router-link v-if="$store.getters.email" class="item" to="/log" v-bind:class="{active: this.$route.path.indexOf('/log') === 0}"><i class="file text icon"></i> {{$L('log')}}</router-link>
-      <router-link v-if="$store.getters.email" class="item" to="/job" v-bind:class="{active: this.$route.path.indexOf('/job') === 0}"><i class="calendar icon"></i> {{$L('job')}}</router-link>
-      <router-link v-if="$store.getters.email" class="item" to="/node" v-bind:class="{active: this.$route.path.indexOf('/node') === 0}"><i class="server icon"></i> {{$L('node')}}</router-link>
+      <router-link v-if="shouldOpen" class="item" to="/" v-bind:class="{active: this.$route.path == '/'}"><i class="dashboard icon"></i> {{$L('dashboard')}}</router-link>
+      <router-link v-if="shouldOpen" class="item" to="/log" v-bind:class="{active: this.$route.path.indexOf('/log') === 0}"><i class="file text icon"></i> {{$L('log')}}</router-link>
+      <router-link v-if="shouldOpen" class="item" to="/job" v-bind:class="{active: this.$route.path.indexOf('/job') === 0}"><i class="calendar icon"></i> {{$L('job')}}</router-link>
+      <router-link v-if="shouldOpen" class="item" to="/node" v-bind:class="{active: this.$route.path.indexOf('/node') === 0}"><i class="server icon"></i> {{$L('node')}}</router-link>
       <router-link v-if="$store.getters.enabledAuth && $store.getters.role === 1" class="item" to="/admin/account/list" v-bind:class="{active: this.$route.path.indexOf('/admin/account') === 0}"><i class="user icon"></i> {{$L('account')}}</router-link>
 
       <div class="right menu">
@@ -52,6 +52,8 @@ export default {
     }).onfailed((data, xhr) => {
       if (xhr.status !== 401) {
         vm.$bus.$emit('error', data);
+      } else {
+        vm.$store.commit('enabledAuth', true);
       }
       vm.$router.push('/login');
     }).
@@ -72,6 +74,12 @@ export default {
         }
       }
     });
+  },
+
+  computed: {
+    shouldOpen() {
+      return !this.$store.getters.enabledAuth || (this.$store.getters.enabledAuth && this.$store.getters.email)
+    }
   },
 
   methods: {
