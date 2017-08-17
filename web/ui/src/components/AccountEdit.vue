@@ -83,7 +83,7 @@ export default {
             status: resp.status,
           }
         }).
-        onfailed((msg)=>{vm.$bus.$emit(msg)}).
+        onfailed((msg)=>{vm.$bus.$emit('error', msg)}).
         onend(()=>{vm.loading = false}).
         do();
     }

@@ -62,21 +62,9 @@ export default {
         vm.$store.commit('setRole', resp.role);
         vm.$store.commit('enabledAuth', resp.enabledAuth);
         vm.$router.push('/')
-        vm.getConfig();
+        vm.$loadConfiguration();
       }).
       do();
-    },
-
-    getConfig(){
-      this.$rest.GET('configurations').onsucceed(200, (resp)=>{
-        const Config = (Vue, options)=>{
-          Vue.prototype.$appConfig = resp;
-        }
-        Vue.use(Config);
-      }).onfailed((data, xhr)=>{
-        var msg = data ? data : xhr.status+' '+xhr.statusText;
-        vm.$bus.$emit('error', msg);
-      }).do();
     }
   }
 }

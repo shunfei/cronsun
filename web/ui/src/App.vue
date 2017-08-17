@@ -48,7 +48,7 @@ export default {
       vm.$store.commit('setEmail', resp.email);
       vm.$store.commit('setRole', resp.role);
 
-      vm.getConfig();
+      vm.$loadConfiguration();
     }).onfailed((data, xhr) => {
       if (xhr.status !== 401) {
         vm.$bus.$emit('error', data);
@@ -83,19 +83,6 @@ export default {
   },
 
   methods: {
-    getConfig() {
-      this.$rest.GET('configurations').
-        onsucceed(200, (resp)=>{
-          const Config = (Vue, options)=>{
-            Vue.prototype.$appConfig = resp;
-          }
-          Vue.use(Config);
-        }).onfailed((data, xhr)=>{
-          var msg = data ? data : xhr.status+' '+xhr.statusText;
-          vm.$bus.$emit('error', msg);
-        }).do();
-    },
-
     logout() {
       var vm = this;
       this.$rest.DELETE('session').
