@@ -3,11 +3,11 @@ package web
 import (
 	"net/http"
 	"path"
+	"strings"
 
 	"github.com/gorilla/mux"
 
 	"github.com/shunfei/cronsun"
-	"github.com/shunfei/cronsun/conf"
 )
 
 func GetVersion(ctx *Context) {
@@ -101,14 +101,49 @@ func initRouters() (s *http.Server, err error) {
 	h = NewAuthHandler(configHandler.Configuratios)
 	subrouter.Handle("/configurations", h).Methods("GET")
 
-	uidir := conf.Config.Web.UIDir
-	if len(uidir) == 0 {
-		uidir = path.Join("web", "ui", "dist")
-	}
-	r.PathPrefix("/ui/").Handler(http.StripPrefix("/ui/", http.FileServer(http.Dir(uidir))))
+	r.PathPrefix("/ui/").Handler(http.StripPrefix("/ui/", newEmbeddedFileServer("", "index.html")))
 
 	s = &http.Server{
 		Handler: r,
 	}
 	return s, nil
+}
+
+type embeddedFileServer struct {
+	Prefix    string
+	IndexFile string
+}
+
+func newEmbeddedFileServer(prefix, index string) *embeddedFileServer {
+	index = strings.TrimLeft(index, "/")
+	return &embeddedFileServer{Prefix: prefix, IndexFile: index}
+}
+
+func (s *embeddedFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fp := path.Clean(s.Prefix + r.URL.Path)
+	if fp == "." {
+		fp = ""
+	} else {
+		fp = strings.TrimLeft(fp, "/")
+	}
+
+	b, err := Asset(fp)
+	if err == nil {
+		w.Write(b)
+		return
+	}
+
+	if len(fp) > 0 {
+		fp += "/"
+	}
+	fp += s.IndexFile
+
+	b, err = Asset(fp)
+	if err == nil {
+		w.Write(b)
+		return
+	}
+
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte("404 page not found"))
 }

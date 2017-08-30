@@ -18,8 +18,6 @@ check_code
 go build -o ./$out/cronweb ./bin/web/server.go
 check_code
 
-cp -r web/ui/dist "$out/ui"
-
 sources=`find ./conf/files -name "*.json.sample"`
 check_code
 for source in $sources;do

@@ -73,7 +73,6 @@ type Conf struct {
 
 type webConfig struct {
 	BindAddr string
-	UIDir    string
 	Auth     struct {
 		Enabled bool
 	}
