@@ -11,12 +11,13 @@ var languages = {
 }
 
 var supported = [
-  {name: 'English', code: 'en'},
-  {name: '简体中文', code: 'zh-CN'}
+  { name: 'English', code: 'en' },
+  { name: '简体中文', code: 'zh-CN' }
 ]
 
 var language;
 var locale = jQuery.cookie('locale') || navigator.language || 'en';
+locale = locale.indexOf('en') === -1 ? 'zh-CN' : 'en';
 setLocale(locale);
 
 function setLocale(loc) {
@@ -76,5 +77,5 @@ function L(k) {
   return tr;
 }
 
-const lang = {getLocale, setLocale, supported, L};
+const lang = { getLocale, setLocale, supported, L };
 export default lang;
