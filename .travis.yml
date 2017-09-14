@@ -1,9 +1,9 @@
 language: go
 go:
-- 1.7.6
 - 1.8.3
+- 1.9
 install:
-- go get github.com/coreos/etcd/clientv3
+- go get -u github.com/coreos/etcd/clientv3
 - go get github.com/coreos/etcd/mvcc/mvccpb
 - go get github.com/rogpeppe/fastuuid
 - go get golang.org/x/net/context
