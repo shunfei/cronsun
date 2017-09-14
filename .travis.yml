@@ -1,6 +1,5 @@
 language: go
 go:
-- 1.8.3
 - 1.9
 install:
 - go get -u github.com/coreos/etcd/clientv3

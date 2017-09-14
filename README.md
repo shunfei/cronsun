@@ -59,7 +59,7 @@ The goal of this project is to make it much easier to manage jobs on lots of mac
 
 Install from binary [releases](https://github.com/shunfei/cronsun/releases), download and unzip.
 
-Or build from source, require `go >= 1.7+`
+Or build from source, require `go >= 1.9+`
 
 ```
 go get -u github.com/shunfei/cronsun

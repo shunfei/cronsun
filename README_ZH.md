@@ -53,7 +53,7 @@
 
 直接下载执行文件 [releases](https://github.com/shunfei/cronsun/releases)，解压后即可运行。
 
-如果你熟悉 `Go`，也可以从源码编译, 要求 `go >= 1.7+`
+如果你熟悉 `Go`，也可以从源码编译, 要求 `go >= 1.9+`
 
 ```
 go get -u github.com/shunfei/cronsun
