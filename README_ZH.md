@@ -4,6 +4,8 @@
 
 `cronsun` 是为了解决多台 `*nix` 机器上`crontab` 任务管理不方便的问题，同时提供任务高可用的支持（当某个节点死机的时候可以自动调度到正常的节点执行）。`cronsun` 和 [Azkaban](https://azkaban.github.io/)、[Chronos](https://mesos.github.io/chronos/)、[Airflow](https://airflow.incubator.apache.org/) 这些不是同一类型的。
 
+> QQ交流群： 123731057
+
 ## 项目状态
 
 `cronsun`已经在线上几百台规模的服务器上面稳定运行了一年多了，虽然目前版本不是正式版，但是我们认为是完全可以用于生产环境的。强烈建议你试用下，因为它非常简单易用，同时感受下他的强大，相信你会喜欢上这个工具的。
