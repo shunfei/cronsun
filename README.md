@@ -17,6 +17,13 @@ The goal of this project is to make it much easier to manage jobs on lots of mac
 - Multi-language support
 - Simple authentication and accounts manager(default administrator email and password: admin@admin.com/admin)
 
+## Status
+
+`cronsun` has been tested in production for years on hundreds of servers. 
+Although the current version is not release as an stable version, but we think it is completely available for the production environment.
+We encourage you to try it, it's easy to use, see how it works for you. We believe you will like this tool.
+
+
 ## Architecture
 
 ```
