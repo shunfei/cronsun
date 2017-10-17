@@ -89,10 +89,8 @@ func (cap *cmdArgumentParser) detectStartToken() {
 	case '\\':
 		cap.startToken = 0
 		cap.shouldEscape = true
-		//cap.currArgument = append(cap.currArgument, c)
 	case '"', '\'':
 		cap.startToken = c
-		//cap.currArgument = append(cap.currArgument, c)
 	default:
 		cap.startToken = 0
 		cap.previous()
@@ -134,7 +132,6 @@ func (cap *cmdArgumentParser) detectEnd() (detected bool) {
 	}
 
 	if c == cap.startToken && !cap.shouldEscape {
-		//cap.currArgument = append(cap.currArgument, c)
 		cap.state = stateArgumentEnd
 		return true
 	}
