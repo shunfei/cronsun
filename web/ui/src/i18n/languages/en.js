@@ -129,7 +129,8 @@ var language = {
   'include nodes': 'Include nodes',
   'select nodes': 'Select nodes',
   'select groups': 'Select groups',
-  'are you sure to delete the group {name}?': 'Are you sure to delete the group {0}?'
+  'are you sure to delete the group {name}?': 'Are you sure to delete the group {0}?',
+  'are you sure to remove the node {nodeId}?': 'Are you sure to remove the node {0}?'
 }
 
 export default language;

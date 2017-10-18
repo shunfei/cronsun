@@ -131,7 +131,8 @@ var language = {
   'include nodes': '包含的节点',
   'select nodes': '选择节点',
   'select groups': '选择分组',
-  'are you sure to delete the group {name}?': '确定删除分组 {0}?'
+  'are you sure to delete the group {name}?': '确定删除分组 {0}?',
+  'are you sure to remove the node {nodeId}?': '确定删除节点 {0}?'
 }
 
 export default language;
