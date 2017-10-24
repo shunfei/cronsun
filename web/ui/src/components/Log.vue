@@ -165,7 +165,7 @@ export default {
     },
 
     formatTime: function(log){
-      return this.$L('{begin ~ end}, took {times}', formatTime(log.beginTime, log.endTime), formatDuration(log.beginTime, log.endTime));
+      return this.$L('took {times}, {begin ~ end}', formatDuration(log.beginTime, log.endTime), formatTime(log.beginTime, log.endTime));
     },
 
     showExecuteJobModal: function(jobName, jobGroup, jobId){
