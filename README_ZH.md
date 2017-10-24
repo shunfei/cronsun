@@ -53,7 +53,7 @@
 
 ### 安装
 
-直接下载执行文件 [releases](https://github.com/shunfei/cronsun/releases)，解压后即可运行。
+直接下载执行文件 [latest release](https://github.com/shunfei/cronsun/releases/latest)。
 
 如果你熟悉 `Go`，也可以从源码编译, 要求 `go >= 1.9+`
 

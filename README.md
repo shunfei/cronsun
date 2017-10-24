@@ -64,7 +64,7 @@ We encourage you to try it, it's easy to use, see how it works for you. We belie
 
 ### Setup / installation
 
-Install from binary [releases](https://github.com/shunfei/cronsun/releases), download and unzip.
+Install from binary [latest release](https://github.com/shunfei/cronsun/releases/latest)
 
 Or build from source, require `go >= 1.9+`
 
