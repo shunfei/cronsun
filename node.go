@@ -90,7 +90,14 @@ func GetNodesBy(query interface{}) (nodes []*Node, err error) {
 	return
 }
 
-func ISNodeFault(id string) (bool, error) {
+func RemoveNode(query interface{}) error {
+	return mgoDB.WithC(Coll_Node, func(c *mgo.Collection) error {
+		return c.Remove(query)
+	})
+
+}
+
+func ISNodeAlive(id string) (bool, error) {
 	n := 0
 	err := mgoDB.WithC(Coll_Node, func(c *mgo.Collection) error {
 		var e error

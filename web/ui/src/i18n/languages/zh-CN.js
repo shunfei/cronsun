@@ -50,7 +50,7 @@ var language = {
   'successed': '成功',
   'failed': '失败',
   'click to select a node and re-execute job': '点此选择节点重新执行任务',
-  '{begin ~ end}, took {times}': '{0}，耗时 {1}',
+  'took {times}, {begin ~ end}': '耗时 {0}, {1}',
   'executing job: {job}': '执行任务：“{0}”',
   'cancel': '取消',
   'execute now': '立刻执行任务',
@@ -75,7 +75,7 @@ var language = {
   'delete': '删除',
   'all groups': '所有分组',
   'all nodes': '所有节点',
-  '{begin ~ end}, on {node} took {times}': '{0}, 于 {1} 耗时 {2}',
+  'on {node} took {times}, {begin ~ end}': '于 {0} 耗时 {1}, {2}',
   'create job': '新建任务',
   'update job': '更新任务',
   'output': '输出',
@@ -131,7 +131,8 @@ var language = {
   'include nodes': '包含的节点',
   'select nodes': '选择节点',
   'select groups': '选择分组',
-  'are you sure to delete the group {name}?': '确定删除分组 {0}?'
+  'are you sure to delete the group {name}?': '确定删除分组 {0}?',
+  'are you sure to remove the node {nodeId}?': '确定删除节点 {0}?'
 }
 
 export default language;

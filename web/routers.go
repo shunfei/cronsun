@@ -82,6 +82,8 @@ func initRouters() (s *http.Server, err error) {
 
 	h = NewAuthHandler(nodeHandler.GetNodes)
 	subrouter.Handle("/nodes", h).Methods("GET")
+	h = NewAuthHandler(nodeHandler.DeleteNode)
+	subrouter.Handle("/node/{ip}", h).Methods("DELETE")
 	// get node group list
 	h = NewAuthHandler(nodeHandler.GetGroups)
 	subrouter.Handle("/node/groups", h).Methods("GET")

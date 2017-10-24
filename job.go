@@ -21,6 +21,7 @@ import (
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/log"
 	"github.com/shunfei/cronsun/node/cron"
+	"github.com/shunfei/cronsun/utils"
 )
 
 const (
@@ -387,7 +388,15 @@ func (j *Job) alone() {
 }
 
 func (j *Job) splitCmd() {
-	j.cmd = strings.Split(j.Command, " ")
+	ps := strings.SplitN(j.Command, " ", 2)
+	if len(ps) == 1 {
+		j.cmd = ps
+		return
+	}
+
+	j.cmd = make([]string, 0, 2)
+	j.cmd = append(j.cmd, ps[0])
+	j.cmd = append(j.cmd, utils.ParseCmdArguments(ps[1])...)
 }
 
 func (j *Job) String() string {

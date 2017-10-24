@@ -49,7 +49,7 @@ var language = {
   'successed': 'Successed',
   'failed': 'Failed',
   'click to select a node and re-execute job': 'Click to select a node and re-execute job',
-  '{begin ~ end}, took {times}': '{0}, took {1}',
+  'took {times}, {begin ~ end}': 'Took {0}, {1}',
   'executing job: {job}': 'executing job: "{0}"',
   'cancel': 'Cancel',
   'execute now': 'Execute now!',
@@ -73,7 +73,7 @@ var language = {
   'delete': 'Delete',
   'all groups': 'All groups',
   'all nodes': 'All nodes',
-  '{begin ~ end}, on {node} took {times}': '{0}, on {1} took {2}',
+  'on {node} took {times}, {begin ~ end}': 'On {0} took {1}, {2}',
   'create job': 'Create job',
   'update job': 'Update job',
   'output': 'Output',
@@ -129,7 +129,8 @@ var language = {
   'include nodes': 'Include nodes',
   'select nodes': 'Select nodes',
   'select groups': 'Select groups',
-  'are you sure to delete the group {name}?': 'Are you sure to delete the group {0}?'
+  'are you sure to delete the group {name}?': 'Are you sure to delete the group {0}?',
+  'are you sure to remove the node {nodeId}?': 'Are you sure to remove the node {0}?'
 }
 
 export default language;

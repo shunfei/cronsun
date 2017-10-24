@@ -182,7 +182,7 @@ func monitorNodes(n Noticer) {
 			switch {
 			case ev.Type == client.EventTypeDelete:
 				id = GetIDFromKey(string(ev.Kv.Key))
-				ok, err = ISNodeFault(id)
+				ok, err = ISNodeAlive(id)
 				if err != nil {
 					log.Warnf("query node[%s] err: %s", id, err.Error())
 					continue
@@ -190,7 +190,8 @@ func monitorNodes(n Noticer) {
 
 				if ok {
 					n.Send(&Message{
-						Subject: "node[" + id + "] fault at time[" + time.Now().Format(time.RFC3339) + "]",
+						Subject: "Node[" + id + "] break away cluster, this happed at " + time.Now().Format(time.RFC3339),
+						Body:    "Node breaked away cluster, this might happed when node crash or network problems.",
 						To:      conf.Config.Mail.To,
 					})
 				}

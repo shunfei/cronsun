@@ -8,6 +8,7 @@ import (
 
 	v3 "github.com/coreos/etcd/clientv3"
 	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/shunfei/cronsun"
 	"github.com/shunfei/cronsun/conf"
@@ -162,4 +163,63 @@ func (n *Node) GetNodes(ctx *Context) {
 	}
 
 	outJSONWithCode(ctx.W, http.StatusOK, nodes)
+}
+
+// DeleteNode force remove node (by ip) which state in offline or damaged.
+func (n *Node) DeleteNode(ctx *Context) {
+	vars := mux.Vars(ctx.R)
+	ip := strings.TrimSpace(vars["ip"])
+	if len(ip) == 0 {
+		outJSONWithCode(ctx.W, http.StatusBadRequest, "node ip is required.")
+		return
+	}
+
+	resp, err := cronsun.DefalutClient.Get(conf.Config.Node + ip)
+	if err != nil {
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(resp.Kvs) > 0 {
+		outJSONWithCode(ctx.W, http.StatusBadRequest, "can not remove a running node.")
+		return
+	}
+
+	err = cronsun.RemoveNode(bson.M{"_id": ip})
+	if err != nil {
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// remove node from group
+	var errmsg = "failed to remove node %s from groups, please remove it manually: %s"
+	resp, err = cronsun.DefalutClient.Get(conf.Config.Group, v3.WithPrefix())
+	if err != nil {
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, fmt.Sprintf(errmsg, ip, err.Error()))
+		return
+	}
+
+	for i := range resp.Kvs {
+		g := cronsun.Group{}
+		err = json.Unmarshal(resp.Kvs[i].Value, &g)
+		if err != nil {
+			outJSONWithCode(ctx.W, http.StatusInternalServerError, fmt.Sprintf(errmsg, ip, err.Error()))
+			return
+		}
+
+		var nids = make([]string, 0, len(g.NodeIDs))
+		for _, nid := range g.NodeIDs {
+			if nid != ip {
+				nids = append(nids, nid)
+			}
+		}
+		g.NodeIDs = nids
+
+		if _, err = g.Put(resp.Kvs[i].ModRevision); err != nil {
+			outJSONWithCode(ctx.W, http.StatusInternalServerError, fmt.Sprintf(errmsg, ip, err.Error()))
+			return
+		}
+	}
+
+	outJSONWithCode(ctx.W, http.StatusNoContent, nil)
 }
