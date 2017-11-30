@@ -237,7 +237,7 @@ func TestLocalTimezone(t *testing.T) {
 	defer cron.Stop()
 
 	select {
-	case <-time.After(ONE_SECOND * 2):
+	case <-time.After(ONE_SECOND * 3):
 		t.FailNow()
 	case <-wait(wg):
 	}
