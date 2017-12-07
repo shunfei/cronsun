@@ -69,6 +69,15 @@ func main() {
 		go cronsun.StartNoticer(noticer)
 	}
 
+	period := int64(conf.Config.Web.LogCleaner.EveryMinute)
+	var stopCleaner func(interface{})
+	if period > 0 {
+		closeChan := web.RunLogCleaner(time.Duration(period)*time.Minute, time.Duration(conf.Config.Web.LogCleaner.ExpirationDays)*time.Hour*24)
+		stopCleaner = func(i interface{}) {
+			close(closeChan)
+		}
+	}
+
 	go func() {
 		err := httpServer.Serve(httpL)
 		if err != nil {
@@ -80,7 +89,7 @@ func main() {
 
 	log.Infof("cronsun web server started on %s, Ctrl+C or send kill sign to exit", conf.Config.Web.BindAddr)
 	// 注册退出事件
-	event.On(event.EXIT, conf.Exit)
+	event.On(event.EXIT, conf.Exit, stopCleaner)
 	// 监听退出信号
 	event.Wait()
 	event.Emit(event.EXIT, nil)

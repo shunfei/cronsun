@@ -102,6 +102,7 @@ var language = {
   'retry interval(in seconds)': 'Retry interval(in seconds)',
   'parallel number in one node(0 for no limits)': 'Parallel number in one node(0 for no limits)',
   'timeout(in seconds, 0 for no limits)': 'Timeout(in seconds, 0 for no limits)',
+  'log expiration(log expired after N days, 0 will use default setting: {n} days)': 'Log expiration(log expired after N days, 0 will use default setting: {0} days)',
   '<sec> <min> <hr> <day> <month> <week>, rule is same with Cron': '<sec> <min> <hr> <day> <month> <week>, rule is same with Cron',
   'and please running on those nodes': 'And please running on those nodes',
   'do not running on those nodes': 'Do not running on those nodes',

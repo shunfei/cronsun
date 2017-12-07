@@ -76,7 +76,11 @@ type webConfig struct {
 	Auth     struct {
 		Enabled bool
 	}
-	Session SessionConfig
+	Session    SessionConfig
+	LogCleaner struct {
+		EveryMinute    int
+		ExpirationDays int
+	}
 }
 
 type SessionConfig struct {
@@ -142,6 +146,15 @@ func (c *Conf) parse() error {
 		c.Mgo.Timeout = 10 * time.Second
 	} else {
 		c.Mgo.Timeout *= time.Second
+	}
+
+	if c.Web != nil {
+		if c.Web.LogCleaner.EveryMinute < 0 {
+			c.Web.LogCleaner.EveryMinute = 30
+		}
+		if c.Web.LogCleaner.ExpirationDays <= 0 {
+			c.Web.LogCleaner.ExpirationDays = 1
+		}
 	}
 
 	c.Node = cleanKeyPrefix(c.Node)

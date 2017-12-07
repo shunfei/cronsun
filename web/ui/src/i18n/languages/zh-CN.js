@@ -104,6 +104,7 @@ var language = {
   'retry interval(in seconds)': '失败重试间隔时间（秒）',
   'parallel number in one node(0 for no limits)': '一个节点上面该任务并行数（0 表示不限制）',
   'timeout(in seconds, 0 for no limits)': '超时设置（单位“秒”，0 表示不限制）',
+  'log expiration(log expired after N days, 0 will use default setting: {n} days)': '日志过期（日志保存天数，0 表示使用默认设置：{0} 天）',
   '<sec> <min> <hr> <day> <month> <week>, rule is same with Cron': '<秒> <分> <时> <日> <月> <周>，规则与 Cron 一样',
   'and please running on those nodes': '同时在这些节点上面运行',
   'do not running on those nodes': '不要在这些节点上面运行',
