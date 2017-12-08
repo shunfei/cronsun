@@ -43,7 +43,7 @@
     <h4 class="ui header">{{$L('command')}}</h4>
     <pre class="ui grey inverted segment">{{log.command}}</pre>
     <h4 class="ui header">{{$L('output')}}</h4>
-    <pre class="ui inverted segment">{{log.output}}</pre>
+    <pre class="ui inverted segment">{{printResult}}</pre>
   </div>
 </template>
 
@@ -67,6 +67,12 @@ export default {
         },
         error: ''
       }
+  },
+
+  computed: {
+    printResult(){
+      return this.log.output.replace("\r\n", "^M\r\n");
+    }
   },
 
   mounted: function(){
