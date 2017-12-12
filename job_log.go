@@ -146,9 +146,10 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 }
 
 type StatExecuted struct {
-	Total     int64 `bson:"total" json:"total"`
-	Successed int64 `bson:"successed" json:"successed"`
-	Failed    int64 `bson:"failed" json:"failed"`
+	Total     int64  `bson:"total" json:"total"`
+	Successed int64  `bson:"successed" json:"successed"`
+	Failed    int64  `bson:"failed" json:"failed"`
+	Date      string `bson:"date" json:"date"`
 }
 
 func JobLogStat() (s *StatExecuted, err error) {
@@ -156,7 +157,21 @@ func JobLogStat() (s *StatExecuted, err error) {
 	return
 }
 
-func JobLogDayStat(day time.Time) (s *StatExecuted, err error) {
-	err = mgoDB.FindOne(Coll_Stat, bson.M{"name": "job-day", "date": day.Format("2006-01-02")}, &s)
+func JobLogDailyStat(begin, end time.Time) (ls []*StatExecuted, err error) {
+	const oneDay = time.Hour * 24
+	err = mgoDB.WithC(Coll_Stat, func(c *mgo.Collection) error {
+		dateList := make([]string, 0, 8)
+
+		cur := begin
+		for {
+			dateList = append(dateList, cur.Format("2006-01-02"))
+			cur = cur.Add(oneDay)
+			if cur.After(end) {
+				break
+			}
+		}
+		return c.Find(bson.M{"name": "job-day", "date": bson.M{"$in": dateList}}).Sort("date").All(&ls)
+	})
+
 	return
 }
