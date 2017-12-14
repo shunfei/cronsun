@@ -56,6 +56,9 @@ func initRouters() (s *http.Server, err error) {
 	// pause/start
 	h = NewAuthHandler(jobHandler.ChangeJobStatus)
 	subrouter.Handle("/job/{group}-{id}", h).Methods("POST")
+	// batch pause/start
+	h = NewAuthHandler(jobHandler.BatchChangeJobStatus)
+	subrouter.Handle("/jobs/{op}", h).Methods("POST")
 	// get a job
 	h = NewAuthHandler(jobHandler.GetJob)
 	subrouter.Handle("/job/{group}-{id}", h).Methods("GET")

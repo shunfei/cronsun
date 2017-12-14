@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sort"
 	"strings"
@@ -56,26 +57,76 @@ func (j *Job) ChangeJobStatus(ctx *Context) {
 	ctx.R.Body.Close()
 
 	vars := mux.Vars(ctx.R)
-	originJob, rev, err := cronsun.GetJobAndRev(vars["group"], vars["id"])
+	job, err = j.updateJobStatus(vars["group"], vars["id"], job.Pause)
 	if err != nil {
 		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	originJob.Pause = job.Pause
+	outJSON(ctx.W, job)
+}
+
+func (j *Job) updateJobStatus(group, id string, isPause bool) (*cronsun.Job, error) {
+	originJob, rev, err := cronsun.GetJobAndRev(group, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if originJob.Pause == isPause {
+		return nil, err
+	}
+
+	originJob.Pause = isPause
 	b, err := json.Marshal(originJob)
 	if err != nil {
-		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
-		return
+		return nil, err
 	}
 
 	_, err = cronsun.DefalutClient.PutWithModRev(originJob.Key(), string(b), rev)
 	if err != nil {
-		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+		return nil, err
+	}
+
+	return originJob, nil
+}
+
+func (j *Job) BatchChangeJobStatus(ctx *Context) {
+	var jobIds []string
+	decoder := json.NewDecoder(ctx.R.Body)
+	err := decoder.Decode(&jobIds)
+	if err != nil {
+		outJSONWithCode(ctx.W, http.StatusBadRequest, err.Error())
+		return
+	}
+	ctx.R.Body.Close()
+
+	vars := mux.Vars(ctx.R)
+	op := vars["op"]
+	var isPause bool
+	switch op {
+	case "pause":
+		isPause = true
+	case "start":
+	default:
+		outJSONWithCode(ctx.W, http.StatusBadRequest, "Unknow batch operation.")
 		return
 	}
 
-	outJSON(ctx.W, originJob)
+	var updated int
+	for i := range jobIds {
+		id := strings.Split(jobIds[i], "/") // [Group, ID]
+		if len(id) != 2 || id[0] == "" || id[1] == "" {
+			continue
+		}
+
+		_, err = j.updateJobStatus(id[0], id[1], isPause)
+		if err != nil {
+			continue
+		}
+		updated++
+	}
+
+	outJSON(ctx.W, fmt.Sprintf("%d of %d updated.", updated, len(jobIds)))
 }
 
 func (j *Job) UpdateJob(ctx *Context) {
