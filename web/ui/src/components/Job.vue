@@ -8,7 +8,7 @@
       <router-link class="ui left floated button" to="/job/executing">{{$L('view executing jobs')}}</router-link>
       <button class="ui left floated icon button" v-on:click="refresh"><i class="refresh icon"></i></button>
       <div class="ui icon buttons">
-        <button class="ui left floated icon button" v-on:click="batched=!batched">批量</button>
+        <button class="ui left floated icon button" v-on:click="batched=!batched">{{$L('batch')}}</button>
         <button class="ui button" :class="{disabled: batchIds.length == 0}" v-if="batched" v-on:click="batch('start')">
           <i class="play icon"></i>
         </button>

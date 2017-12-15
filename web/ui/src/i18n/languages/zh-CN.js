@@ -25,6 +25,7 @@ var language = {
   'total number of nodes': '节点总数',
   'job executed in past 7 days': '过去 7 天任务统计',
 
+  'batch': '批量',
   'job name': '任务名称',
   'multiple names can separated by commas': '多个名称用英文逗号分隔',
   'job ID': '任务 ID',
@@ -98,7 +99,8 @@ var language = {
   'parallel number in one node(0 for no limits)': '一个节点上面该任务并行数（0 表示不限制）',
   'timeout(in seconds, 0 for no limits)': '超时设置（单位“秒”，0 表示不限制）',
   'log expiration(log expired after N days, 0 will use default setting: {n} days)': '日志过期（日志保存天数，0 表示使用默认设置：{0} 天）',
-  '<sec> <min> <hr> <day> <month> <week>, rule is same with Cron': '<秒> <分> <时> <日> <月> <周>，规则与 Cron 一样',
+  '0 * * * * *, rules see the 「?」on the right': '0 * * * * *, 规则参考右边的「?」',
+  '<sec> <min> <hr> <day> <month> <week>, rules is same with Cron': '<秒> <分> <时> <日> <月> <周>，规则与 Cron 一样',
   'and please running on those nodes': '同时在这些节点上面运行',
   'do not running on those nodes': '不要在这些节点上面运行',
   'the job dose not have a timer currently, please click the button below to add a timer': '当前任务没有定时器，点击下面按钮来添加定时器',
