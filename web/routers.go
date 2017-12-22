@@ -56,6 +56,9 @@ func initRouters() (s *http.Server, err error) {
 	// pause/start
 	h = NewAuthHandler(jobHandler.ChangeJobStatus)
 	subrouter.Handle("/job/{group}-{id}", h).Methods("POST")
+	// batch pause/start
+	h = NewAuthHandler(jobHandler.BatchChangeJobStatus)
+	subrouter.Handle("/jobs/{op}", h).Methods("POST")
 	// get a job
 	h = NewAuthHandler(jobHandler.GetJob)
 	subrouter.Handle("/job/{group}-{id}", h).Methods("GET")
@@ -104,6 +107,7 @@ func initRouters() (s *http.Server, err error) {
 	subrouter.Handle("/configurations", h).Methods("GET")
 
 	r.PathPrefix("/ui/").Handler(http.StripPrefix("/ui/", newEmbeddedFileServer("", "index.html")))
+	r.NotFoundHandler = NewBaseHandler(notFoundHandler)
 
 	s = &http.Server{
 		Handler: r,
@@ -146,6 +150,37 @@ func (s *embeddedFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte("404 page not found"))
+	_notFoundHandler(w, r)
+}
+
+func notFoundHandler(c *Context) {
+	_notFoundHandler(c.W, c.R)
+}
+
+func _notFoundHandler(w http.ResponseWriter, r *http.Request) {
+	const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>404 page not found</title>
+</head>
+<body>
+    The page you are looking for is not found. Redirect to <a href="/ui/">Dashboard</a> after <span id="s">5</span> seconds.
+</body>
+<script type="text/javascript">
+var s = 5;
+setInterval(function(){
+    s--;
+    document.getElementById('s').innerText = s;
+    if (s === 0) location.href = '/ui/';
+}, 1000);
+</script>
+</html>`
+
+	if strings.HasPrefix(strings.TrimLeft(r.URL.Path, "/"), "v1") {
+		outJSONWithCode(w, http.StatusNotFound, "Api not found.")
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(html))
+	}
 }

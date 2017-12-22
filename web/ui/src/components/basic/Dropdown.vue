@@ -34,7 +34,7 @@ export default {
     });
     setTimeout(()=>{
       $(vm.$el).dropdown('set exactly', vm.selected).dropdown('refresh');
-    }, 300);
+    }, 500);
   },
 
   updated: function(){

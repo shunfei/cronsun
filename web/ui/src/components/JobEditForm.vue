@@ -79,6 +79,12 @@
         <input type="number" ref="interval" v-model.number="job.interval">
       </div>
     </div>
+    <div class="two fields" v-if="$appConfig.log_expiration_days>0">
+      <div class="field">
+        <label>{{$L('log expiration(log expired after N days, 0 will use default setting: {n} days)', $appConfig.log_expiration_days)}}</label>
+        <input type="number" ref="log_expiration" v-model.number="job.log_expiration">
+      </div>
+    </div>
     <div class="field">
       <span v-if="!job.rules || job.rules.length == 0"><i class="warning circle icon"></i>{{$L('the job dose not have a timer currently, please click the button below to add a timer')}}</span>
     </div>
@@ -123,6 +129,7 @@ export default {
           retry: 0,
           rules: [],
           fail_notify: false,
+          log_expiration: 0,
           to: []
         }
       }

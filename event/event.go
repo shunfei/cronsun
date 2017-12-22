@@ -24,6 +24,10 @@ func On(name string, fs ...func(interface{})) error {
 	}
 
 	for _, f := range fs {
+		if fs == nil {
+			continue
+		}
+
 		fp := reflect.ValueOf(f).Pointer()
 		for i := 0; i < len(evs); i++ {
 			if reflect.ValueOf(evs[i]).Pointer() == fp {

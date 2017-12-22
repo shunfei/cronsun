@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/log"
 )
 
@@ -28,6 +29,7 @@ type JobLog struct {
 	Success   bool          `bson:"success" json:"success"`           // 是否执行成功
 	BeginTime time.Time     `bson:"beginTime" json:"beginTime"`       // 任务开始执行时间，精确到毫秒，索引
 	EndTime   time.Time     `bson:"endTime" json:"endTime"`           // 任务执行完毕时间，精确到毫秒
+	Cleanup   time.Time     `bson:"cleanup,omitempty" json:"-"`       // 日志清除时间标志
 }
 
 type JobLatestLog struct {
@@ -102,6 +104,17 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 		BeginTime: t,
 		EndTime:   et,
 	}
+
+	if conf.Config.Web.LogCleaner.EveryMinute > 0 {
+		var expiration int
+		if j.LogExpiration > 0 {
+			expiration = j.LogExpiration
+		} else {
+			expiration = conf.Config.Web.LogCleaner.ExpirationDays
+		}
+		jl.Cleanup = jl.EndTime.Add(time.Duration(expiration) * time.Hour * 24)
+	}
+
 	if err := mgoDB.Insert(Coll_JobLog, jl); err != nil {
 		log.Errorf(err.Error())
 	}
@@ -133,9 +146,10 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 }
 
 type StatExecuted struct {
-	Total     int64 `bson:"total" json:"total"`
-	Successed int64 `bson:"successed" json:"successed"`
-	Failed    int64 `bson:"failed" json:"failed"`
+	Total     int64  `bson:"total" json:"total"`
+	Successed int64  `bson:"successed" json:"successed"`
+	Failed    int64  `bson:"failed" json:"failed"`
+	Date      string `bson:"date" json:"date"`
 }
 
 func JobLogStat() (s *StatExecuted, err error) {
@@ -143,7 +157,21 @@ func JobLogStat() (s *StatExecuted, err error) {
 	return
 }
 
-func JobLogDayStat(day time.Time) (s *StatExecuted, err error) {
-	err = mgoDB.FindOne(Coll_Stat, bson.M{"name": "job-day", "date": day.Format("2006-01-02")}, &s)
+func JobLogDailyStat(begin, end time.Time) (ls []*StatExecuted, err error) {
+	const oneDay = time.Hour * 24
+	err = mgoDB.WithC(Coll_Stat, func(c *mgo.Collection) error {
+		dateList := make([]string, 0, 8)
+
+		cur := begin
+		for {
+			dateList = append(dateList, cur.Format("2006-01-02"))
+			cur = cur.Add(oneDay)
+			if cur.After(end) {
+				break
+			}
+		}
+		return c.Find(bson.M{"name": "job-day", "date": bson.M{"$in": dateList}}).Sort("date").All(&ls)
+	})
+
 	return
 }

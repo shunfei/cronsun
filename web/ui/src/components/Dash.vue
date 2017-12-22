@@ -3,21 +3,24 @@
 #numbers .card .header {text-align: center;}
 #numbers .card .number {font-size: 2em;}
 #numbers .card .title {font-size: 1em;}
-
-#charts>div {
-    width: 300px; 
-    display: inline-block;
-    margin: 0 1em;
-    border: none;
-    box-shadow: none;
-}
-#charts .header {text-align: center;}
 </style>
 
 <template>
   <div>
     <div id="numbers" class="ui three column grid">
       <div class="row">
+        <div class="column">
+          <div class="ui fluid card">
+            <div class="content">
+              <div class="header number">
+                <span style="color:green;">{{totalOnlineNodes}}</span>/
+                <span>{{totalOfflineNodes}}</span>/
+                <span style="color:red;">{{totalDamagedNodes}}</span>
+              </div>
+              <div class="header title">{{$L('total number of nodes')}}</div>
+            </div>
+          </div>
+        </div>
         <div class="column">
           <div class="ui fluid card">
             <div class="content">
@@ -34,45 +37,11 @@
             </div>
           </div>
         </div>
-        <div class="column">
-          <div class="ui fluid card">
-            <div class="content">
-              <div class="header number">{{todayExecuted}}</div>
-              <div class="header title">{{$L('total number of executeds(today)')}}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="column">
-          <div class="ui fluid card">
-            <div class="content">
-              <div class="header number">{{totalNodes}}</div>
-              <div class="header title">{{$L('total number of nodes')}}</div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 
     <div id="charts">
-      <div class="ui card">
-        <div class="content">
-          <h4 class="header"><router-link to="node">{{$L('node stat')}}</router-link></h4>
-          <div class="description">
-            <canvas ref="node"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <div class="ui card">
-        <div class="content">
-          <h4 class="header"><router-link :to="'log?begin='+today+'&end='+today">{{$L('executed stat(today)')}}</router-link></h4>
-          <div class="description">
-            <canvas ref="job"></canvas>
-          </div>
-        </div>
-      </div>
+      <canvas ref="daily" height="80"></canvas>
     </div>
   </div>
 </template>
@@ -87,8 +56,9 @@ export default {
     return {
       totalJobs: 0,
       totalExecuted: 0,
-      todayExecuted: 0,
-      totalNodes: 0,
+      totalOnlineNodes: 0,
+      totalOfflineNodes: 0,
+      totalDamagedNodes: 0,
 
       today: ''
     }
@@ -102,20 +72,62 @@ export default {
     var renderJobInfo = function(resp){
       vm.totalJobs = resp.totalJobs;
       vm.totalExecuted = resp.jobExecuted ? resp.jobExecuted.total : 0;
-      vm.todayExecuted = resp.jobExecutedDaily ? resp.jobExecutedDaily.total : 0;
-      var dailySuccessed = resp.jobExecutedDaily ? resp.jobExecutedDaily.successed : 0;
-      var dailytotal = resp.jobExecutedDaily ? resp.jobExecutedDaily.total : 0;
-      new Chart($(vm.$refs.job), {
-        type: 'pie',
-        data: {
-          labels: [vm.$L("{n} successed", dailySuccessed), vm.$L("{n} failed", dailytotal-dailySuccessed)],
-          datasets: [{
-            data: [dailySuccessed, dailytotal - dailySuccessed],
-            backgroundColor: ["#21BA45", "#DB2828"],
-            hoverBackgroundColor: ["#39DE60", "#D64848"]
-          }]
+      var data = {
+        labels: [],
+        datasets: [{
+          label: vm.$L('successed'),
+          borderColor: 'rgb(75, 192, 192)',
+          backgroundColor: 'rgb(75, 192, 192)',
+          fill: false,
+          yAxisID: 'yAxisSuccessed',
+          data: []
+        }, {
+          label: vm.$L('failed'),
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgb(255, 99, 132)',
+            fill: false,
+            yAxisID: 'yAxisFailed',
+            data: []
+        }]
+      };
+
+      for (var i in resp.jobExecutedDaily) {
+        var info = resp.jobExecutedDaily[i];
+        data.labels.push(info.date),
+        data.datasets[0].data.push(info.successed);
+        data.datasets[1].data.push(info.failed);
+      }
+
+      var ctx = vm.$refs.daily.getContext('2d');
+      var chart = Chart.Line(ctx, {
+        data: data,
+        options: {
+          responsive: true,
+          hoverMode: 'index',
+          stacked: false,
+          title:{
+            display: true,
+            text: vm.$L('job executed in past 7 days')
+          },
+          scales: {
+            yAxes: [{
+              type: 'linear',
+              display: true,
+              position: 'left',
+              id: 'yAxisSuccessed'
+            }, {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              id: 'yAxisFailed',
+              gridLines: {
+                drawOnChartArea: false
+              }
+            }],
+          }
         }
       });
+      chart.update();
     }
 
     var renderNodeInfo = function(resp){
@@ -132,18 +144,10 @@ export default {
           offline++;
         }
       }
-      
-      new Chart($(vm.$refs.node), {
-        type: 'pie',
-        data: {
-          labels: [vm.$L("{n} online", online), vm.$L("{n} offline", offline), vm.$L("{n} damaged", damaged)],
-          datasets: [{
-            data: [online, offline, damaged],
-            backgroundColor: ["#21BA45", "#333", "#DB2828"],
-            hoverBackgroundColor: ["#39DE60", "#555", "#D64848"]
-          }]
-        }
-      });
+
+      vm.totalOnlineNodes = online;
+      vm.totalOfflineNodes = offline;
+      vm.totalDamagedNodes = damaged;
     }
 
     this.$rest.GET('/info/overview').onsucceed(200, renderJobInfo).do();

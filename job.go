@@ -65,6 +65,8 @@ type Job struct {
 	FailNotify bool `json:"fail_notify"`
 	// 发送通知地址
 	To []string `json:"to"`
+	// 单独对任务指定日志清除时间
+	LogExpiration int `json:"log_expiration"`
 
 	// 执行任务的结点，用于记录 job log
 	runOn string
@@ -524,6 +526,10 @@ func (j *Job) Check() error {
 
 	if !IsValidAsKeyPath(j.Group) {
 		return ErrIllegalJobGroupName
+	}
+
+	if j.LogExpiration < 0 {
+		j.LogExpiration = 0
 	}
 
 	j.User = strings.TrimSpace(j.User)

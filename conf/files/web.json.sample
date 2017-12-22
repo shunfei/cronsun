@@ -7,5 +7,11 @@
         "StorePrefixPath": "/cronsun/sess/",
         "CookieName": "uid",
         "Expiration": 8640000
+    },
+    "#comment": "Delete the expired log (which store in mongodb) periodically",
+    "LogCleaner": {
+        "#comment": "if EveryMinute is 0, the LogCleaner will not run",
+        "EveryMinute": 0,
+        "ExpirationDays": 3
     }
 }

@@ -1,11 +1,21 @@
 <style scope>
   .clearfix:after {content:""; clear:both; display:table;}
+  .ui.fitted.checkbox {min-height: 15px;}
 </style>
 <template>
   <div>
     <div class="clearfix" style="margin-bottom: 20px;">
       <router-link class="ui left floated button" to="/job/executing">{{$L('view executing jobs')}}</router-link>
       <button class="ui left floated icon button" v-on:click="refresh"><i class="refresh icon"></i></button>
+      <div class="ui icon buttons">
+        <button class="ui left floated icon button" v-on:click="batched=!batched">{{$L('batch')}}</button>
+        <button class="ui button" :class="{disabled: batchIds.length == 0}" v-if="batched" v-on:click="batch('start')">
+          <i class="play icon"></i>
+        </button>
+        <button class="ui button" :class="{disabled: batchIds.length == 0}" v-if="batched" v-on:click="batch('pause')">
+          <i class="pause icon"></i>
+        </button>
+      </div>
       <router-link class="ui right floated primary button" to="/job/create"><i class="add to calendar icon"></i> {{$L('create job')}}</router-link>
     </div>
     <form class="ui form">
@@ -35,7 +45,7 @@
       <tbody>
         <tr v-for="(job, index) in jobs">
           <td class="center aligned">
-            <div class="ui icon dropdown">
+            <div class="ui icon dropdown" v-show="!batched">
               <i class="content icon"></i>
               <div class="menu">
                 <div class="item" v-on:click="$router.push('/job/edit/'+job.group+'/'+job.id)">{{$L('edit')}}</div>
@@ -44,6 +54,9 @@
                 <div class="divider"></div>
                 <div class="item" style="color:red;" v-on:click="removeJob(job.group, job.id, index)">{{$L('delete')}}</div>
               </div>
+            </div>
+            <div class="ui fitted checkbox" v-show="batched">
+              <input type="checkbox" :value="job.group+'/'+job.id" v-model="batchIds"><label></label>
             </div>
           </td>
           <td class="center aligned"><i class="icon" v-bind:class="{pause: job.pause, play: !job.pause, green: !job.pause}"></i></td>
@@ -76,6 +89,8 @@ export default {
   name: 'job',
   data: function(){
     return {
+      batched: false,
+      batchIds: [],
       groups: [],
       group: '',
       nodes: [],
@@ -101,6 +116,8 @@ export default {
         vm.nodes.push(resp[i].id);
       }
     }).do();
+
+    $('.ui.checkbox').checkbox();
   },
 
   watch: {
@@ -174,6 +191,20 @@ export default {
 
     showExecuteJobModal: function(jobName, jobGroup, jobId){
       this.$refs.executeJobModal.show(jobName, jobGroup, jobId);
+    },
+
+    batch: function(op){
+      switch(op) {
+        case 'start': break;
+        case 'pause': break;
+        default: return;
+      }
+
+      var vm = this;
+      this.$rest.POST('jobs/'+op, this.batchIds).onsucceed(200, (resp)=>{
+        vm.refresh();
+        vm.$bus.$emit('warning', resp);
+      }).do();
     }
   },
 
