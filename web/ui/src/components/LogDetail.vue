@@ -53,14 +53,14 @@ export default {
   data: function(){
       return {
         log: {
-          id: 'sdfas',
-          jobId: 'wewe',
-          jobGroup: 'test',
-          name:  'run run run',
-          node:  '192.168.1.2',
+          id: '',
+          jobId: '',
+          jobGroup: '',
+          name:  '',
+          node:  '',
           user:  '',
-          command: 'echo hello;',
-          output: 'hello',
+          command: '',
+          output: '',
           exitCode: 0,
           beginTime: new Date(),
           endTime: new Date()
@@ -71,7 +71,7 @@ export default {
 
   computed: {
     printResult(){
-      return this.log.output.replace("\r\n", "^M\r\n");
+      return this.log.output ? this.log.output.replace("\r\n", "^M\r\n") : '';
     }
   },
 
