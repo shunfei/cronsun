@@ -94,9 +94,8 @@ func (m *Mail) Serve() {
 			if m.open {
 				if err = m.sc.Close(); err != nil {
 					log.Warnf("close smtp server err: %s", err.Error())
-				} else {
-					m.open = false
 				}
+				m.open = false
 			}
 			m.timer.Reset(time.Duration(m.cf.Keepalive) * time.Second)
 		}
