@@ -14,7 +14,7 @@ var (
 	_Uid int
 )
 
-func Init() (err error) {
+func Init(baseConfFile string) (err error) {
 	if initialized {
 		return
 	}
@@ -25,7 +25,7 @@ func Init() (err error) {
 	}
 
 	// init config
-	if err = conf.Init(); err != nil {
+	if err = conf.Init(baseConfFile); err != nil {
 		return fmt.Errorf("Init Config failed: %s", err)
 	}
 

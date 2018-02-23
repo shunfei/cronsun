@@ -1,7 +1,6 @@
 package conf
 
 import (
-	"flag"
 	"path"
 	"time"
 
@@ -16,9 +15,6 @@ import (
 )
 
 var (
-	confFile = flag.String("conf",
-		"conf/files/base.json", "config file path")
-
 	Config      = new(Conf)
 	initialized bool
 
@@ -26,16 +22,15 @@ var (
 	exitChan = make(chan struct{})
 )
 
-func Init() error {
+func Init(confFile string) error {
 	if initialized {
 		return nil
 	}
 
-	flag.Parse()
-	if err := Config.parse(); err != nil {
+	if err := Config.parse(confFile); err != nil {
 		return err
 	}
-	if err := Config.watch(); err != nil {
+	if err := Config.watch(confFile); err != nil {
 		return err
 	}
 	initialized = true
@@ -124,8 +119,8 @@ func cleanKeyPrefix(p string) string {
 	return p
 }
 
-func (c *Conf) parse() error {
-	err := utils.LoadExtendConf(*confFile, c)
+func (c *Conf) parse(confFile string) error {
+	err := utils.LoadExtendConf(confFile, c)
 	if err != nil {
 		return err
 	}
@@ -168,7 +163,7 @@ func (c *Conf) parse() error {
 	return nil
 }
 
-func (c *Conf) watch() error {
+func (c *Conf) watch(confFile string) error {
 	var err error
 	watcher, err = fsnotify.NewWatcher()
 	if err != nil {
@@ -190,7 +185,7 @@ func (c *Conf) watch() error {
 				timer.Reset(duration)
 			case <-timer.C:
 				if update {
-					c.reload()
+					c.reload(confFile)
 					event.Emit(event.WAIT, nil)
 					update = false
 				}
@@ -201,7 +196,7 @@ func (c *Conf) watch() error {
 		}
 	}()
 
-	return watcher.Add(*confFile)
+	return watcher.Add(confFile)
 }
 
 // 重新加载配置项
@@ -209,9 +204,9 @@ func (c *Conf) watch() error {
 // Etcd
 // Mgo
 // Web
-func (c *Conf) reload() {
+func (c *Conf) reload(confFile string) {
 	cf := new(Conf)
-	if err := cf.parse(); err != nil {
+	if err := cf.parse(confFile); err != nil {
 		log.Warnf("config file reload err: %s", err.Error())
 		return
 	}
@@ -220,7 +215,7 @@ func (c *Conf) reload() {
 	cf.Node, cf.Proc, cf.Cmd, cf.Once, cf.Lock, cf.Group, cf.Noticer = c.Node, c.Proc, c.Cmd, c.Once, c.Lock, c.Group, c.Noticer
 
 	*c = *cf
-	log.Infof("config file[%s] reload success", *confFile)
+	log.Infof("config file[%s] reload success", confFile)
 	return
 }
 
