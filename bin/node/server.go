@@ -33,7 +33,7 @@ func main() {
 	}
 	log.SetLogger(logger.Sugar())
 
-	if err = cronsun.Init(*confFile); err != nil {
+	if err = cronsun.Init(*confFile, true); err != nil {
 		log.Errorf(err.Error())
 		return
 	}

@@ -22,7 +22,7 @@ var (
 	exitChan = make(chan struct{})
 )
 
-func Init(confFile string) error {
+func Init(confFile string, watchConfiFile bool) error {
 	if initialized {
 		return nil
 	}
@@ -30,9 +30,13 @@ func Init(confFile string) error {
 	if err := Config.parse(confFile); err != nil {
 		return err
 	}
-	if err := Config.watch(confFile); err != nil {
-		return err
+
+	if watchConfiFile {
+		if err := Config.watch(confFile); err != nil {
+			return err
+		}
 	}
+
 	initialized = true
 	return nil
 }
