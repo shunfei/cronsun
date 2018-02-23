@@ -91,7 +91,6 @@ type locker struct {
 	kind  int
 	ttl   int64
 	lID   client.LeaseID
-	lKey  string
 	timer *time.Timer
 	done  chan struct{}
 }
@@ -121,12 +120,8 @@ func (l *locker) unlock() {
 
 	close(l.done)
 	l.timer.Stop()
-	if _, err := DefalutClient.KeepAliveOnce(l.lID); err != nil {
-		log.Warnf("unlock keep alive err: %s", err.Error())
-	}
-	err := DefalutClient.DelLock(l.lKey)
-	if err != nil {
-		log.Warnf("unlock[%s] err: %s", l.lKey, err.Error())
+	if _, err := DefalutClient.Revoke(l.lID); err != nil {
+		log.Warnf("unlock revoke err: %s", err.Error())
 	}
 }
 
@@ -270,7 +265,6 @@ func (c *Cmd) lock() *locker {
 	}
 
 	lk.lID = resp.ID
-	lk.lKey = c.Job.ID
 	if lk.kind == KindAlone {
 		go lk.keepAlive()
 	}
