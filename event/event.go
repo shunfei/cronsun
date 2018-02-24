@@ -24,7 +24,7 @@ func On(name string, fs ...func(interface{})) error {
 	}
 
 	for _, f := range fs {
-		if fs == nil {
+		if f == nil {
 			continue
 		}
 
