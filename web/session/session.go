@@ -3,6 +3,7 @@ package session
 import (
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"net/http"
 
 	client "github.com/coreos/etcd/clientv3"
@@ -120,7 +121,7 @@ func (this *EtcdStore) Store(sess *Session) (err error) {
 	if sess.leaseID == 0 {
 		lresp, err := this.client.Grant(int64(this.conf.Expiration))
 		if err != nil {
-			return err
+			return errors.New("etcd create new lease faild: " + err.Error()) // err
 		}
 		sess.leaseID = lresp.ID
 	}

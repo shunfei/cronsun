@@ -2,6 +2,7 @@ package cronsun
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -12,8 +13,6 @@ import (
 	"sync/atomic"
 	"syscall"
 	"time"
-
-	"golang.org/x/net/context"
 
 	client "github.com/coreos/etcd/clientv3"
 
