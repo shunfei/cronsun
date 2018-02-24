@@ -118,8 +118,8 @@ func (l *locker) unlock() {
 
 	close(l.done)
 	l.timer.Stop()
-	if _, err := DefalutClient.KeepAliveOnce(l.lID); err != nil {
-		log.Warnf("unlock keep alive err: %s", err.Error())
+	if _, err := DefalutClient.Revoke(l.lID); err != nil {
+		log.Warnf("unlock revoke err: %s", err.Error())
 	}
 }
 

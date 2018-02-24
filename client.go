@@ -86,6 +86,12 @@ func (c *Client) Grant(ttl int64) (*client.LeaseGrantResponse, error) {
 	return c.Client.Grant(ctx, ttl)
 }
 
+func (c *Client) Revoke(id client.LeaseID) (*client.LeaseRevokeResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), c.reqTimeout)
+	defer cancel()
+	return c.Client.Revoke(ctx, id)
+}
+
 func (c *Client) KeepAliveOnce(id client.LeaseID) (*client.LeaseKeepAliveResponse, error) {
 	ctx, cancel := NewEtcdTimeoutContext(c)
 	defer cancel()
