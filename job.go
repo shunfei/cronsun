@@ -16,7 +16,6 @@ import (
 	"golang.org/x/net/context"
 
 	client "github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/mvcc/mvccpb"
 
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/log"
@@ -371,10 +370,10 @@ func WatchJobs() client.WatchChan {
 	return DefalutClient.Watch(conf.Config.Cmd, client.WithPrefix())
 }
 
-func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
+func GetJobFromKv(key, value []byte) (job *Job, err error) {
 	job = new(Job)
-	if err = json.Unmarshal(kv.Value, job); err != nil {
-		err = fmt.Errorf("job[%s] umarshal err: %s", string(kv.Key), err.Error())
+	if err = json.Unmarshal(value, job); err != nil {
+		err = fmt.Errorf("job[%s] umarshal err: %s", string(key), err.Error())
 		return
 	}
 
