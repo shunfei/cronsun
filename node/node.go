@@ -364,7 +364,7 @@ func (n *Node) watchJobs() {
 		for _, ev := range wresp.Events {
 			switch {
 			case ev.IsCreate():
-				job, err := cronsun.GetJobFromKv(ev.Kv)
+				job, err := cronsun.GetJobFromKv(ev.Kv.Key, ev.Kv.Value)
 				if err != nil {
 					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
 					continue
@@ -373,7 +373,7 @@ func (n *Node) watchJobs() {
 				job.Init(n.ID)
 				n.addJob(job, true)
 			case ev.IsModify():
-				job, err := cronsun.GetJobFromKv(ev.Kv)
+				job, err := cronsun.GetJobFromKv(ev.Kv.Key, ev.Kv.Value)
 				if err != nil {
 					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
 					continue
@@ -396,7 +396,7 @@ func (n *Node) watchGroups() {
 		for _, ev := range wresp.Events {
 			switch {
 			case ev.IsCreate():
-				g, err := cronsun.GetGroupFromKv(ev.Kv)
+				g, err := cronsun.GetGroupFromKv(ev.Kv.Key, ev.Kv.Value)
 				if err != nil {
 					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
 					continue
@@ -404,7 +404,7 @@ func (n *Node) watchGroups() {
 
 				n.addGroup(g)
 			case ev.IsModify():
-				g, err := cronsun.GetGroupFromKv(ev.Kv)
+				g, err := cronsun.GetGroupFromKv(ev.Kv.Key, ev.Kv.Value)
 				if err != nil {
 					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
 					continue
