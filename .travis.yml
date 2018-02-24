@@ -3,9 +3,7 @@ go:
 - 1.9
 install:
 - go get -u github.com/coreos/etcd/clientv3
-- go get github.com/coreos/etcd/mvcc/mvccpb
 - go get github.com/rogpeppe/fastuuid
-- go get golang.org/x/net/context
 - go get gopkg.in/mgo.v2
 - go get github.com/fsnotify/fsnotify
 - go get github.com/go-gomail/gomail
