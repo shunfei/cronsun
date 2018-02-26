@@ -2,6 +2,7 @@ package cronsun
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -13,10 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"golang.org/x/net/context"
-
 	client "github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/mvcc/mvccpb"
 
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/log"
@@ -120,8 +118,8 @@ func (l *locker) unlock() {
 
 	close(l.done)
 	l.timer.Stop()
-	if _, err := DefalutClient.KeepAliveOnce(l.lID); err != nil {
-		log.Warnf("unlock keep alive err: %s", err.Error())
+	if _, err := DefalutClient.Revoke(l.lID); err != nil {
+		log.Warnf("unlock revoke err: %s", err.Error())
 	}
 }
 
@@ -372,10 +370,10 @@ func WatchJobs() client.WatchChan {
 	return DefalutClient.Watch(conf.Config.Cmd, client.WithPrefix())
 }
 
-func GetJobFromKv(kv *mvccpb.KeyValue) (job *Job, err error) {
+func GetJobFromKv(key, value []byte) (job *Job, err error) {
 	job = new(Job)
-	if err = json.Unmarshal(kv.Value, job); err != nil {
-		err = fmt.Errorf("job[%s] umarshal err: %s", string(kv.Key), err.Error())
+	if err = json.Unmarshal(value, job); err != nil {
+		err = fmt.Errorf("job[%s] umarshal err: %s", string(key), err.Error())
 		return
 	}
 

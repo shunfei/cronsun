@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	client "github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/mvcc/mvccpb"
 
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/log"
@@ -65,10 +64,10 @@ func WatchGroups() client.WatchChan {
 	return DefalutClient.Watch(conf.Config.Group, client.WithPrefix(), client.WithPrevKV())
 }
 
-func GetGroupFromKv(kv *mvccpb.KeyValue) (g *Group, err error) {
+func GetGroupFromKv(key, value []byte) (g *Group, err error) {
 	g = new(Group)
-	if err = json.Unmarshal(kv.Value, g); err != nil {
-		err = fmt.Errorf("group[%s] umarshal err: %s", string(kv.Key), err.Error())
+	if err = json.Unmarshal(value, g); err != nil {
+		err = fmt.Errorf("group[%s] umarshal err: %s", string(key), err.Error())
 	}
 	return
 }
