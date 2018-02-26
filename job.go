@@ -308,6 +308,7 @@ func (j *JobRule) Valid() error {
 	return nil
 }
 
+// Note: this function did't check the job.
 func GetJob(group, id string) (job *Job, err error) {
 	job, _, err = GetJobAndRev(group, id)
 	return
