@@ -22,7 +22,7 @@ type Client struct {
 }
 
 func NewClient(cfg *conf.Conf) (c *Client, err error) {
-	cli, err := client.New(cfg.Etcd)
+	cli, err := client.New(cfg.Etcd.Copy())
 	if err != nil {
 		return
 	}
