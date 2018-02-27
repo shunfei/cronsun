@@ -83,7 +83,7 @@ export default {
       });
       for (var i in resp) {
         var n = resp[i];
-        n.title = n.version + "\nstarted at: " + n.up
+        n.title = n.ip + "\n" + n.hostname + "\n" + n.version + "\nstarted at: " + n.up
         if (n.alived && n.connected) {
           vm.groups[2].nodes.push(n);
         } else if (n.alived && !n.connected) {
