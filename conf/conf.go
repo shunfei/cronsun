@@ -8,7 +8,6 @@ import (
 	client "github.com/coreos/etcd/clientv3"
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-gomail/gomail"
-	"github.com/k0kubun/pp"
 
 	"github.com/shunfei/cronsun/db"
 	"github.com/shunfei/cronsun/event"
@@ -150,7 +149,6 @@ func (c *Conf) parse() error {
 	c.Etcd.conf.Username = c.Etcd.Username
 	c.Etcd.conf.Password = c.Etcd.Password
 	c.Etcd.conf.Endpoints = c.Etcd.Endpoints
-	pp.Println(c.Etcd.conf)
 
 	if c.Ttl <= 0 {
 		c.Ttl = 10
