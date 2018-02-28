@@ -75,20 +75,18 @@ func getHostnameAndIP(cfg *conf.Conf) (hostName string, nodeIP string, err error
 	if err != nil {
 		log.Warnf("can't get hostname: %s", err)
 	}
-	if nodeIP == "" {
-		if cfg.NodeInfo.IPPref != "" {
-			ip, err := utils.GetIPByPref(cfg.NodeInfo.IPPref)
-			if err == nil {
-				nodeIP = ip.String()
-			}
-		}
-		if nodeIP == "" {
-			ip, err := utils.LocalIP()
-			if err != nil {
-				return "", "", err
-			}
+	if cfg.NodeInfo.IPPref != "" {
+		ip, err := utils.GetIPByPref(cfg.NodeInfo.IPPref)
+		if err == nil {
 			nodeIP = ip.String()
 		}
+	}
+	if nodeIP == "" {
+		ip, err := utils.LocalIP()
+		if err != nil {
+			return "", "", err
+		}
+		nodeIP = ip.String()
 	}
 	return
 }
