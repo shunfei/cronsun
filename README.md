@@ -53,7 +53,7 @@ We encourage you to try it, it's easy to use, see how it works for you. We belie
     "users": [
         "www", "db"
     ],
-    "#ext": "allowed execution file extension",
+    "#ext": "allowed execution file extensions",
     "ext": [
         ".cron.sh", ".cron.py"
     ]
@@ -66,11 +66,13 @@ We encourage you to try it, it's easy to use, see how it works for you. We belie
 
 Install from binary [latest release](https://github.com/shunfei/cronsun/releases/latest)
 
-Or build from source, require `go >= 1.9+`
+Or build from source ([feature/glide](https://github.com/shunfei/cronsun/tree/feature/glide)), require `go >= 1.9+`, [glide](https://glide.sh/)
 
 ```
 go get -u github.com/shunfei/cronsun
 cd $GOPATH/src/github.com/shunfei/cronsun
+git checkout feature/glide
+glide update
 sh build.sh
 ```
 
@@ -78,9 +80,9 @@ sh build.sh
 
 1. Install [MongoDB](http://docs.mongodb.org/manual/installation/)
 2. Install [etcd3](https://github.com/coreos/etcd)
-3. Modify config in `conf` dir
-4. Start Node: `./cronnode -conf conf/base.json`, start Web: `./cronweb -conf conf/base.json`
-5. Opne `http://127.0.0.1:7079/ui/` with the browser
+3. Open and update Etcd(`conf/etcd.json`) and MongoDB(`conf/db.json`) configurations
+4. Start cronnode: `./cronnode -conf conf/base.json`, start cronweb: `./cronweb -conf conf/base.json`
+5. Open `http://127.0.0.1:7079` in browser
 
 ## Screenshot
 
