@@ -51,6 +51,11 @@ type Conf struct {
 	Group   string // 节点分组
 	Noticer string // 通知
 
+	NodeInfo struct {
+		IPPref      string
+		UseHostName bool
+	}
+
 	Ttl        int64 // 节点超时时间，单位秒
 	ReqTimeout int   // 请求超时时间，单位秒
 	// 执行任务信息过期时间，单位秒

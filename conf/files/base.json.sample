@@ -17,6 +17,14 @@
     "ProcReq": 5,
     "#LockTtl": "任务锁最大过期时间，单位秒,默认 600",
     "LockTtl": 600,
+    "NodeInfo": {
+        "#IPPref": "choose the specify IP as Node-Name when a server has multi IPs",
+        "#IPPref_cn": "当机器有多个IP的时候，指定选取特定前缀的IP作为节点名称。例如: 192.168.",
+        "IPPref": "",
+        "#UseHostName": "set to true to use hostname instead IP as Node-Name",
+        "#UseHostName_cn": "设为true时，使用hostname来作为节点名称",
+        "UseHostName": true
+    },
     "Etcd": "@extend:etcd.json",
     "Mgo": "@extend:db.json",
     "Mail": "@extend:mail.json",

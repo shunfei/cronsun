@@ -35,16 +35,26 @@ type Node struct {
 }
 
 func NewNode(cfg *conf.Conf) (n *Node, err error) {
-	ip, err := utils.LocalIP()
+	var hostName, nodeIP, nodeName string
+
+	hostName, nodeIP, err = getHostnameAndIP(cfg)
 	if err != nil {
 		return
+	}
+	if hostName != "" && cfg.NodeInfo.UseHostName {
+		nodeName = hostName
+	}
+	if nodeName == "" {
+		nodeName = nodeIP
 	}
 
 	n = &Node{
 		Client: cronsun.DefalutClient,
 		Node: &cronsun.Node{
-			ID:  ip.String(),
-			PID: strconv.Itoa(os.Getpid()),
+			ID:       nodeName,
+			PID:      strconv.Itoa(os.Getpid()),
+			Hostname: hostName,
+			IP:       nodeIP,
 		},
 		Cron: cron.New(),
 
@@ -56,6 +66,27 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 
 		ttl:  cfg.Ttl,
 		done: make(chan struct{}),
+	}
+	return
+}
+
+func getHostnameAndIP(cfg *conf.Conf) (hostName string, nodeIP string, err error) {
+	hostName, err = os.Hostname()
+	if err != nil {
+		log.Warnf("can't get hostname: %s", err)
+	}
+	if cfg.NodeInfo.IPPref != "" {
+		ip, err := utils.GetIPByPref(cfg.NodeInfo.IPPref)
+		if err == nil {
+			nodeIP = ip.String()
+		}
+	}
+	if nodeIP == "" {
+		ip, err := utils.LocalIP()
+		if err != nil {
+			return "", "", err
+		}
+		nodeIP = ip.String()
 	}
 	return
 }
