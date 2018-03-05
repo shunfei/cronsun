@@ -76,7 +76,7 @@ func restoreKvs(r io.Reader, keyPrefix string, storeChan chan *kv, wg *sync.Wait
 		// read length of key
 		n, err := r.Read(keyLenBuf)
 		if err == io.EOF && n != 0 {
-			return fmt.Errorf("Unexcepted data, the file may borken")
+			return fmt.Errorf("unexcepted data, the file may broken")
 		} else if err == io.EOF && n == 0 {
 			break
 		} else if err != nil {

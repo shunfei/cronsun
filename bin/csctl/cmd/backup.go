@@ -25,7 +25,7 @@ var (
 
 var BackupCmd = &cobra.Command{
 	Use:   "backup",
-	Short: "Backup job & group data",
+	Short: "backup job & group data",
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		var ea = NewExitAction()
