@@ -61,7 +61,7 @@ func main() {
 		if len(conf.Config.Mail.HttpAPI) > 0 {
 			noticer = &cronsun.HttpAPI{}
 		} else {
-			mailer, err := cronsun.NewMail(10 * time.Second)
+			mailer, err := cronsun.NewMail(30 * time.Second)
 			if err != nil {
 				log.Errorf(err.Error())
 				return

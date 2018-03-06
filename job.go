@@ -119,8 +119,8 @@ func (l *locker) unlock() {
 
 	close(l.done)
 	l.timer.Stop()
-	if _, err := DefalutClient.KeepAliveOnce(l.lID); err != nil {
-		log.Warnf("unlock keep alive err: %s", err.Error())
+	if _, err := DefalutClient.Revoke(l.lID); err != nil {
+		log.Warnf("unlock revoke err: %s", err.Error())
 	}
 }
 
@@ -307,6 +307,7 @@ func (rule *JobRule) Valid() error {
 	return nil
 }
 
+// Note: this function did't check the job.
 func GetJob(group, id string) (job *Job, err error) {
 	job, _, err = GetJobAndRev(group, id)
 	return
