@@ -30,7 +30,13 @@
           <router-link class="header" :to="'/node/group/'+g.id">{{g.name}}</router-link>
           <div class="description">
             <div class="ui middle large aligned divided list"> 
-              <div class="item" v-for="n in g.nids">{{n}}</div>
+              <div class="item" v-for="nodeID in g.nids">
+                <span v-if="nodes[nodeID]">{{nodes[nodeID].hostname || nodes[nodeID].id}}
+                <i class="arrow circle up icon red" v-if="nodes[nodeID].hostname == ''"></i>
+                <i v-if="nodes[nodeID].hostname == ''">(need to upgrade)</i>
+                </span>
+                <span v-else :title="$L('node not found, was it removed?')">{{nodeID}} <i class="question circle icon red"></i></span>
+              </div>
             </div>
           </div>
         </div>
@@ -62,6 +68,12 @@ export default {
         onfailed((data)=>{vm.error = data}).
         onend(()=>{vm.loading = false}).
         do();
+    }
+  },
+
+  computed: {
+    nodes: function () {
+      return this.$store.getters.nodes;
     }
   }
 }

@@ -22,6 +22,7 @@
 
 <script>
 import Dropdown from './basic/Dropdown.vue';
+import {nodeDropdownData} from '../libraries/functions';
 
 export default {
   name: 'node_group_edit',
@@ -57,11 +58,7 @@ export default {
     }
 
     this.$rest.GET('nodes').onsucceed(200, (resp)=>{
-      var allNodes = [];
-      for (var i in resp) {
-        allNodes.push(resp[i].id);
-      }
-      vm.allNodes = allNodes;
+      vm.allNodes = nodeDropdownData(resp);
     }).do();
   },
 

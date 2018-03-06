@@ -79,3 +79,9 @@ func (self *Mdb) FindOne(collection string, query interface{}, result interface{
 		return c.Find(query).One(result)
 	})
 }
+
+func (self *Mdb) RemoveId(collection string, id interface{}) error {
+	return self.WithC(collection, func(c *mgo.Collection) error {
+		return c.RemoveId(id)
+	})
+}

@@ -61,7 +61,7 @@
           </td>
           <td class="center aligned"><i class="icon" v-bind:class="{pause: job.pause, play: !job.pause, green: !job.pause}"></i></td>
           <td>{{job.group}}</td>
-          <td>{{job.user}}</td>
+          <td>{{job.user && job.user.length > 0 ? job.user : '-'}}</td>
           <td><router-link :to="'/job/edit/'+job.group+'/'+job.id">{{job.name}}</router-link></td>
           <td>
             <span v-if="!job.latestStatus">-</span>
@@ -110,12 +110,9 @@ export default {
       this.fetchList(this.buildQuery());
     }).do();
 
-    this.$rest.GET('nodes').onsucceed(200, (resp)=>{
-      vm.nodes.push({name: vm.$L('all nodes'), value: ''});
-      for (var i in resp) {
-        vm.nodes.push(resp[i].id);
-      }
-    }).do();
+    var nodes = Array.from(this.$store.getters.dropdownNodes);
+    nodes.unshift({value: '', name: this.$L('all nodes')});
+    vm.nodes = nodes;
 
     $('.ui.checkbox').checkbox();
   },
@@ -186,7 +183,7 @@ export default {
     },
 
     formatLatest: function(latest){
-      return this.$L('on {node} took {times}, {begin ~ end}', latest.node, formatDuration(latest.beginTime, latest.endTime), formatTime(latest.beginTime, latest.endTime));
+      return this.$L('on {node} took {times}, {begin ~ end}', latest.hostname, formatDuration(latest.beginTime, latest.endTime), formatTime(latest.beginTime, latest.endTime));
     },
 
     showExecuteJobModal: function(jobName, jobGroup, jobId){

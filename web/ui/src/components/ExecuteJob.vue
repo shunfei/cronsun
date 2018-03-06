@@ -3,7 +3,7 @@
     <i class="close icon"></i>
     <div class="header">{{$L('executing job: {job}', jobName)}}</div>
     <div class="content">
-      <Dropdown :title="$L('node')" :items="nodes" v-on:change="changeNode"></Dropdown>
+      <Dropdown :title="$L('node')" :items="nodes" v-on:change="changeNode" style="width:100%"></Dropdown>
     </div>
     <div class="actions">
       <div class="ui deny button">{{$L('cancel')}}</div>
@@ -51,8 +51,11 @@ export default {
       this.loading = true;
       this.$rest.GET('job/'+this.jobGroup+'-'+this.jobId+'/nodes').
         onsucceed(200, (resp)=>{
-          resp.unshift('全部节点');
-          vm.nodes = resp;
+          var nodes = [{value: 'all nodes', name: vm.$L('all nodes')}];
+          for (var i in resp) {
+            nodes.push({value: resp[i], name: vm.$store.getters.getHostnameByID(resp[i])})
+          }
+          vm.nodes = nodes;
         }).
         onfailed((msg)=>{
           vm.$bus.$emit('error', msg);
@@ -65,7 +68,7 @@ export default {
     submit(){
       var vm = this;
       this.loading = true;
-      var node = this.selectedNode === '全部节点' ? '' : this.selectedNode;
+      var node = this.selectedNode === 'all nodes' ? '' : this.selectedNode;
       this.$rest.PUT('/job/'+this.jobGroup+'-'+this.jobId+'/execute?node='+node).
         onsucceed(204, ()=>{
           vm.$bus.$emit('success', '执行命令已发送，注意查看任务日志');

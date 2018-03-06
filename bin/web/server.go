@@ -38,6 +38,7 @@ func main() {
 		log.Errorf(err.Error())
 		return
 	}
+	web.EnsureJobLogIndex()
 
 	l, err := net.Listen("tcp", conf.Config.Web.BindAddr)
 	if err != nil {

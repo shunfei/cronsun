@@ -23,8 +23,10 @@ const (
 // 执行 cron cmd 的进程
 // 注册到 /cronsun/node/<id>
 type Node struct {
-	ID  string `bson:"_id" json:"id"`  // ip
-	PID string `bson:"pid" json:"pid"` // 进程 pid
+	ID       string `bson:"_id" json:"id"`  // machine id
+	PID      string `bson:"pid" json:"pid"` // 进程 pid
+	IP       string `bson:"ip" json:"ip"`   // node ip
+	Hostname string `bson:"hostname" json:"hostname"`
 
 	Version  string    `bson:"version" json:"version"`
 	UpTime   time.Time `bson:"up" json:"up"`     // 启动时间
@@ -134,6 +136,9 @@ func WatchNode() client.WatchChan {
 
 // On 结点实例启动后，在 mongoDB 中记录存活信息
 func (n *Node) On() {
+	// remove old version(< 0.3.0) node info
+	mgoDB.RemoveId(Coll_Node, n.IP)
+
 	n.Alived, n.Version, n.UpTime = true, Version, time.Now()
 	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
 		log.Errorf(err.Error())

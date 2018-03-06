@@ -17,7 +17,7 @@
       </div>
       <div class="ui segment">
         <p>
-          <span class="title">{{$L('node')}}</span> {{log.node}}
+          <span class="title">{{$L('node')}}</span> {{node.hostname}} [{{node.ip}}]
         </p>
       </div>
       <div class="ui segment">
@@ -65,6 +65,7 @@ export default {
           beginTime: new Date(),
           endTime: new Date()
         },
+        node: {},
         error: ''
       }
   },
@@ -78,8 +79,17 @@ export default {
   mounted: function(){
     var vm = this;
     this.$rest.GET('log/'+this.$route.params.id).
-        onsucceed(200, (resp)=>{vm.log = resp}).
-        onfailed((data)=>{vm.error = data}).
+        onsucceed(200, (resp)=>{
+          vm.log = resp;
+          vm.node = vm.$store.getters.getNodeByID(resp.node)
+        }).
+        onfailed((data, xhr) => {
+          if (xhr.status === 404) {
+            vm.error = vm.$L('log has been deleted')
+          } else {
+            vm.error = data
+          }
+        }).
         do();
   }
 }

@@ -38,12 +38,7 @@ export default {
 
   mounted: function(){
     var vm = this;
-    this.$rest.GET('nodes').onsucceed(200, (resp)=>{
-      for (var i in resp) {
-        vm.activityNodes.push(resp[i].id);
-      }
-    }).do();
-
+    this.activityNodes = this.$store.getters.dropdownNodes;
 
     this.$rest.GET('node/groups').onsucceed(200, (resp)=>{
       var groups = [];
