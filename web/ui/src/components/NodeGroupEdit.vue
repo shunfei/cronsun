@@ -9,7 +9,7 @@
     </div>
     <div class="field">
       <label>{{$L('include nodes')}}</label>
-      <Dropdown :title="$L('select nodes')" multiple="true" v-bind:items="allNodes" v-bind:selected="group.nids" v-on:change="changeGroup"/>
+      <Dropdown :title="$L('select nodes')" multiple="true" v-bind:items="$store.getters.dropdownNodes" v-bind:selected="group.nids" v-on:change="changeGroup"/>
     </div>
     <div class="field">
       <button class="fluid blue ui button" type="button" v-on:click="submit"><i class="upload icon"></i> {{$L('save group')}}</button>
@@ -22,7 +22,6 @@
 
 <script>
 import Dropdown from './basic/Dropdown.vue';
-import {nodeDropdownData} from '../libraries/functions';
 
 export default {
   name: 'node_group_edit',
@@ -31,7 +30,6 @@ export default {
       error: '',
       loading: false,
       action: '',
-      allNodes: [],
       group: {
         id: '',
         name: '',
@@ -56,10 +54,6 @@ export default {
         onend(()=>{vm.loading = false}).
         do();
     }
-
-    this.$rest.GET('nodes').onsucceed(200, (resp)=>{
-      vm.allNodes = nodeDropdownData(resp);
-    }).do();
   },
 
   methods: {

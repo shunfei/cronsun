@@ -53,13 +53,4 @@ var split = function(str, sep){
   return str.split(sep || ',');
 }
 
-var nodeDropdownData = function(nodeList){
-  var data = [];
-  nodeList.forEach(n => {
-    data.push({value: n.id, name: n.hostname == '' ? n.id : n.hostname}); 
-  });
-
-  return data;
-}
-
-export {formatDuration, formatTime, formatNumber, split, nodeDropdownData};
+export {formatDuration, formatTime, formatNumber, split};
