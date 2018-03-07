@@ -66,7 +66,7 @@
         </tr>
       </tbody>
     </table>
-    <Pager v-if="list && list.length>0" :total="total" :length="5"/>
+    <Pager v-if="list && list.length>0" :total="total" :maxBtn="5"/>
     <ExecuteJob ref="executeJobModal"/>
   </div>
 </template>
