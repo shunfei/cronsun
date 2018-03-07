@@ -12,6 +12,8 @@ install:
 - go get github.com/gorilla/mux
 - go get github.com/smartystreets/goconvey/convey
 - go get github.com/spf13/cobra
+- go get github.com/denisbrodbeck/machineid
+
 before_script:
 - go vet -x ./...
 script:
