@@ -1,9 +1,11 @@
 package conf
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	client "github.com/coreos/etcd/clientv3"
@@ -52,6 +54,8 @@ type Conf struct {
 	Lock    string // job lock 路径
 	Group   string // 节点分组
 	Noticer string // 通知
+
+	UUIDFile string
 
 	Ttl        int64 // 节点超时时间，单位秒
 	ReqTimeout int   // 请求超时时间，单位秒
@@ -139,10 +143,16 @@ func cleanKeyPrefix(p string) string {
 	return p
 }
 
-const UUID_FILE = "/etc/cronsun/CRONSUN_UUID"
+var errUUIDFilePathRequired = errors.New("the UUIDFile file path is required, see base.json.sample")
 
 func (c *Conf) UUID() (string, error) {
-	b, err := ioutil.ReadFile(UUID_FILE)
+	c.UUIDFile = strings.TrimSpace(c.UUIDFile)
+	if len(c.UUIDFile) == 0 {
+		return "", errUUIDFilePathRequired
+	}
+	c.UUIDFile = path.Clean(c.UUIDFile)
+
+	b, err := ioutil.ReadFile(c.UUIDFile)
 	if err == nil {
 		if len(b) == 0 {
 			return c.genUUID()
@@ -163,7 +173,12 @@ func (c *Conf) genUUID() (string, error) {
 		return "", err
 	}
 
-	err = ioutil.WriteFile(UUID_FILE, []byte(u.String()), 0600)
+	uuidDir := path.Dir(c.UUIDFile)
+	if err := os.MkdirAll(uuidDir, 0755); err != nil {
+		return "", err
+	}
+
+	err = ioutil.WriteFile(c.UUIDFile, []byte(u.String()), 0600)
 	if err != nil {
 		return "", err
 	}
