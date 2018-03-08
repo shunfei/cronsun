@@ -45,7 +45,6 @@ func Init(confFile string, watchConfiFile bool) error {
 }
 
 type Conf struct {
-	dir     string
 	Node    string // node 进程路径
 	Proc    string // 当前执行任务路径
 	Cmd     string // cmd 路径
@@ -140,10 +139,10 @@ func cleanKeyPrefix(p string) string {
 	return p
 }
 
-const UUID_FILE = "CRONSUN_UUID"
+const UUID_FILE = "/etc/cronsun/CRONSUN_UUID"
 
 func (c *Conf) UUID() (string, error) {
-	b, err := ioutil.ReadFile(path.Join(c.dir, UUID_FILE))
+	b, err := ioutil.ReadFile(UUID_FILE)
 	if err == nil {
 		if len(b) == 0 {
 			return c.genUUID()
@@ -164,7 +163,7 @@ func (c *Conf) genUUID() (string, error) {
 		return "", err
 	}
 
-	err = ioutil.WriteFile(path.Join(c.dir, UUID_FILE), []byte(u.String()), 0600)
+	err = ioutil.WriteFile(UUID_FILE, []byte(u.String()), 0600)
 	if err != nil {
 		return "", err
 	}
@@ -177,8 +176,6 @@ func (c *Conf) parse(confFile string) error {
 	if err != nil {
 		return err
 	}
-
-	c.dir = path.Dir(confFile)
 
 	if c.Etcd.DialTimeout > 0 {
 		c.Etcd.conf.DialTimeout = time.Duration(c.Etcd.DialTimeout) * time.Second
