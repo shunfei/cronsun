@@ -1,12 +1,15 @@
 package conf
 
 import (
+	"io/ioutil"
+	"os"
 	"path"
 	"time"
 
 	client "github.com/coreos/etcd/clientv3"
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-gomail/gomail"
+	"github.com/satori/go.uuid"
 
 	"github.com/shunfei/cronsun/db"
 	"github.com/shunfei/cronsun/event"
@@ -42,6 +45,7 @@ func Init(confFile string, watchConfiFile bool) error {
 }
 
 type Conf struct {
+	dir     string
 	Node    string // node 进程路径
 	Proc    string // 当前执行任务路径
 	Cmd     string // cmd 路径
@@ -136,11 +140,45 @@ func cleanKeyPrefix(p string) string {
 	return p
 }
 
+const UUID_FILE = "CRONSUN_UUID"
+
+func (c *Conf) UUID() (string, error) {
+	b, err := ioutil.ReadFile(path.Join(c.dir, UUID_FILE))
+	if err == nil {
+		if len(b) == 0 {
+			return c.genUUID()
+		}
+		return string(b), nil
+	}
+
+	if !os.IsNotExist(err) {
+		return "", err
+	}
+
+	return c.genUUID()
+}
+
+func (c *Conf) genUUID() (string, error) {
+	u, err := uuid.NewV4()
+	if err != nil {
+		return "", err
+	}
+
+	err = ioutil.WriteFile(path.Join(c.dir, UUID_FILE), []byte(u.String()), 0600)
+	if err != nil {
+		return "", err
+	}
+
+	return u.String(), nil
+}
+
 func (c *Conf) parse(confFile string) error {
 	err := utils.LoadExtendConf(confFile, c)
 	if err != nil {
 		return err
 	}
+
+	c.dir = path.Dir(confFile)
 
 	if c.Etcd.DialTimeout > 0 {
 		c.Etcd.conf.DialTimeout = time.Duration(c.Etcd.DialTimeout) * time.Second

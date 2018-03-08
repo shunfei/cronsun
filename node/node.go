@@ -7,7 +7,6 @@ import (
 	"time"
 
 	client "github.com/coreos/etcd/clientv3"
-	"github.com/denisbrodbeck/machineid"
 
 	"github.com/shunfei/cronsun"
 	"github.com/shunfei/cronsun/conf"
@@ -36,7 +35,7 @@ type Node struct {
 }
 
 func NewNode(cfg *conf.Conf) (n *Node, err error) {
-	mid, err := machineid.ProtectedID("cronsun")
+	uuid, err := cfg.UUID()
 	if err != nil {
 		return
 	}
@@ -48,14 +47,14 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 
 	hostname, err := os.Hostname()
 	if err != nil {
-		hostname = mid
+		hostname = uuid
 		err = nil
 	}
 
 	n = &Node{
 		Client: cronsun.DefalutClient,
 		Node: &cronsun.Node{
-			ID:       mid,
+			ID:       uuid,
 			PID:      strconv.Itoa(os.Getpid()),
 			IP:       ip.String(),
 			Hostname: hostname,

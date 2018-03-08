@@ -73,7 +73,7 @@ export default {
     var nodes = this.$store.getters.nodes;
     for (var id in nodes) {
       var n = nodes[id];
-      n.title = n.ip + "\n" + n.id.substr(0, 16) + "\n" + n.version + "\nstarted at: " + n.up
+      n.title = n.ip + "\n" + n.id + "\n" + n.version + "\nstarted at: " + n.up
       if (n.alived && n.connected) {
         vm.groups[2].nodes.push(n);
       } else if (n.alived && !n.connected) {
