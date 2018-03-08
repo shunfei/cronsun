@@ -32,7 +32,7 @@ var BackupCmd = &cobra.Command{
 
 		backupDir = strings.TrimSpace(backupDir)
 		if len(backupDir) > 0 {
-			err = os.MkdirAll(backupDir, os.ModeDir)
+			err = os.MkdirAll(backupDir, 0755)
 			if err != nil {
 				ea.Exit("failed to make directory %s, err: %s", backupDir, err)
 			}
