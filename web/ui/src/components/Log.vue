@@ -13,7 +13,7 @@
       </div>
       <div class="field">
         <label>{{$L('node')}}</label>
-        <input type="text" v-model="nodes" :placeholder="$L('multiple IPs can separated by commas')">
+        <input type="text" v-model="hostnames" :placeholder="$L('multiple Hostnames can separated by commas')">
       </div>
       <div class="two fields">
         <div class="field">
@@ -56,7 +56,7 @@
       <tbody>
         <tr v-for="log in list">
           <td><router-link class="item" :to="'/job/edit/'+log.jobGroup+'/'+log.jobId">{{log.name}}</router-link></td>
-          <td>{{log.node}}</td>
+          <td :title="log.node">{{$store.getters.getHostnameByID(log.node)}}</td>
           <td>{{log.user}}</td>
           <td :class="{warning: durationAttention(log.beginTime, log.endTime)}"><i class="attention icon" v-if="durationAttention(log.beginTime, log.endTime)"></i> {{formatTime(log)}}</td>
           <td :class="{error: !log.success}">
@@ -66,7 +66,7 @@
         </tr>
       </tbody>
     </table>
-    <Pager v-if="list && list.length>0" :total="total" :length="5"/>
+    <Pager v-if="list && list.length>0" :total="total" :maxBtn="5"/>
     <ExecuteJob ref="executeJobModal"/>
   </div>
 </template>
@@ -83,7 +83,7 @@ export default {
       loading: false,
       names: '',
       ids: '',
-      nodes: '',
+      hostnames: '',
       begin: '',
       end: '',
       latest: false,
@@ -114,7 +114,7 @@ export default {
     fillParams(){
       this.names = this.$route.query.names || '';
       this.ids = this.$route.query.ids || '';
-      this.nodes = this.$route.query.nodes || '';
+      this.hostnames = this.$route.query.hostnames || '';
       this.begin = this.$route.query.begin || '';
       this.end = this.$route.query.end || '';
       this.page = this.$route.query.page || 1;
@@ -139,7 +139,7 @@ export default {
       var params = [];
       if (this.names) params.push('names='+this.names);
       if (this.ids) params.push('ids='+this.ids);
-      if (this.nodes) params.push('nodes='+this.nodes);
+      if (this.hostnames) params.push('hostnames='+this.hostnames);
       if (this.begin) params.push('begin='+this.begin);
       if (this.end) params.push('end='+this.end);
       if (this.failedOnly) params.push('failedOnly=true');

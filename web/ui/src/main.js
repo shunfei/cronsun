@@ -1,6 +1,7 @@
 window.$ = window.jQuery = require('jquery');
 require('semantic');
 require('semantic-ui/dist/semantic.min.css');
+import store from './vuex/store';
 
 import Vue from 'vue';
 Vue.config.debug = true;
@@ -110,8 +111,55 @@ var router = new VueRouter({
   routes: routes
 });
 
-var app = new Vue({
-  el: '#app',
-  render: h => h(App),
-  router: router
+bus.$on('goLogin', () => {
+  store.commit('setEmail', '');
+  store.commit('setRole', 0);
+  router.push('/login');
 });
+
+var initConf = new Promise((resolve) => {
+  restApi.GET('session?check=1').
+  onsucceed(200, (resp) => {
+    store.commit('enabledAuth', resp.enabledAuth);
+    store.commit('setEmail', resp.email);
+    store.commit('setRole', resp.role);
+  
+    restApi.GET('configurations').
+    onsucceed(200, (resp) => {
+      Vue.use((Vue) => Vue.prototype.$appConfig = resp);
+      bus.$emit('conf_loaded', resp);
+
+      restApi.GET('nodes').onsucceed(200, (resp)=>{
+        var nodes = {};
+        for (var i in resp) {
+          nodes[resp[i].id] = resp[i];
+        }
+        store.commit('setNodes', nodes);
+        resolve();
+      }).do();
+    }).onfailed((data, xhr) => {
+      bus.$emit('error', data ? data : xhr.status + ' ' + xhr.statusText);
+      resolve();
+    }).do();
+  }).onfailed((data, xhr) => {
+    if (xhr.status !== 401) {
+      bus.$emit('error', data);
+    } else {
+      store.commit('enabledAuth', true);
+    }
+    router.push('/login');
+    resolve()
+  }).
+  do();
+})
+
+initConf.then(() => {
+  new Vue({
+    el: '#app',
+    render: h => h(App),
+    router: router
+  });
+})
+
+
+

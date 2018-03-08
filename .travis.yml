@@ -11,6 +11,9 @@ install:
 - go get github.com/cockroachdb/cmux
 - go get github.com/gorilla/mux
 - go get github.com/smartystreets/goconvey/convey
+- go get github.com/spf13/cobra
+- go get github.com/satori/go.uuid
+
 before_script:
 - go vet -x ./...
 script:

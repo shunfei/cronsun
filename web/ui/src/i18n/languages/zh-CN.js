@@ -30,7 +30,7 @@ var language = {
   'multiple names can separated by commas': '多个名称用英文逗号分隔',
   'job ID': '任务 ID',
   'multiple IDs can separated by commas': '多个 ID 用英文逗号分隔',
-  'multiple IPs can separated by commas': '多个 IP 用英文逗号分隔',
+  'multiple Hostnames can separated by commas': '多个主机名称用英文逗号分隔',
   'starting date': '起始日期',
   'end date': '截至日期',
   'failure only': '只看失败的任务',
@@ -77,6 +77,7 @@ var language = {
   'spend time': '耗时',
   'result': '结果',
   'loading configurations': '正在加载配置',
+  'log has been deleted': '日志已经被删除',
 
   'job type': '任务类型',
   'common job': '普通任务',
@@ -128,7 +129,8 @@ var language = {
   'select nodes': '选择节点',
   'select groups': '选择分组',
   'are you sure to delete the group {name}?': '确定删除分组 {0}?',
-  'are you sure to remove the node {nodeId}?': '确定删除节点 {0}?'
+  'are you sure to remove the node {nodeId}?': '确定删除节点 {0}?',
+  'node not found, was it removed?': '不存在的节点，被删除了吗？'
 }
 
 export default language;

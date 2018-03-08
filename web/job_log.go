@@ -13,6 +13,14 @@ import (
 	"github.com/shunfei/cronsun"
 )
 
+func EnsureJobLogIndex() {
+	cronsun.GetDb().WithC(cronsun.Coll_JobLog, func(c *mgo.Collection) error {
+		return c.EnsureIndex(mgo.Index{
+			Key: []string{"beginTime"},
+		})
+	})
+}
+
 type JobLog struct{}
 
 func (jl *JobLog) GetDetail(ctx *Context) {
@@ -43,7 +51,7 @@ func (jl *JobLog) GetDetail(ctx *Context) {
 }
 
 func (jl *JobLog) GetList(ctx *Context) {
-	nodes := getStringArrayFromQuery("nodes", ",", ctx.R)
+	hostnames := getStringArrayFromQuery("hostnames", ",", ctx.R)
 	names := getStringArrayFromQuery("names", ",", ctx.R)
 	ids := getStringArrayFromQuery("ids", ",", ctx.R)
 	begin := getTime(ctx.R.FormValue("begin"))
@@ -51,14 +59,11 @@ func (jl *JobLog) GetList(ctx *Context) {
 	page := getPage(ctx.R.FormValue("page"))
 	failedOnly := ctx.R.FormValue("failedOnly") == "true"
 	pageSize := getPageSize(ctx.R.FormValue("pageSize"))
-	sort := "-beginTime"
-	if ctx.R.FormValue("sort") == "1" {
-		sort = "beginTime"
-	}
+	orderBy := "-beginTime"
 
 	query := bson.M{}
-	if len(nodes) > 0 {
-		query["node"] = bson.M{"$in": nodes}
+	if len(hostnames) > 0 {
+		query["hostname"] = bson.M{"$in": hostnames}
 	}
 
 	if len(ids) > 0 {
@@ -95,13 +100,13 @@ func (jl *JobLog) GetList(ctx *Context) {
 	var err error
 	if ctx.R.FormValue("latest") == "true" {
 		var latestLogList []*cronsun.JobLatestLog
-		latestLogList, pager.Total, err = cronsun.GetJobLatestLogList(query, page, pageSize, sort)
+		latestLogList, pager.Total, err = cronsun.GetJobLatestLogList(query, page, pageSize, orderBy)
 		for i := range latestLogList {
 			latestLogList[i].JobLog.Id = bson.ObjectIdHex(latestLogList[i].RefLogId)
 			pager.List = append(pager.List, &latestLogList[i].JobLog)
 		}
 	} else {
-		pager.List, pager.Total, err = cronsun.GetJobLogList(query, page, pageSize, sort)
+		pager.List, pager.Total, err = cronsun.GetJobLogList(query, page, pageSize, orderBy)
 	}
 	if err != nil {
 		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())

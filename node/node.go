@@ -35,16 +35,29 @@ type Node struct {
 }
 
 func NewNode(cfg *conf.Conf) (n *Node, err error) {
+	uuid, err := cfg.UUID()
+	if err != nil {
+		return
+	}
+
 	ip, err := utils.LocalIP()
 	if err != nil {
 		return
 	}
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = uuid
+		err = nil
+	}
+
 	n = &Node{
 		Client: cronsun.DefalutClient,
 		Node: &cronsun.Node{
-			ID:  ip.String(),
-			PID: strconv.Itoa(os.Getpid()),
+			ID:       uuid,
+			PID:      strconv.Itoa(os.Getpid()),
+			IP:       ip.String(),
+			Hostname: hostname,
 		},
 		Cron: cron.New(),
 
@@ -62,6 +75,9 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 
 // 注册到 /cronsun/node/xx
 func (n *Node) Register() (err error) {
+	// remove old version(< 0.3.0) node info
+	cronsun.DefalutClient.Delete(conf.Config.Node + n.IP)
+
 	pid, err := n.Node.Exist()
 	if err != nil {
 		return
@@ -133,7 +149,7 @@ func (n *Node) loadJobs() (err error) {
 	}
 
 	for _, job := range jobs {
-		job.Init(n.ID)
+		job.Init(n.ID, n.Hostname)
 		n.addJob(job, false)
 	}
 
@@ -142,6 +158,7 @@ func (n *Node) loadJobs() (err error) {
 
 func (n *Node) addJob(job *cronsun.Job, notice bool) {
 	n.link.addJob(job)
+
 	if job.IsRunOn(n.ID, n.groups) {
 		n.jobs[job.ID] = job
 	}
@@ -321,7 +338,7 @@ func (n *Node) groupAddNode(g *cronsun.Group) {
 				continue
 			}
 
-			job.Init(n.ID)
+			job.Init(n.ID, n.Hostname)
 		}
 
 		cmds := job.Cmds(n.ID, n.groups)
@@ -377,7 +394,7 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
-				job.Init(n.ID)
+				job.Init(n.ID, n.Hostname)
 				n.addJob(job, true)
 			case ev.IsModify():
 				job, err := cronsun.GetJobFromKv(ev.Kv.Key, ev.Kv.Value)
@@ -386,7 +403,7 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
-				job.Init(n.ID)
+				job.Init(n.ID, n.Hostname)
 				n.modJob(job)
 			case ev.Type == client.EventTypeDelete:
 				n.delJob(cronsun.GetIDFromKey(string(ev.Kv.Key)))

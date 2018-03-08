@@ -14,8 +14,8 @@
         <input type="text" ref="ids" v-model:value="ids" :placeholder="$L('multiple IDs can separated by commas')"/>
       </div>
       <div class="field">
-        <label>{{$L('select group')}}</label>
-        <Dropdown :title="$L('select group')" v-bind:items="prefetchs.groups" v-on:change="changeGroup" :selected="groups" :multiple="true"/>
+        <label>{{$L('select groups')}}</label>
+        <Dropdown :title="$L('select groups')" v-bind:items="prefetchs.groups" v-on:change="changeGroup" :selected="groups" :multiple="true"/>
       </div>
       <div class="field">
         <label>{{$L('select nodes')}}</label>

@@ -130,28 +130,26 @@ export default {
       chart.update();
     }
 
-    var renderNodeInfo = function(resp){
-      vm.totalNodes = resp ? resp.length : 0;
-      var online = 0;
-      var offline = 0;
-      var damaged = 0;
-      for (var i in resp) {
-        if (resp[i].alived && resp[i].connected) {
-          online++;
-        } else if (resp[i].alived && !resp[i].connected) {
-          damaged++;
-        } else if(!resp[i].alived) {
-          offline++;
-        }
+    var nodes = this.$store.getters.nodes;
+    this.totalNodes = nodes.length;
+    var online = 0;
+    var offline = 0;
+    var damaged = 0;
+    for (var id in nodes) {
+      if (nodes[id].alived && nodes[id].connected) {
+        online++;
+      } else if (nodes[id].alived && !nodes[id].connected) {
+        damaged++;
+      } else if(!nodes[id].alived) {
+        offline++;
       }
-
-      vm.totalOnlineNodes = online;
-      vm.totalOfflineNodes = offline;
-      vm.totalDamagedNodes = damaged;
     }
 
+    this.totalOnlineNodes = online;
+    this.totalOfflineNodes = offline;
+    this.totalDamagedNodes = damaged;
+
     this.$rest.GET('/info/overview').onsucceed(200, renderJobInfo).do();
-    this.$rest.GET('nodes').onsucceed(200, renderNodeInfo).do();
   }
 }
 </script>

@@ -8,3 +8,4 @@ web/ui/node_modules
 web/ui/dist
 .vscode
 *npm-debug.log
+vendor

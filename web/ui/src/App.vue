@@ -40,31 +40,6 @@ export default {
   store,
 
   mounted: function(){
-    var vm = this;
-
-    this.$rest.GET('session?check=1').
-    onsucceed(200, (resp) => {
-      vm.$store.commit('enabledAuth', resp.enabledAuth);
-      vm.$store.commit('setEmail', resp.email);
-      vm.$store.commit('setRole', resp.role);
-
-      vm.$loadConfiguration();
-    }).onfailed((data, xhr) => {
-      if (xhr.status !== 401) {
-        vm.$bus.$emit('error', data);
-      } else {
-        vm.$store.commit('enabledAuth', true);
-      }
-      vm.$router.push('/login');
-    }).
-    do();
-
-    this.$bus.$on('goLogin', () => {
-      vm.$store.commit('setEmail', '');
-      vm.$store.commit('setRole', 0);
-      vm.$router.push('/login');
-    });
-
     $(this.$refs.langSelection).dropdown({
       onChange: function(value, text){
         var old = window.$.cookie('locale');

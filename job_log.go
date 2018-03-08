@@ -23,7 +23,8 @@ type JobLog struct {
 	JobGroup  string        `bson:"jobGroup" json:"jobGroup"`         // 任务分组，配合 Id 跳转用
 	User      string        `bson:"user" json:"user"`                 // 执行此次任务的用户
 	Name      string        `bson:"name" json:"name"`                 // 任务名称
-	Node      string        `bson:"node" json:"node"`                 // 运行此次任务的节点 ip，索引
+	Node      string        `bson:"node" json:"node"`                 // 运行此次任务的节点 id，索引
+	Hostname  string        `bson:"hostname" json:"hostname"`         // 运行此次任务的节点主机名称，索引
 	Command   string        `bson:"command" json:"command,omitempty"` // 执行的命令，包括参数
 	Output    string        `bson:"output" json:"output,omitempty"`   // 任务输出的所有内容
 	Success   bool          `bson:"success" json:"success"`           // 是否执行成功
@@ -95,7 +96,8 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 		Name:     j.Name,
 		User:     j.User,
 
-		Node: j.runOn,
+		Node:     j.runOn,
+		Hostname: j.hostname,
 
 		Command: j.Command,
 		Output:  rs,
@@ -124,7 +126,7 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 		JobLog:   jl,
 	}
 	latestLog.Id = ""
-	if err := mgoDB.Upsert(Coll_JobLatestLog, bson.M{"node": jl.Node, "jobId": jl.JobId, "jobGroup": jl.JobGroup}, latestLog); err != nil {
+	if err := mgoDB.Upsert(Coll_JobLatestLog, bson.M{"node": jl.Node, "hostname": jl.Hostname, "jobId": jl.JobId, "jobGroup": jl.JobGroup}, latestLog); err != nil {
 		log.Errorf(err.Error())
 	}
 

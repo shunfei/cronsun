@@ -30,7 +30,7 @@ var language = {
   'multiple names can separated by commas': 'Multiple names can separated by commas',
   'job ID': 'Job ID',
   'multiple IDs can separated by commas': 'Multiple IDs can separated by commas',
-  'multiple IPs can separated by commas': 'Multiple IPs can separated by commas',
+  'multiple Hostnames can separated by commas': 'Multiple Hostnames can separated by commas',
   'starting date': 'Starting date',
   'end date': 'End date',
   'failure only': 'Failure only',
@@ -75,6 +75,7 @@ var language = {
   'spend time': 'Spend time',
   'result': 'Result',
   'loading configurations': 'Loading configurations',
+  'log has been deleted': 'Log has been deleted',
 
   'job type': 'Job type',
   'common job': 'Common',
@@ -126,7 +127,8 @@ var language = {
   'select nodes': 'Select nodes',
   'select groups': 'Select groups',
   'are you sure to delete the group {name}?': 'Are you sure to delete the group {0}?',
-  'are you sure to remove the node {nodeId}?': 'Are you sure to remove the node {0}?'
+  'are you sure to remove the node {nodeId}?': 'Are you sure to remove the node {0}?',
+  'node not found, was it removed?': 'Node not found, was it removed?'
 }
 
 export default language;

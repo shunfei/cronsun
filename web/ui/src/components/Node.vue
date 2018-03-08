@@ -1,13 +1,13 @@
 <style scoped>
 .node {
-  width: 140px;
+  padding: 0 13px;
   border-radius: 3px;
   margin: 3px;
   display: inline-block;
   background: #e8e8e8;
   text-align: center;
   position: relative;
-  overflow: hidden;
+
   line-height: 1.9em;
 }
 
@@ -30,7 +30,6 @@
   <div>
     <div class="clearfix">
       <router-link class="ui right floated primary button" to="/node/group"><i class="cubes icon"></i> {{$L('group manager')}}</router-link>
-      <div class="ui label" 
       <div class="ui label" v-for="group in groups" v-bind:title="$L(group.title)">
         <i class="cube icon" v-bind:class="group.css"></i> {{group.nodes.length}} {{$L(group.name)}}
       </div>
@@ -42,7 +41,7 @@
       <div v-for="(node, nodeIndex) in group.nodes" class="node" v-bind:title="node.title">
         <router-link class="item" :to="'/job?node='+node.id">
           <i class="red icon fork" v-if="node.version !== version" :title="$L('version inconsistent, node: {version}', node.version)"></i>
-          {{node.id}}
+          {{node.hostname || node.id+"(need to upgrade)"}}
         </router-link>
         <i v-if="groupIndex != 2" v-on:click="removeConfirm(groupIndex, nodeIndex, node.id)" class="icon remove"></i>
       </div>
@@ -70,30 +69,20 @@ export default {
     this.$rest.GET('version').onsucceed(200, (resp)=>{
       vm.version = resp;
     }).do();
-    this.$rest.GET('nodes').onsucceed(200, (resp)=>{
-      resp.sort(function(a, b){
-        var aid = a.id.split('.');
-        var bid = b.id.split('.');
-        var ai = 0, bi = 0;
-        for (var i in aid) {
-          ai += (+aid[i])*Math.pow(255,3-i);
-          bi += (+bid[i])*Math.pow(255,3-i);
-        }
-        return ai - bi;
-      });
-      for (var i in resp) {
-        var n = resp[i];
-        n.title = n.version + "\nstarted at: " + n.up
-        if (n.alived && n.connected) {
-          vm.groups[2].nodes.push(n);
-        } else if (n.alived && !n.connected) {
-          vm.groups[0].nodes.push(n);
-        } else {
-          vm.groups[1].nodes.push(n);
-        }
+
+    var nodes = this.$store.getters.nodes;
+    for (var id in nodes) {
+      var n = nodes[id];
+      n.title = n.ip + "\n" + n.id + "\n" + n.version + "\nstarted at: " + n.up
+      if (n.alived && n.connected) {
+        vm.groups[2].nodes.push(n);
+      } else if (n.alived && !n.connected) {
+        vm.groups[0].nodes.push(n);
+      } else {
+        vm.groups[1].nodes.push(n);
       }
-      vm.count = resp.length || 0;
-    }).do();
+    }
+    vm.count = nodes.length || 0;
   },
 
   methods: {
@@ -101,7 +90,7 @@ export default {
       if (!confirm(this.$L('are you sure to remove the node {nodeId}?', nodeId))) return;
       
       var vm = this;
-      this.$rest.DELETE('node/'+nodeId).onsucceed(204, (resp)=>{
+      this.$rest.DELETE('node/'+nodeId).onsucceed(204, (resp) => {
         vm.groups[groupIndex].nodes.splice(nodeIndex, 1);
       }).do();
     }
