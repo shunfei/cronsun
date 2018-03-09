@@ -82,7 +82,8 @@ export default {
         vm.groups[1].nodes.push(n);
       }
     }
-    vm.count = nodes.length || 0;
+
+    vm.count = Object.keys(nodes).length;
   },
 
   methods: {

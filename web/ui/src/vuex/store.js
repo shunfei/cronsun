@@ -33,7 +33,8 @@ const store = new Vuex.Store({
 
     getHostnameByID: function (state) {
       return (id) => {
-        return state.nodes[id] ? state.nodes[id].hostname : id;
+        if (!state.nodes[id]) return id + '(node not found)';
+        return state.nodes[id].hostname || id + '(need to upgrade)';
       }
     },
 

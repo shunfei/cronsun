@@ -17,7 +17,7 @@
       </div>
       <div class="ui segment">
         <p>
-          <span class="title">{{$L('node')}}</span> {{node.hostname}} [{{node.ip}}]
+          <span class="title">{{$L('node')}}</span> {{log.hostname}}
         </p>
       </div>
       <div class="ui segment">
@@ -65,7 +65,6 @@ export default {
           beginTime: new Date(),
           endTime: new Date()
         },
-        node: {},
         error: ''
       }
   },
@@ -80,8 +79,18 @@ export default {
     var vm = this;
     this.$rest.GET('log/'+this.$route.params.id).
         onsucceed(200, (resp)=>{
+          var node = vm.$store.getters.getNodeByID(resp.node);
+          if (!node) {
+            resp.hostname = resp.node + ' (Node not found)'
+          } else {
+            if (!node.ip) {
+              resp.hostname = node.id + ' (Need to upgrade)';
+            } else {
+              resp.hostname = node.hostname + ' [' + node.ip + ']';
+            }
+          }
+
           vm.log = resp;
-          vm.node = vm.$store.getters.getNodeByID(resp.node)
         }).
         onfailed((data, xhr) => {
           if (xhr.status === 404) {

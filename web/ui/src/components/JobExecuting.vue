@@ -39,7 +39,7 @@
         <tr v-for="(proc, index) in executings">
           <td class="center aligned"><router-link :to="'/job/edit/'+proc.group+'/'+proc.jobId">{{proc.jobId}}</router-link></td>
           <td class="center aligned">{{proc.group}}</td>
-          <td class="center aligned">{{proc.nodeId}}</td>
+          <td class="center aligned">{{$store.getters.getHostnameByID(proc.nodeId)}}</td>
           <td class="center aligned">{{proc.id}}</td>
           <td class="center aligned">{{proc.time}}</td>
         </tr>
