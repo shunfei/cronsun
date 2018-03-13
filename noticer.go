@@ -169,28 +169,25 @@ func StartNoticer(n Noticer) {
 }
 
 func monitorNodes(n Noticer) {
-	var (
-		err error
-		ok  bool
-		id  string
-	)
 	rch := WatchNode()
 
 	for wresp := range rch {
 		for _, ev := range wresp.Events {
 			switch {
 			case ev.Type == client.EventTypeDelete:
-				id = GetIDFromKey(string(ev.Kv.Key))
-				ok, err = ISNodeAlive(id)
+				id := GetIDFromKey(string(ev.Kv.Key))
+				log.Errorf("cronnode DELETE event detected, node UUID: %s", id)
+
+				node, err := GetNodesByID(id)
 				if err != nil {
-					log.Warnf("query node[%s] err: %s", id, err.Error())
+					log.Warnf("failed to fetch node[%s] from mongodb: %s", id, err.Error())
 					continue
 				}
 
-				if ok {
+				if node.Alived {
 					n.Send(&Message{
-						Subject: "Node[" + id + "] break away cluster, this happed at " + time.Now().Format(time.RFC3339),
-						Body:    "Node breaked away cluster, this might happed when node crash or network problems.",
+						Subject: fmt.Sprintf("Node[%s] break away cluster at %s", node.Hostname, time.Now().Format(time.RFC3339)),
+						Body:    fmt.Sprintf("Node breaked away cluster, this might happened when node crash or network problems.\nUUID: %s\nHostname: %s\nIP: %s\n", id, node.Hostname, node.IP),
 						To:      conf.Config.Mail.To,
 					})
 				}

@@ -92,6 +92,11 @@ func GetNodesBy(query interface{}) (nodes []*Node, err error) {
 	return
 }
 
+func GetNodesByID(id string) (node *Node, err error) {
+	err = mgoDB.FindId(Coll_Node, id, &node)
+	return
+}
+
 func RemoveNode(query interface{}) error {
 	return mgoDB.WithC(Coll_Node, func(c *mgo.Collection) error {
 		return c.Remove(query)
