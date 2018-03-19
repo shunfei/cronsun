@@ -24,6 +24,8 @@ var language = {
   'total number of executeds': 'Total executeds',
   'total number of nodes': 'Total nodes',
   'job executed in past 7 days': 'Job executed in past 7 days',
+  'node show as': 'Node show as',
+  'hostname': 'Hostname',
 
   'batch': 'Batch',
   'job name': 'Job name',
@@ -31,6 +33,7 @@ var language = {
   'job ID': 'Job ID',
   'multiple IDs can separated by commas': 'Multiple IDs can separated by commas',
   'multiple Hostnames can separated by commas': 'Multiple Hostnames can separated by commas',
+  'multiple IPs can separated by commas': 'Multiple IPs can separated by commas',
   'starting date': 'Starting date',
   'end date': 'End date',
   'failure only': 'Failure only',

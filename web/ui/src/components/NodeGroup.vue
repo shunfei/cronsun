@@ -31,7 +31,7 @@
           <div class="description">
             <div class="ui middle large aligned divided list"> 
               <div class="item" v-for="nodeID in g.nids">
-                <span v-if="nodes[nodeID]">{{nodes[nodeID].hostname || nodes[nodeID].id}}
+                <span v-if="nodes[nodeID]">{{$store.getters.hostshows(nodeID)}}
                 <i class="arrow circle up icon red" v-if="nodes[nodeID].hostname == ''"></i>
                 <i v-if="nodes[nodeID].hostname == ''">(need to upgrade)</i>
                 </span>

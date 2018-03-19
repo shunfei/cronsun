@@ -183,7 +183,7 @@ export default {
     },
 
     formatLatest: function(latest){
-      return this.$L('on {node} took {times}, {begin ~ end}', latest.hostname, formatDuration(latest.beginTime, latest.endTime), formatTime(latest.beginTime, latest.endTime));
+      return this.$L('on {node} took {times}, {begin ~ end}', this.$store.getters.hostshowsWithoutTip(latest.node), formatDuration(latest.beginTime, latest.endTime), formatTime(latest.beginTime, latest.endTime));
     },
 
     showExecuteJobModal: function(jobName, jobGroup, jobId){

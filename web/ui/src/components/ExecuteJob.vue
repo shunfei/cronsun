@@ -27,8 +27,6 @@ export default {
       loading: false
     }
   },
-  
-  mounted(){},
 
   methods: {
     show(jobName, jobGroup, jobId){
@@ -53,7 +51,7 @@ export default {
         onsucceed(200, (resp)=>{
           var nodes = [{value: 'all nodes', name: vm.$L('all nodes')}];
           for (var i in resp) {
-            nodes.push({value: resp[i], name: vm.$store.getters.getHostnameByID(resp[i])})
+            nodes.push({value: resp[i], name: vm.$store.getters.hostshows(resp[i])})
           }
           vm.nodes = nodes;
         }).

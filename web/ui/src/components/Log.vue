@@ -1,6 +1,6 @@
 <template>
   <div>
-    <form class="ui form" method="GET" v-bind:class="{loading:loading}" v-on:submit.prevent>
+    <form class="ui form" method="GET" v-bind:class="{loading:loading}" v-on:submit.prevent v-on:keyup.enter="submit">
       <div class="two fields">
         <div class="field">
           <label>{{$L('job name')}}</label>
@@ -8,12 +8,13 @@
         </div>
         <div class="field">
           <label>{{$L('job ID')}}</label>
-          <input type="text" v-model="ids"  :placeholder="$L('multiple IDs can separated by commas')">
+          <input type="text" v-model="ids" :placeholder="$L('multiple IDs can separated by commas')">
         </div>
       </div>
       <div class="field">
         <label>{{$L('node')}}</label>
-        <input type="text" v-model="hostnames" :placeholder="$L('multiple Hostnames can separated by commas')">
+        <input v-if="$store.getters.showWithHostname" type="text" v-model="hostnames" :placeholder="$L('multiple Hostnames can separated by commas')">
+        <input v-else type="text" v-model="ips" :placeholder="$L('multiple IPs can separated by commas')">
       </div>
       <div class="two fields">
         <div class="field">
@@ -56,7 +57,7 @@
       <tbody>
         <tr v-for="log in list">
           <td><router-link class="item" :to="'/job/edit/'+log.jobGroup+'/'+log.jobId">{{log.name}}</router-link></td>
-          <td :title="log.node">{{$store.getters.getHostnameByID(log.node)}}</td>
+          <td :title="log.node">{{$store.getters.hostshows(log.node)}}</td>
           <td>{{log.user}}</td>
           <td :class="{warning: durationAttention(log.beginTime, log.endTime)}"><i class="attention icon" v-if="durationAttention(log.beginTime, log.endTime)"></i> {{formatTime(log)}}</td>
           <td :class="{error: !log.success}">
@@ -84,6 +85,7 @@ export default {
       names: '',
       ids: '',
       hostnames: '',
+      ips: '',
       begin: '',
       end: '',
       latest: false,
@@ -115,6 +117,7 @@ export default {
       this.names = this.$route.query.names || '';
       this.ids = this.$route.query.ids || '';
       this.hostnames = this.$route.query.hostnames || '';
+      this.ips = this.$route.query.ips || '';
       this.begin = this.$route.query.begin || '';
       this.end = this.$route.query.end || '';
       this.page = this.$route.query.page || 1;
@@ -138,8 +141,9 @@ export default {
     buildQuery(){
       var params = [];
       if (this.names) params.push('names='+this.names);
-      if (this.ids) params.push('ids='+this.ids);
-      if (this.hostnames) params.push('hostnames='+this.hostnames);
+      if (!this.$store.getters.showWithHostname && this.ids) params.push('ids='+this.ids);
+      if (this.$store.getters.showWithHostname && this.hostnames) params.push('hostnames='+this.hostnames);
+      if (this.ips) params.push('ips='+this.ips);
       if (this.begin) params.push('begin='+this.begin);
       if (this.end) params.push('end='+this.end);
       if (this.failedOnly) params.push('failedOnly=true');

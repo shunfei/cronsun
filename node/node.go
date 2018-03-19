@@ -149,7 +149,7 @@ func (n *Node) loadJobs() (err error) {
 	}
 
 	for _, job := range jobs {
-		job.Init(n.ID, n.Hostname)
+		job.Init(n.ID, n.Hostname, n.IP)
 		n.addJob(job, false)
 	}
 
@@ -338,7 +338,7 @@ func (n *Node) groupAddNode(g *cronsun.Group) {
 				continue
 			}
 
-			job.Init(n.ID, n.Hostname)
+			job.Init(n.ID, n.Hostname, n.IP)
 		}
 
 		cmds := job.Cmds(n.ID, n.groups)
@@ -394,7 +394,7 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
-				job.Init(n.ID, n.Hostname)
+				job.Init(n.ID, n.Hostname, n.IP)
 				n.addJob(job, true)
 			case ev.IsModify():
 				job, err := cronsun.GetJobFromKv(ev.Kv.Key, ev.Kv.Value)
@@ -403,7 +403,7 @@ func (n *Node) watchJobs() {
 					continue
 				}
 
-				job.Init(n.ID, n.Hostname)
+				job.Init(n.ID, n.Hostname, n.IP)
 				n.modJob(job)
 			case ev.Type == client.EventTypeDelete:
 				n.delJob(cronsun.GetIDFromKey(string(ev.Kv.Key)))

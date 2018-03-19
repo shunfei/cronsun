@@ -69,6 +69,7 @@ type Job struct {
 	// 执行任务的结点，用于记录 job log
 	runOn    string
 	hostname string
+	ip       string
 	// 用于存储分隔后的任务
 	cmd []string
 	// 控制同时执行任务数
@@ -186,9 +187,9 @@ func (j *Job) unlimit() {
 	atomic.AddInt64(j.Count, -1)
 }
 
-func (j *Job) Init(nodeID, hostname string) {
+func (j *Job) Init(nodeID, hostname, ip string) {
 	var c int64
-	j.Count, j.runOn, j.hostname = &c, nodeID, hostname
+	j.Count, j.runOn, j.hostname, j.ip = &c, nodeID, hostname, ip
 }
 
 func (c *Cmd) lockTtl() int64 {

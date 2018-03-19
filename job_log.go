@@ -25,6 +25,7 @@ type JobLog struct {
 	Name      string        `bson:"name" json:"name"`                 // 任务名称
 	Node      string        `bson:"node" json:"node"`                 // 运行此次任务的节点 id，索引
 	Hostname  string        `bson:"hostname" json:"hostname"`         // 运行此次任务的节点主机名称，索引
+	IP        string        `bson:"ip" json:"ip"`                     // 运行此次任务的节点主机IP，索引
 	Command   string        `bson:"command" json:"command,omitempty"` // 执行的命令，包括参数
 	Output    string        `bson:"output" json:"output,omitempty"`   // 任务输出的所有内容
 	Success   bool          `bson:"success" json:"success"`           // 是否执行成功
@@ -98,6 +99,7 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 
 		Node:     j.runOn,
 		Hostname: j.hostname,
+		IP:       j.ip,
 
 		Command: j.Command,
 		Output:  rs,
@@ -126,7 +128,7 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 		JobLog:   jl,
 	}
 	latestLog.Id = ""
-	if err := mgoDB.Upsert(Coll_JobLatestLog, bson.M{"node": jl.Node, "hostname": jl.Hostname, "jobId": jl.JobId, "jobGroup": jl.JobGroup}, latestLog); err != nil {
+	if err := mgoDB.Upsert(Coll_JobLatestLog, bson.M{"node": jl.Node, "hostname": jl.Hostname, "ip": jl.IP, "jobId": jl.JobId, "jobGroup": jl.JobGroup}, latestLog); err != nil {
 		log.Errorf(err.Error())
 	}
 

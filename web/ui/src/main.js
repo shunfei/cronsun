@@ -123,6 +123,10 @@ var initConf = new Promise((resolve) => {
     store.commit('enabledAuth', resp.enabledAuth);
     store.commit('setEmail', resp.email);
     store.commit('setRole', resp.role);
+
+    restApi.GET('version').onsucceed(200, (resp)=>{
+      store.commit('setVersion', resp);
+    }).do();
   
     restApi.GET('configurations').
     onsucceed(200, (resp) => {

@@ -15,9 +15,17 @@ import (
 
 func EnsureJobLogIndex() {
 	cronsun.GetDb().WithC(cronsun.Coll_JobLog, func(c *mgo.Collection) error {
-		return c.EnsureIndex(mgo.Index{
+		c.EnsureIndex(mgo.Index{
 			Key: []string{"beginTime"},
 		})
+		c.EnsureIndex(mgo.Index{
+			Key: []string{"hostname"},
+		})
+		c.EnsureIndex(mgo.Index{
+			Key: []string{"ip"},
+		})
+
+		return nil
 	})
 }
 
@@ -50,8 +58,21 @@ func (jl *JobLog) GetDetail(ctx *Context) {
 	outJSON(ctx.W, logDetail)
 }
 
+func searchText(field string, keywords []string) (q []bson.M) {
+	for _, k := range keywords {
+		k = strings.TrimSpace(k)
+		if len(k) == 0 {
+			continue
+		}
+		q = append(q, bson.M{field: bson.M{"$regex": bson.RegEx{Pattern: k, Options: "i"}}})
+	}
+
+	return q
+}
+
 func (jl *JobLog) GetList(ctx *Context) {
 	hostnames := getStringArrayFromQuery("hostnames", ",", ctx.R)
+	ips := getStringArrayFromQuery("ips", ",", ctx.R)
 	names := getStringArrayFromQuery("names", ",", ctx.R)
 	ids := getStringArrayFromQuery("ids", ",", ctx.R)
 	begin := getTime(ctx.R.FormValue("begin"))
@@ -62,24 +83,16 @@ func (jl *JobLog) GetList(ctx *Context) {
 	orderBy := "-beginTime"
 
 	query := bson.M{}
-	if len(hostnames) > 0 {
-		query["hostname"] = bson.M{"$in": hostnames}
+	var textSearch = make([]bson.M, 0, 2)
+	textSearch = append(textSearch, searchText("hostname", hostnames)...)
+	textSearch = append(textSearch, searchText("name", names)...)
+
+	if len(ips) > 0 {
+		query["ip"] = bson.M{"$in": ips}
 	}
 
 	if len(ids) > 0 {
 		query["jobId"] = bson.M{"$in": ids}
-	}
-
-	if len(names) > 0 {
-		var search []bson.M
-		for _, k := range names {
-			k = strings.TrimSpace(k)
-			if len(k) == 0 {
-				continue
-			}
-			search = append(search, bson.M{"name": bson.M{"$regex": bson.RegEx{Pattern: k, Options: "i"}}})
-		}
-		query["$or"] = search
 	}
 
 	if !begin.IsZero() {
@@ -91,6 +104,10 @@ func (jl *JobLog) GetList(ctx *Context) {
 
 	if failedOnly {
 		query["success"] = false
+	}
+
+	if len(textSearch) > 0 {
+		query["$or"] = textSearch
 	}
 
 	var pager struct {

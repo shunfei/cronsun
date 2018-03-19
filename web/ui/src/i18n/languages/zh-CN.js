@@ -24,6 +24,8 @@ var language = {
   'total number of executeds': '执行任务总次数',
   'total number of nodes': '节点总数',
   'job executed in past 7 days': '过去 7 天任务统计',
+  'node show as': '节点显示为',
+  'hostname': '主机名称',
 
   'batch': '批量',
   'job name': '任务名称',
@@ -31,6 +33,7 @@ var language = {
   'job ID': '任务 ID',
   'multiple IDs can separated by commas': '多个 ID 用英文逗号分隔',
   'multiple Hostnames can separated by commas': '多个主机名称用英文逗号分隔',
+  'multiple IPs can separated by commas': '多个 IP 用英文逗号分隔',
   'starting date': '起始日期',
   'end date': '截至日期',
   'failure only': '只看失败的任务',

@@ -5,16 +5,21 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
   state: {
+    version: '',
     enabledAuth: false,
     user: {
       email: '',
       role: 0
     },
     nodes: {},
-    dropdownNodes: []
+    showWithHostname: false
   },
 
   getters: {
+    version: function (state) {
+      return state.version;
+    },
+
     email: function (state) {
       return state.user.email;
     },
@@ -31,11 +36,16 @@ const store = new Vuex.Store({
       return state.nodes;
     },
 
-    getHostnameByID: function (state) {
-      return (id) => {
-        if (!state.nodes[id]) return id + '(node not found)';
-        return state.nodes[id].hostname || id + '(need to upgrade)';
-      }
+    showWithHostname: function (state) {
+      return state.showWithHostname;
+    },
+
+    hostshows: function (state) {
+      return (id) => _hostshows(id, state, true);
+    },
+
+    hostshowsWithoutTip: function (state) {
+      return (id) => _hostshows(id, state, false);
     },
 
     getNodeByID: function (state) {
@@ -45,11 +55,23 @@ const store = new Vuex.Store({
     },
 
     dropdownNodes: function (state) {
-      return state.dropdownNodes;
+      var dn = [];
+      var nodes = state.nodes;
+      for (var i in nodes) {
+        dn.push({
+          value: nodes[i].id,
+          name: _hostshows(nodes[i].id, state, true)
+        });
+      }
+      return dn;
     }
   },
 
   mutations: {
+    setVersion: function (state, v) {
+      state.version = v;
+    },
+
     setEmail: function (state, email) {
       state.user.email = email;
     },
@@ -64,13 +86,26 @@ const store = new Vuex.Store({
 
     setNodes: function (state, nodes) {
       state.nodes = nodes;
-      var dn = []
-      for (var i in nodes) {
-        dn.push({value: nodes[i].id, name: nodes[i].hostname || nodes[i].id + '(need to upgrade)'})
-      }
-      state.dropdownNodes = dn;
+    },
+
+    setShowWithHostname: function (state, b) {
+      state.showWithHostname = b;
     }
   }
 })
+
+function _hostshows(id, state, tip) {
+  if (!state.nodes[id]) {
+    if (tip) id += '(node not found)';
+    return id;
+  }
+
+  var show = state.showWithHostname ? state.nodes[id].hostname : state.nodes[id].ip;
+  if (!show) {
+    show = id
+    if (tip) show += '(need to upgrade)';
+  }
+  return show;
+}
 
 export default store

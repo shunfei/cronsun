@@ -31,10 +31,17 @@ var UpgradeCmd = &cobra.Command{
 			ea.Exit("invalid version number")
 		}
 
+		nodesById := getIPMapper(ea)
 		if prever < "0.3.0" {
 			fmt.Println("upgrading data to version 0.3.0")
-			nodesById := getIPMapper(ea)
 			if to_0_3_0(ea, nodesById) {
+				return
+			}
+		}
+
+		if prever < "0.3.1" {
+			fmt.Println("upgrading data to version 0.3.1")
+			if to_0_3_1(ea, nodesById) {
 				return
 			}
 		}
@@ -133,9 +140,7 @@ func to_0_3_0(ea *ExitAction, nodesById map[string]*cronsun.Node) (shouldStop bo
 		for ip, node := range nodesById {
 			_, err = c.UpdateAll(bson.M{"node": ip}, bson.M{"$set": bson.M{"node": node.ID, "hostname": node.Hostname}})
 			if err != nil {
-				if err != nil {
-					fmt.Println("failed to upgrade job logs: ", err.Error())
-				}
+				fmt.Println("failed to upgrade job logs: ", err.Error())
 				break
 			}
 		}
@@ -148,9 +153,38 @@ func to_0_3_0(ea *ExitAction, nodesById map[string]*cronsun.Node) (shouldStop bo
 		for ip, node := range nodesById {
 			_, err = c.UpdateAll(bson.M{"node": ip}, bson.M{"$set": bson.M{"node": node.ID, "hostname": node.Hostname}})
 			if err != nil {
-				if err != nil {
-					fmt.Println("failed to upgrade job latest logs: ", err.Error())
-				}
+				fmt.Println("failed to upgrade job latest logs: ", err.Error())
+				break
+			}
+		}
+		shouldStop = true
+		return err
+	})
+
+	return
+}
+
+// to_0_3_0 can be run many times
+func to_0_3_1(ea *ExitAction, nodesById map[string]*cronsun.Node) (shouldStop bool) {
+	// upgrade logs
+	var err error
+	cronsun.GetDb().WithC(cronsun.Coll_JobLog, func(c *mgo.Collection) error {
+		for _, node := range nodesById {
+			_, err = c.UpdateAll(bson.M{"node": node.ID}, bson.M{"$set": bson.M{"ip": node.IP}})
+			if err != nil {
+				fmt.Println("failed to upgrade job logs: ", err.Error())
+				break
+			}
+		}
+		shouldStop = true
+		return err
+	})
+
+	cronsun.GetDb().WithC(cronsun.Coll_JobLatestLog, func(c *mgo.Collection) error {
+		for _, node := range nodesById {
+			_, err = c.UpdateAll(bson.M{"node": node.ID}, bson.M{"$set": bson.M{"ip": node.IP}})
+			if err != nil {
+				fmt.Println("failed to upgrade job latest logs: ", err.Error())
 				break
 			}
 		}

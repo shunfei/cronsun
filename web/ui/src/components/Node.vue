@@ -34,14 +34,14 @@
         <i class="cube icon" v-bind:class="group.css"></i> {{group.nodes.length}} {{$L(group.name)}}
       </div>
       {{$L('(total {n} nodes)', count)}}
-      <div class="ui label" :title="$L('currently version')"> {{version}} </div>
+      <div class="ui label" :title="$L('currently version')"> {{version}}</div>
     </div>
     <div class="ui relaxed list" v-for="(group, groupIndex) in groups">
       <h4 v-if="group.nodes.length > 0" class="ui horizontal divider header"><i class="cube icon" v-bind:class="group.css"></i> {{$L(group.name)}} {{group.nodes.length}}</h4>
       <div v-for="(node, nodeIndex) in group.nodes" class="node" v-bind:title="node.title">
         <router-link class="item" :to="'/job?node='+node.id">
           <i class="red icon fork" v-if="node.version !== version" :title="$L('version inconsistent, node: {version}', node.version)"></i>
-          {{node.hostname || node.id+"(need to upgrade)"}}
+          {{$store.getters.hostshows(node.id)}}
         </router-link>
         <i v-if="groupIndex != 2" v-on:click="removeConfirm(groupIndex, nodeIndex, node.id)" class="icon remove"></i>
       </div>
@@ -59,16 +59,12 @@ export default {
         {nodes: [], name: 'node offline', title: 'node is in maintenance or is shutdown manually', css:''},
         {nodes: [], name: 'node normaly', title: 'node is running', css:'green'}
       ],
-      count: 0,
-      version: ''
+      count: 0
     }
   },
 
   mounted: function(){
     var vm = this;
-    this.$rest.GET('version').onsucceed(200, (resp)=>{
-      vm.version = resp;
-    }).do();
 
     var nodes = this.$store.getters.nodes;
     for (var id in nodes) {
@@ -84,6 +80,12 @@ export default {
     }
 
     vm.count = Object.keys(nodes).length;
+  },
+
+  computed: {
+    version: function(){
+      return this.$store.getters.version;
+    }
   },
 
   methods: {
