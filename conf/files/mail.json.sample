@@ -10,7 +10,6 @@
     "Username": "sendmail@nb.com",
     "Password": "nbhh",
     "SSL": false,
-    "#LocalName": "LocalName is the hostname sent to the SMTP server with the HELO command.",
-    "#LocalName": "By default, "localhost" is sent.",
+    "#LocalName": "LocalName is the hostname sent to the SMTP server with the HELO command. By default, 'localhost' is sent.",
     "LocalName": "localhost"
 }
