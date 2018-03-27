@@ -566,15 +566,15 @@ func (j *Job) Notify(t time.Time, msg string) {
 	}
 
 	ts := t.Format(time.RFC3339)
-	body := "job: " + j.Key() + "\n" +
-		"job name: " + j.Name + "\n" +
-		"job cmd: " + j.Command + "\n" +
-		"node: " + j.runOn + "\n" +
-		"time: " + ts + "\n" +
-		"err: " + msg
+	body := "Job: " + j.Key() + "\n" +
+		"Job name: " + j.Name + "\n" +
+		"Job cmd: " + j.Command + "\n" +
+		"Node: " + j.hostname + "|" + j.ip + "[" + j.runOn + "]\n" +
+		"Time: " + ts + "\n" +
+		"Error: " + msg
 
 	m := Message{
-		Subject: "node[" + j.runOn + "] job[" + j.ShortName() + "] time[" + ts + "] exec failed",
+		Subject: "[Cronsun] node[" + j.hostname + "|" + j.ip + "] job[" + j.ShortName() + "] time[" + ts + "] exec failed",
 		Body:    body,
 		To:      j.To,
 	}
