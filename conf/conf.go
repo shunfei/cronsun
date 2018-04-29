@@ -55,6 +55,7 @@ type Conf struct {
 	Group   string // 节点分组
 	Noticer string // 通知
 
+	PIDFile  string
 	UUIDFile string
 
 	Ttl        int64 // 节点超时时间，单位秒
