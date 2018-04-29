@@ -23,8 +23,9 @@ const (
 // 执行 cron cmd 的进程
 // 注册到 /cronsun/node/<id>
 type Node struct {
-	ID  string `bson:"_id" json:"id"`  // ip
-	PID string `bson:"pid" json:"pid"` // 进程 pid
+	ID      string `bson:"_id" json:"id"`  // ip
+	PID     string `bson:"pid" json:"pid"` // 进程 pid
+	PIDFile string `bson:"-" json:"-"`
 
 	Version  string    `bson:"version" json:"version"`
 	UpTime   time.Time `bson:"up" json:"up"`     // 启动时间

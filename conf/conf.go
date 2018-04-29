@@ -63,6 +63,8 @@ type Conf struct {
 	// 默认 300
 	LockTtl int64
 
+	PIDFile string
+
 	Etcd client.Config
 	Mgo  *db.Config
 	Web  *webConfig

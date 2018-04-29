@@ -20,5 +20,6 @@
     "Etcd": "@extend:etcd.json",
     "Mgo": "@extend:db.json",
     "Mail": "@extend:mail.json",
-    "Security": "@extend:security.json"
+    "Security": "@extend:security.json",
+    "PIDFile": "/tmp/cronsun/cronnode_pid"
 }
