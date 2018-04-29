@@ -20,6 +20,7 @@ import (
 var (
 	level    = flag.Int("l", 0, "log level, -1:debug, 0:info, 1:warn, 2:error")
 	confFile = flag.String("conf", "conf/files/base.json", "config file path")
+	network  = flag.String("network", "", "network protocol of listen address: ipv4/ipv6, or empty use both")
 )
 
 func main() {
@@ -40,7 +41,7 @@ func main() {
 	}
 	web.EnsureJobLogIndex()
 
-	l, err := net.Listen("tcp", conf.Config.Web.BindAddr)
+	l, err := net.Listen(checkNetworkProtocol(*network), conf.Config.Web.BindAddr)
 	if err != nil {
 		log.Errorf(err.Error())
 		return
@@ -96,4 +97,15 @@ func main() {
 	event.Wait()
 	event.Emit(event.EXIT, nil)
 	log.Infof("exit success")
+}
+
+func checkNetworkProtocol(p string) string {
+	switch p {
+	case "ipv4":
+		return "tcp4"
+	case "ipv6":
+		return "tcp6"
+	}
+
+	return "tcp"
 }
