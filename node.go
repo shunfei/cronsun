@@ -25,7 +25,8 @@ const (
 type Node struct {
 	ID       string `bson:"_id" json:"id"`  // machine id
 	PID      string `bson:"pid" json:"pid"` // 进程 pid
-	IP       string `bson:"ip" json:"ip"`   // node ip
+	PIDFile  string `bson:"-" json:"-"`
+	IP       string `bson:"ip" json:"ip"` // node ip
 	Hostname string `bson:"hostname" json:"hostname"`
 
 	Version  string    `bson:"version" json:"version"`
