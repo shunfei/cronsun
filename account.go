@@ -29,11 +29,12 @@ type Role int
 const (
 	Administrator Role = 1
 	Developer     Role = 2
+	Reporter      Role = 3
 )
 
 func (r Role) Defined() bool {
 	switch r {
-	case Administrator, Developer:
+	case Administrator, Developer, Reporter:
 		return true
 	}
 	return false
@@ -45,6 +46,8 @@ func (r Role) String() string {
 		return "Administrator"
 	case Developer:
 		return "Developer"
+	case Reporter:
+		return "Reporter"
 	}
 	return "Undefined"
 }

@@ -16,6 +16,7 @@ import (
 func init() {
 	gob.Register(cronsun.Administrator)
 	gob.Register(cronsun.Developer)
+	gob.Register(cronsun.Reporter)
 }
 
 var Manager SessionManager

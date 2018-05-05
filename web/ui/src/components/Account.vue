@@ -64,6 +64,7 @@ export default {
       switch (s){
         case 1: return 'Administrator';
         case 2: return 'Developer';
+        case 3: return 'Repoter';
       }
       return '';
     }

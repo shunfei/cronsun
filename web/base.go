@@ -65,19 +65,19 @@ type BaseHandler struct {
 
 func NewBaseHandler(f func(ctx *Context)) BaseHandler {
 	return BaseHandler{
-		BeforeHandle: authHandler(false),
+		BeforeHandle: authHandler(false, 0),
 		Handle:       f,
 	}
 }
 
-func NewAuthHandler(f func(ctx *Context)) BaseHandler {
+func NewAuthHandler(f func(ctx *Context), reqRole cronsun.Role) BaseHandler {
 	return BaseHandler{
-		BeforeHandle: authHandler(true),
+		BeforeHandle: authHandler(true, reqRole),
 		Handle:       f,
 	}
 }
 
-func authHandler(needAuth bool) func(*Context) bool {
+func authHandler(needAuth bool, reqRole cronsun.Role) func(*Context) bool {
 	return func(ctx *Context) (abort bool) {
 		var err error
 		ctx.Session, err = sessManager.Get(ctx.W, ctx.R)
@@ -104,6 +104,21 @@ func authHandler(needAuth bool) func(*Context) bool {
 			abort = true
 			return
 		}
+
+		if r, ok := ctx.Session.Data["role"]; !ok {
+			outJSONWithCode(ctx.W, http.StatusUnauthorized, "role unknow.")
+			abort = true
+			return
+		} else if role, ok := r.(cronsun.Role); !ok {
+			outJSONWithCode(ctx.W, http.StatusUnauthorized, "role unknow.")
+			abort = true
+			return
+		} else if role > reqRole { // Lower number has more power.
+			outJSONWithCode(ctx.W, http.StatusUnauthorized, "higher role permission is required.")
+			abort = true
+			return
+		}
+
 		return
 	}
 }

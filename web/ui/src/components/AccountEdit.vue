@@ -23,6 +23,12 @@
           <label>Developer</label>
         </div>
       </div>
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input type="radio" name="role" value="3" v-model="account.role" class="hidden">
+          <label>Reporter(ReadOnly)</label>
+        </div>
+      </div>
     </div>
     <div v-show="action === 'UPDATE'">
       <div class="inline fields" ref="status">
