@@ -530,10 +530,10 @@ func (n *Node) Run() (err error) {
 
 // 停止服务
 func (n *Node) Stop(i interface{}) {
-	n.removePIDFile()
 	n.Node.Down()
 	close(n.done)
 	n.Node.Del()
 	n.Client.Close()
 	n.Cron.Stop()
+	n.removePIDFile()
 }
