@@ -142,14 +142,16 @@ func WatchNode() client.WatchChan {
 // On 结点实例启动后，在 mongoDB 中记录存活信息
 func (n *Node) On() {
 	n.Alived, n.Version, n.UpTime = true, Version, time.Now()
-	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
-		log.Errorf(err.Error())
-	}
+	n.SyncToMgo()
 }
 
 // On 结点实例停用后，在 mongoDB 中去掉存活信息
 func (n *Node) Down() {
 	n.Alived, n.DownTime = false, time.Now()
+	n.SyncToMgo()
+}
+
+func (n *Node) SyncToMgo() {
 	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
 		log.Errorf(err.Error())
 	}

@@ -23,6 +23,8 @@ func (n *Node) executCsctlCmd(key, value []byte) error {
 	switch cmd.Cmd {
 	case cronsun.NodeCmdRmOld:
 		n.Node.RmOldInfo()
+	case cronsun.NodeCmdSync:
+		n.Node.SyncToMgo()
 	}
 
 	log.Infof("%s execute csctl command[%s] success", n.String(), cmd.Cmd.String())

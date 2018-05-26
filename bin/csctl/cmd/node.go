@@ -30,6 +30,7 @@ var NodeCmd = &cobra.Command{
 
 Available Commands:
   rmold:	remove old version(< 0.3.0) node info from mongodb and etcd
+  sync:		sync node info to mongodb
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		ea := NewExitAction()

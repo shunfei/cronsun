@@ -12,6 +12,7 @@ import (
 const (
 	NodeCmdUnknown NodeCmd = iota
 	NodeCmdRmOld
+	NodeCmdSync
 	NodeCmdMax
 )
 
@@ -21,6 +22,7 @@ var (
 	NodeCmds = []string{
 		"unknown",
 		"rmold",
+		"sync",
 	}
 )
 
