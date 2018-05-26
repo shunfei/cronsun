@@ -142,9 +142,6 @@ func WatchNode() client.WatchChan {
 
 // On 结点实例启动后，在 mongoDB 中记录存活信息
 func (n *Node) On() {
-	// remove old version(< 0.3.0) node info
-	mgoDB.RemoveId(Coll_Node, n.IP)
-
 	n.Alived, n.Version, n.UpTime = true, Version, time.Now()
 	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
 		log.Errorf(err.Error())

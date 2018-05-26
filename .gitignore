@@ -5,6 +5,9 @@ dist
 bin/*/*server
 .DS_Store
 web/ui/node_modules
+web/ui/package-lock.json
+web/ui/semantic.json
+web/ui/semantic
 web/ui/dist
 .vscode
 *npm-debug.log
