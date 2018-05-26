@@ -102,7 +102,6 @@ func RemoveNode(query interface{}) error {
 	return mgoDB.WithC(Coll_Node, func(c *mgo.Collection) error {
 		return c.Remove(query)
 	})
-
 }
 
 func ISNodeAlive(id string) (bool, error) {
@@ -154,4 +153,10 @@ func (n *Node) Down() {
 	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
 		log.Errorf(err.Error())
 	}
+}
+
+// RmOldInfo remove old version(< 0.3.0) node info
+func (n *Node) RmOldInfo() {
+	RemoveNode(bson.M{"_id": n.IP})
+	DefalutClient.Delete(conf.Config.Node + n.IP)
 }
