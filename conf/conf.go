@@ -51,10 +51,12 @@ type Conf struct {
 	Proc    string // 当前执行任务路径
 	Cmd     string // cmd 路径
 	Once    string // 马上执行任务路径
+	Csctl   string // csctl 发送执行命令的路径
 	Lock    string // job lock 路径
 	Group   string // 节点分组
 	Noticer string // 通知
 
+	PIDFile  string
 	UUIDFile string
 
 	Ttl        int64 // 节点超时时间，单位秒
@@ -227,6 +229,7 @@ func (c *Conf) parse(confFile string) error {
 	c.Proc = cleanKeyPrefix(c.Proc)
 	c.Cmd = cleanKeyPrefix(c.Cmd)
 	c.Once = cleanKeyPrefix(c.Once)
+	c.Csctl = cleanKeyPrefix(c.Csctl)
 	c.Lock = cleanKeyPrefix(c.Lock)
 	c.Group = cleanKeyPrefix(c.Group)
 	c.Noticer = cleanKeyPrefix(c.Noticer)
@@ -283,7 +286,7 @@ func (c *Conf) reload(confFile string) {
 	}
 
 	// etcd key 选项需要重启
-	cf.Node, cf.Proc, cf.Cmd, cf.Once, cf.Lock, cf.Group, cf.Noticer = c.Node, c.Proc, c.Cmd, c.Once, c.Lock, c.Group, c.Noticer
+	cf.Node, cf.Proc, cf.Cmd, cf.Once, cf.Csctl, cf.Lock, cf.Group, cf.Noticer = c.Node, c.Proc, c.Cmd, c.Once, c.Csctl, c.Lock, c.Group, c.Noticer
 
 	*c = *cf
 	log.Infof("config file[%s] reload success", confFile)

@@ -2,8 +2,11 @@ package node
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	client "github.com/coreos/etcd/clientv3"
@@ -56,6 +59,7 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 		Node: &cronsun.Node{
 			ID:       uuid,
 			PID:      strconv.Itoa(os.Getpid()),
+			PIDFile:  strings.TrimSpace(cfg.PIDFile),
 			IP:       ip.String(),
 			Hostname: hostname,
 		},
@@ -75,9 +79,6 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 
 // 注册到 /cronsun/node/xx
 func (n *Node) Register() (err error) {
-	// remove old version(< 0.3.0) node info
-	cronsun.DefalutClient.Delete(conf.Config.Node + n.IP)
-
 	pid, err := n.Node.Exist()
 	if err != nil {
 		return
@@ -101,7 +102,44 @@ func (n *Node) set() error {
 	}
 
 	n.lID = resp.ID
+	n.writePIDFile()
+
 	return nil
+}
+
+func (n *Node) writePIDFile() {
+	if len(n.PIDFile) == 0 {
+		return
+	}
+
+	filename := "cronnode_pid"
+	if !strings.HasSuffix(n.PIDFile, "/") {
+		filename = path.Base(n.PIDFile)
+	}
+
+	dir := path.Dir(n.PIDFile)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		log.Errorf("Failed to write pid file: %s", err)
+		return
+	}
+
+	n.PIDFile = path.Join(dir, filename)
+	err = ioutil.WriteFile(n.PIDFile, []byte(n.PID), 0644)
+	if err != nil {
+		log.Errorf("Failed to write pid file: %s", err)
+		return
+	}
+}
+
+func (n *Node) removePIDFile() {
+	if len(n.PIDFile) == 0 {
+		return
+	}
+
+	if err := os.Remove(n.PIDFile); err != nil {
+		log.Warnf("Failed to remove pid file: %s", err)
+	}
 }
 
 // 断网掉线重新注册
@@ -465,6 +503,18 @@ func (n *Node) watchOnce() {
 	}
 }
 
+func (n *Node) watchCsctl() {
+	rch := cronsun.WatchCsctl()
+	for wresp := range rch {
+		for _, ev := range wresp.Events {
+			switch {
+			case ev.IsCreate(), ev.IsModify():
+				n.executCsctlCmd(ev.Kv.Key, ev.Kv.Value)
+			}
+		}
+	}
+}
+
 // 启动服务
 func (n *Node) Run() (err error) {
 	go n.keepAlive()
@@ -483,6 +533,7 @@ func (n *Node) Run() (err error) {
 	go n.watchJobs()
 	go n.watchGroups()
 	go n.watchOnce()
+	go n.watchCsctl()
 	n.Node.On()
 	return
 }
@@ -494,4 +545,5 @@ func (n *Node) Stop(i interface{}) {
 	n.Node.Del()
 	n.Client.Close()
 	n.Cron.Stop()
+	n.removePIDFile()
 }

@@ -17,16 +17,7 @@ import (
 type Administrator struct{}
 
 func adminAuthHandler(ctx *Context) (abort bool) {
-	if abort = authHandler(true)(ctx); abort {
-		return
-	}
-
-	abort = ctx.Session.Data["role"].(cronsun.Role) != cronsun.Administrator
-	if abort {
-		outJSONWithCode(ctx.W, http.StatusForbidden, "access deny.")
-	}
-
-	return
+	return authHandler(true, cronsun.Administrator)(ctx)
 }
 
 func NewAdminAuthHandler(f func(ctx *Context)) BaseHandler {
