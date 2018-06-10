@@ -102,7 +102,6 @@ func RemoveNode(query interface{}) error {
 	return mgoDB.WithC(Coll_Node, func(c *mgo.Collection) error {
 		return c.Remove(query)
 	})
-
 }
 
 func ISNodeAlive(id string) (bool, error) {
@@ -142,19 +141,24 @@ func WatchNode() client.WatchChan {
 
 // On 结点实例启动后，在 mongoDB 中记录存活信息
 func (n *Node) On() {
-	// remove old version(< 0.3.0) node info
-	mgoDB.RemoveId(Coll_Node, n.IP)
-
 	n.Alived, n.Version, n.UpTime = true, Version, time.Now()
-	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
-		log.Errorf(err.Error())
-	}
+	n.SyncToMgo()
 }
 
 // On 结点实例停用后，在 mongoDB 中去掉存活信息
 func (n *Node) Down() {
 	n.Alived, n.DownTime = false, time.Now()
+	n.SyncToMgo()
+}
+
+func (n *Node) SyncToMgo() {
 	if err := mgoDB.Upsert(Coll_Node, bson.M{"_id": n.ID}, n); err != nil {
 		log.Errorf(err.Error())
 	}
+}
+
+// RmOldInfo remove old version(< 0.3.0) node info
+func (n *Node) RmOldInfo() {
+	RemoveNode(bson.M{"_id": n.IP})
+	DefalutClient.Delete(conf.Config.Node + n.IP)
 }

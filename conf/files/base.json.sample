@@ -4,6 +4,7 @@
     "Proc": "/cronsun/proc/",
     "Cmd": "/cronsun/cmd/",
     "Once": "/cronsun/once/",
+    "Csctl": "/cronsun/csctl/",
     "Lock": "/cronsun/lock/",
     "Group": "/cronsun/group/",
     "Noticer": "/cronsun/noticer/",
@@ -21,8 +22,8 @@
     "Mgo": "@extend:db.json",
     "Mail": "@extend:mail.json",
     "Security": "@extend:security.json",
-    "#comment": "PIDFile and UUIDFile just work for cronnode"
-    "#PIDFile": "Given a none-empty string to write a pid file to the specialed path, or leave it empty to do nothing"
+    "#comment": "PIDFile and UUIDFile just work for cronnode",
+    "#PIDFile": "Given a none-empty string to write a pid file to the specialed path, or leave it empty to do nothing",
     "PIDFile": "/tmp/cronsun/cronnode_pid",
     "UUIDFile": "/etc/cronsun/CRONSUN_UUID"
 }
