@@ -78,6 +78,7 @@ func init() {
 
 type ExitAction struct {
 	Defer func()
+	After func()
 }
 
 func NewExitAction() *ExitAction {
@@ -97,6 +98,10 @@ func (ea *ExitAction) Exit(format string, v ...interface{}) {
 	}
 
 	fmt.Printf(format+"\n", v...)
+
+	if ea.After != nil {
+		ea.After()
+	}
 	os.Exit(1)
 }
 

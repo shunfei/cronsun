@@ -31,7 +31,7 @@ var UpgradeCmd = &cobra.Command{
 			ea.Exit("invalid version number")
 		}
 
-		nodesById := getIPMapper(ea)
+		nodesById := getIPMapper(ea, prever)
 		if prever < "0.3.0" {
 			fmt.Println("upgrading data to version 0.3.0")
 			if to_0_3_0(ea, nodesById) {
@@ -48,7 +48,7 @@ var UpgradeCmd = &cobra.Command{
 	},
 }
 
-func getIPMapper(ea *ExitAction) map[string]*cronsun.Node {
+func getIPMapper(ea *ExitAction, prever string) map[string]*cronsun.Node {
 	nodes, err := cronsun.GetNodes()
 	if err != nil {
 		ea.Exit("failed to fetch nodes from MongoDB: %s", err.Error())
@@ -61,6 +61,9 @@ func getIPMapper(ea *ExitAction) map[string]*cronsun.Node {
 			continue
 		}
 
+		if prever < "0.3.0" {
+			n.RmOldInfo()
+		}
 		ipMapper[n.IP] = n
 	}
 
