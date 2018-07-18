@@ -120,7 +120,7 @@ func (c *Client) DelLock(key string) error {
 }
 
 func IsValidAsKeyPath(s string) bool {
-	return strings.IndexByte(s, '/') == -1
+	return strings.IndexAny(s, "/\\") == -1
 }
 
 // etcdTimeoutContext return better error info
