@@ -54,6 +54,7 @@ var language = {
   'view job list': 'View job list',
   'starting time': 'Starting time',
   'process ID': 'Process ID',
+  'kill process': 'Kill process',
   'group filter': 'Group filter',
   'node filter': 'Node filter',
   'select a group': 'Select a group',

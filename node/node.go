@@ -7,9 +7,14 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	client "github.com/coreos/etcd/clientv3"
+
+	"os/exec"
+
+	"encoding/json"
 
 	"github.com/shunfei/cronsun"
 	"github.com/shunfei/cronsun/conf"
@@ -420,6 +425,35 @@ func (n *Node) groupRmNode(g, og *cronsun.Group) {
 	n.groups[g.ID] = g
 }
 
+func (n *Node) KillExcutingProc(process *cronsun.Process) {
+	var (
+		cmd         *exec.Cmd
+		sysProcAttr *syscall.SysProcAttr
+		err         error
+	)
+
+	job, ok := n.jobs[process.JobID]
+	if !ok {
+		log.Warnf("jobId:[%s] is not exist!\n", process.JobID)
+		return
+	}
+
+	if job.User != "" {
+		sysProcAttr, err = job.CreateCmdAttr()
+		if err != nil {
+			log.Warnf("process:[%s] createCmdAttr failed, error:[%s]\n", process.ID, err)
+			return
+		}
+	}
+
+	cmd = exec.Command("kill", "-9", process.ID)
+	cmd.SysProcAttr = sysProcAttr
+	if err := cmd.Run(); err != nil {
+		log.Warnf("process:[%s] force kill failed, error:[%s]\n", process.ID, err)
+		return
+	}
+}
+
 func (n *Node) watchJobs() {
 	rch := cronsun.WatchJobs()
 	for wresp := range rch {
@@ -447,6 +481,34 @@ func (n *Node) watchJobs() {
 				n.delJob(cronsun.GetIDFromKey(string(ev.Kv.Key)))
 			default:
 				log.Warnf("unknown event type[%v] from job[%s]", ev.Type, string(ev.Kv.Key))
+			}
+		}
+	}
+}
+
+func (n *Node) watchExcutingProc() {
+	rch := cronsun.WatchProcs(n.ID)
+
+	for wresp := range rch {
+		for _, ev := range wresp.Events {
+			switch {
+			case ev.IsModify():
+				key := string(ev.Kv.Key)
+				process, err := cronsun.GetProcFromKey(key)
+				if err != nil {
+					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
+					continue
+				}
+
+				val := string(ev.Kv.Value)
+				err = json.Unmarshal([]byte(val), process)
+				if err != nil {
+					continue
+				}
+
+				if process.Killed {
+					n.KillExcutingProc(process)
+				}
 			}
 		}
 	}
@@ -531,6 +593,7 @@ func (n *Node) Run() (err error) {
 
 	n.Cron.Start()
 	go n.watchJobs()
+	go n.watchExcutingProc()
 	go n.watchGroups()
 	go n.watchOnce()
 	go n.watchCsctl()
