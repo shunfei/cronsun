@@ -1,5 +1,6 @@
 <style scope>
   .clearfix:after {content:""; clear:both; display:table;}
+  .kill-proc-btn { color:red;cursor: pointer;}
 </style>
 <template>
   <div>
@@ -43,7 +44,7 @@
           <td class="center aligned">{{$store.getters.hostshows(proc.nodeId)}}</td>
           <td class="center aligned">{{proc.id}}</td>
           <td class="center aligned">{{proc.time}}</td>
-          <td class="center aligned"><button v-on:click="killProc(proc, index)">{{$L('kill process')}}</button></td>
+          <td class="center aligned"><a class="kill-proc-btn" v-on:click="killProc(proc, index)">{{$L('kill process')}}</a></td>
         </tr>
       </tbody>
     </table>
