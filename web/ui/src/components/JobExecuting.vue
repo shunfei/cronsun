@@ -33,6 +33,7 @@
           <th class="center aligned">{{$L('node')}}</th>
           <th class="center aligned">{{$L('process ID')}}</th>
           <th class="center aligned">{{$L('starting time')}}</th>
+          <th class="center aligned">{{$L('operation')}}</th>
         </tr>
       </thead>
       <tbody>
@@ -42,6 +43,7 @@
           <td class="center aligned">{{$store.getters.hostshows(proc.nodeId)}}</td>
           <td class="center aligned">{{proc.id}}</td>
           <td class="center aligned">{{proc.time}}</td>
+          <td class="center aligned"><button v-on:click="killProc(proc, index)">{{$L('kill process')}}</button></td>
         </tr>
       </tbody>
     </table>
@@ -98,6 +100,14 @@ export default {
 
     submit(){
       this.$router.push('/job/executing?'+this.buildQuery());
+    },
+
+    killProc(proc, index) {
+      if (confirm("确认杀死该进程?")) {
+        var id = proc.nodeId + "." + proc.group + "." + proc.jobId + "." + proc.id;
+        this.$rest.DELETE('job/executing/' + id).do();
+        this.executings.splice(index, 1);
+      }
     },
 
     buildQuery(){

@@ -9,6 +9,8 @@ import (
 
 	client "github.com/coreos/etcd/clientv3"
 
+	"encoding/json"
+
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/log"
 )
@@ -131,7 +133,8 @@ type Process struct {
 	JobID  string    `json:"jobId"`
 	Group  string    `json:"group"`
 	NodeID string    `json:"nodeId"`
-	Time   time.Time `json:"time"` // 开始执行时间
+	Time   time.Time `json:"time"`   // 开始执行时间
+	Killed bool      `json:"killed"` // 是否强制杀死
 
 	running int32
 	hasPut  int32
@@ -161,7 +164,12 @@ func (p *Process) Key() string {
 }
 
 func (p *Process) Val() string {
-	return p.Time.Format(time.RFC3339)
+	val := map[string]interface{}{
+		"time":   p.Time.Format(time.RFC3339),
+		"killed": p.Killed,
+	}
+	str, _ := json.Marshal(val)
+	return string(str)
 }
 
 // 获取结点正在执行任务的数量
@@ -253,4 +261,8 @@ func (p *Process) Stop() {
 	if err := p.del(); err != nil {
 		log.Warnf("proc del[%s] err: %s", p.Key(), err.Error())
 	}
+}
+
+func WatchProcs(nid string) client.WatchChan {
+	return DefalutClient.Watch(conf.Config.Proc+nid, client.WithPrefix())
 }
