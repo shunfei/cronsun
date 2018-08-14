@@ -55,6 +55,7 @@ var language = {
   'view job list': '查看任务列表',
   'starting time': '开始时间',
   'process ID': '进程ID',
+  'kill process': '杀死进程',
 
   'group filter': '分组过滤',
   'node filter': '节点过滤',

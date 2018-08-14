@@ -350,12 +350,55 @@ func (j *Job) GetExecutingJob(ctx *Context) {
 		if !opt.Match(proc) {
 			continue
 		}
-		proc.Time, _ = time.Parse(time.RFC3339, string(gresp.Kvs[i].Value))
+
+		val := string(gresp.Kvs[i].Value)
+		m := make(map[string]interface{})
+		json.Unmarshal([]byte(val), &m)
+		proc.Time, _ = time.Parse(time.RFC3339, m["time"].(string))
+
 		list = append(list, proc)
 	}
 
 	sort.Sort(ByProcTime(list))
 	outJSON(ctx.W, list)
+}
+
+func (j *Job) KillExecutingJob(ctx *Context) {
+	vars := mux.Vars(ctx.R)
+	id := strings.TrimSpace(vars["id"])
+	id = strings.Replace(id, ".", "/", -1)
+
+	procKey := conf.Config.Proc + id
+	resp, err := cronsun.DefalutClient.Get(procKey)
+
+	if err != nil {
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(resp.Kvs) < 1 {
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, "进程不存在")
+		return
+	}
+
+	procVal := make(map[string]interface{})
+	err = json.Unmarshal(resp.Kvs[0].Value, &procVal)
+
+	if err != nil {
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	procVal["killed"] = true
+	newVal, _ := json.Marshal(procVal)
+
+	_, err = cronsun.DefalutClient.Put(procKey, string(newVal))
+	if err != nil {
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	outJSONWithCode(ctx.W, http.StatusOK, "杀死进程成功")
 }
 
 type ProcFetchOptions struct {
