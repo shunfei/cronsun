@@ -212,7 +212,7 @@ func (c *Cmd) lockTtl() int64 {
 	}
 
 	cost := c.Job.AvgTime / 1e3
-	if c.Job.AvgTime/1e3-cost*1e3 > 0 {
+	if c.Job.AvgTime-cost*1e3 > 0 {
 		cost += 1
 	}
 	// 如果执行间隔时间不大于执行时间，把过期时间设置为执行时间的下限-1
