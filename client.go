@@ -131,9 +131,13 @@ type etcdTimeoutContext struct {
 }
 
 func (c *etcdTimeoutContext) Err() error {
+	return c.Context.Err()
+}
+
+func (c *etcdTimeoutContext) Error() error {
 	err := c.Context.Err()
 	if err == context.DeadlineExceeded {
-		err = fmt.Errorf("%s: etcd(%v) maybe lost",
+		err = fmt.Errorf("Etcd(%v) connection time out",
 			err, c.etcdEndpoints)
 	}
 	return err
