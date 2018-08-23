@@ -352,9 +352,9 @@ func (j *Job) GetExecutingJob(ctx *Context) {
 		}
 
 		val := string(gresp.Kvs[i].Value)
-		m := make(map[string]interface{})
-		json.Unmarshal([]byte(val), &m)
-		proc.Time, _ = time.Parse(time.RFC3339, m["time"].(string))
+		var p cronsun.Process
+		json.Unmarshal([]byte(val), &p)
+		proc.Time, _ = time.Parse(time.RFC3339, p.Time)
 
 		list = append(list, proc)
 	}
@@ -377,7 +377,7 @@ func (j *Job) KillExecutingJob(ctx *Context) {
 	}
 
 	if len(resp.Kvs) < 1 {
-		outJSONWithCode(ctx.W, http.StatusInternalServerError, "进程不存在")
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, nil)
 		return
 	}
 
