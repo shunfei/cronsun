@@ -381,7 +381,7 @@ func (j *Job) KillExecutingJob(ctx *Context) {
 		return
 	}
 
-	procVal := make(map[string]interface{})
+	var procVal cronsun.Process
 	err = json.Unmarshal(resp.Kvs[0].Value, &procVal)
 
 	if err != nil {
@@ -389,8 +389,12 @@ func (j *Job) KillExecutingJob(ctx *Context) {
 		return
 	}
 
-	procVal["killed"] = true
-	newVal, _ := json.Marshal(procVal)
+	procVal.Killed = true
+	newVal, err := json.Marshal(procVal)
+	if err != nil {
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+		return
+	}
 
 	_, err = cronsun.DefalutClient.Put(procKey, string(newVal))
 	if err != nil {

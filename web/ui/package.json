@@ -25,7 +25,6 @@
     "cross-env": "^3.0.0",
     "css-loader": "^0.26.1",
     "file-loader": "^0.9.0",
-    "gulp-header": "^2.0.5",
     "style-loader": "^0.13.1",
     "vue-loader": "^10.0.0",
     "vue-template-compiler": "^2.3.4",

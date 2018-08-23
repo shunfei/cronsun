@@ -84,6 +84,7 @@ var language = {
   'job type': 'Job type',
   'common job': 'Common',
   'single node single process': 'Single Node Single Process',
+  'whether to kill the process': 'Whether to kill the process',
   'group level common': 'Group Level Common',
   'group level common help': 'It is difficult to name it, a simple way to explain is that we merge all selected nodes as a large node, then the job\'s behavior will looks like a Common job in a single node.',
   'warning on': 'Warning ON',

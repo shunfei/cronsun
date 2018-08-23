@@ -163,13 +163,14 @@ func (p *Process) Key() string {
 	return conf.Config.Proc + p.NodeID + "/" + p.Group + "/" + p.JobID + "/" + p.ID
 }
 
-func (p *Process) Val() string {
-	val := map[string]interface{}{
-		"time":   p.Time.Format(time.RFC3339),
-		"killed": p.Killed,
-	}
-	str, _ := json.Marshal(val)
-	return string(str)
+func (p *Process) Val() (string, error) {
+	val := struct {
+		Time   string `json:"time"`
+		Killed bool   `json:"killed"`
+	}{p.Time.Format(time.RFC3339), p.Killed}
+
+	str, err := json.Marshal(val)
+	return string(str), err
 }
 
 // 获取结点正在执行任务的数量
@@ -195,13 +196,17 @@ func (p *Process) put() (err error) {
 	}
 
 	id := lID.get()
+	val, err := p.Val()
+	if err != nil {
+		return err
+	}
 	if id < 0 {
-		if _, err = DefalutClient.Put(p.Key(), p.Val()); err != nil {
+		if _, err = DefalutClient.Put(p.Key(), val); err != nil {
 			return
 		}
 	}
 
-	_, err = DefalutClient.Put(p.Key(), p.Val(), client.WithLease(id))
+	_, err = DefalutClient.Put(p.Key(), val, client.WithLease(id))
 	return
 }
 

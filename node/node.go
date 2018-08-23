@@ -1,6 +1,7 @@
 package node
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,11 +12,6 @@ import (
 	"time"
 
 	client "github.com/coreos/etcd/clientv3"
-
-	"os/exec"
-
-	"encoding/json"
-
 	"github.com/shunfei/cronsun"
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/log"
@@ -426,30 +422,9 @@ func (n *Node) groupRmNode(g, og *cronsun.Group) {
 }
 
 func (n *Node) KillExcutingProc(process *cronsun.Process) {
-	var (
-		cmd         *exec.Cmd
-		sysProcAttr *syscall.SysProcAttr
-		err         error
-	)
-
-	job, ok := n.jobs[process.JobID]
-	if !ok {
-		log.Warnf("jobId:[%s] is not exist!\n", process.JobID)
-		return
-	}
-
-	if job.User != "" {
-		sysProcAttr, err = job.CreateCmdAttr()
-		if err != nil {
-			log.Warnf("process:[%s] createCmdAttr failed, error:[%s]\n", process.ID, err)
-			return
-		}
-	}
-
-	cmd = exec.Command("kill", "-9", process.ID)
-	cmd.SysProcAttr = sysProcAttr
-	if err := cmd.Run(); err != nil {
-		log.Warnf("process:[%s] force kill failed, error:[%s]\n", process.ID, err)
+	pid, _ := strconv.Atoi(process.ID)
+	if err := syscall.Kill(pid, syscall.SIGKILL); err != nil {
+		log.Warnf("process:[%d] force kill failed, error:[%s]\n", pid, err)
 		return
 	}
 }
