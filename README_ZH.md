@@ -55,11 +55,13 @@
 
 直接下载执行文件 [latest release](https://github.com/shunfei/cronsun/releases/latest)。
 
-如果你熟悉 `Go`，也可以从源码编译, 要求 `go >= 1.9+`
+如果你熟悉 `Go`，也可以从源码编译, 要求 `go >= 1.11+`
 
 ```
 go get -u github.com/shunfei/cronsun
 cd $GOPATH/src/github.com/shunfei/cronsun
+go mod vendor
+# 如果 go mod vendor 下载失败，请尝试 https://goproxy.io
 sh build.sh
 ```
 
