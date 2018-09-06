@@ -6,7 +6,7 @@ env:
 install: true
 
 before_script:
-- go vet -x ./...
+- go vet -v $(go list ./... | grep -v vendor)
 
 matrix:
   include:
