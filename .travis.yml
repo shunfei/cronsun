@@ -3,7 +3,8 @@ go:
 - 1.11.x
 env:
 - GO111MODULE=on
-install: true
+install:
+- go mod vendor
 
 before_script:
 - go vet -v $(go list ./... | grep -v vendor)
