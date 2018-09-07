@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os/exec"
 	"os/user"
@@ -416,30 +417,16 @@ func (j *Job) Run() bool {
 		cmd         *exec.Cmd
 		proc        *Process
 		sysProcAttr *syscall.SysProcAttr
+		err         error
 	)
 
 	t := time.Now()
-	// 用户权限控制
+
 	if len(j.User) > 0 {
-		u, err := user.Lookup(j.User)
+		sysProcAttr, err = j.CreateCmdAttr()
 		if err != nil {
 			j.Fail(t, err.Error())
 			return false
-		}
-
-		uid, err := strconv.Atoi(u.Uid)
-		if err != nil {
-			j.Fail(t, "not support run with user on windows")
-			return false
-		}
-		if uid != _Uid {
-			gid, _ := strconv.Atoi(u.Gid)
-			sysProcAttr = &syscall.SysProcAttr{
-				Credential: &syscall.Credential{
-					Uid: uint32(uid),
-					Gid: uint32(gid),
-				},
-			}
 		}
 	}
 
@@ -721,4 +708,29 @@ func (j *Job) ShortName() string {
 	}
 
 	return string(names[:10]) + "..."
+}
+
+func (j *Job) CreateCmdAttr() (*syscall.SysProcAttr, error) {
+	var sysProcAttr *syscall.SysProcAttr
+
+	u, err := user.Lookup(j.User)
+	if err != nil {
+		return nil, err
+	}
+
+	uid, err := strconv.Atoi(u.Uid)
+	if err != nil {
+		return nil, errors.New("not support run with user on windows")
+	}
+	if uid != _Uid {
+		gid, _ := strconv.Atoi(u.Gid)
+		sysProcAttr = &syscall.SysProcAttr{
+			Credential: &syscall.Credential{
+				Uid: uint32(uid),
+				Gid: uint32(gid),
+			},
+		}
+	}
+
+	return sysProcAttr, nil
 }

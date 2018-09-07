@@ -1,5 +1,6 @@
 <style scope>
   .clearfix:after {content:""; clear:both; display:table;}
+  .kill-proc-btn { color:red;cursor: pointer;}
 </style>
 <template>
   <div>
@@ -33,6 +34,7 @@
           <th class="center aligned">{{$L('node')}}</th>
           <th class="center aligned">{{$L('process ID')}}</th>
           <th class="center aligned">{{$L('starting time')}}</th>
+          <th class="center aligned">{{$L('operation')}}</th>
         </tr>
       </thead>
       <tbody>
@@ -42,6 +44,7 @@
           <td class="center aligned">{{$store.getters.hostshows(proc.nodeId)}}</td>
           <td class="center aligned">{{proc.id}}</td>
           <td class="center aligned">{{proc.time}}</td>
+          <td class="center aligned"><a class="kill-proc-btn" v-on:click="killProc(proc, index)">{{$L('kill process')}}</a></td>
         </tr>
       </tbody>
     </table>
@@ -98,6 +101,18 @@ export default {
 
     submit(){
       this.$router.push('/job/executing?'+this.buildQuery());
+    },
+
+    killProc(proc, index) {
+      if (confirm(this.$L("whether to kill the process"))) {
+        var id = proc.nodeId + "." + proc.group + "." + proc.jobId + "." + proc.id;
+        this.$rest.DELETE('job/executing/' + id)
+        .onsucceed(200, (resp) => {
+          this.executings.splice(index, 1);
+        })
+        .onfailed((resp)=>{vm.$bus.$emit('error', resp)})
+        .do();
+      }
     },
 
     buildQuery(){

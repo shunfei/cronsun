@@ -11,7 +11,7 @@ import (
 	client "github.com/coreos/etcd/clientv3"
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-gomail/gomail"
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 
 	"github.com/shunfei/cronsun/db"
 	"github.com/shunfei/cronsun/event"

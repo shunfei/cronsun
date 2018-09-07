@@ -9,6 +9,8 @@ import (
 
 	client "github.com/coreos/etcd/clientv3"
 
+	"encoding/json"
+
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/log"
 )
@@ -131,7 +133,8 @@ type Process struct {
 	JobID  string    `json:"jobId"`
 	Group  string    `json:"group"`
 	NodeID string    `json:"nodeId"`
-	Time   time.Time `json:"time"` // 开始执行时间
+	Time   time.Time `json:"time"`   // 开始执行时间
+	Killed bool      `json:"killed"` // 是否强制杀死
 
 	running int32
 	hasPut  int32
@@ -160,8 +163,14 @@ func (p *Process) Key() string {
 	return conf.Config.Proc + p.NodeID + "/" + p.Group + "/" + p.JobID + "/" + p.ID
 }
 
-func (p *Process) Val() string {
-	return p.Time.Format(time.RFC3339)
+func (p *Process) Val() (string, error) {
+	val := struct {
+		Time   string `json:"time"`
+		Killed bool   `json:"killed"`
+	}{p.Time.Format(time.RFC3339), p.Killed}
+
+	str, err := json.Marshal(val)
+	return string(str), err
 }
 
 // 获取结点正在执行任务的数量
@@ -187,13 +196,17 @@ func (p *Process) put() (err error) {
 	}
 
 	id := lID.get()
+	val, err := p.Val()
+	if err != nil {
+		return err
+	}
 	if id < 0 {
-		if _, err = DefalutClient.Put(p.Key(), p.Val()); err != nil {
+		if _, err = DefalutClient.Put(p.Key(), val); err != nil {
 			return
 		}
 	}
 
-	_, err = DefalutClient.Put(p.Key(), p.Val(), client.WithLease(id))
+	_, err = DefalutClient.Put(p.Key(), val, client.WithLease(id))
 	return
 }
 
@@ -253,4 +266,8 @@ func (p *Process) Stop() {
 	if err := p.del(); err != nil {
 		log.Warnf("proc del[%s] err: %s", p.Key(), err.Error())
 	}
+}
+
+func WatchProcs(nid string) client.WatchChan {
+	return DefalutClient.Watch(conf.Config.Proc+nid, client.WithPrefix())
 }
