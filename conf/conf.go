@@ -159,7 +159,8 @@ func (c *Conf) UUID() (string, error) {
 		if len(b) == 0 {
 			return c.genUUID()
 		}
-		return string(b), nil
+		suid := strings.Join(strings.Fields(string(b)), "")
+		return suid, nil
 	}
 
 	if !os.IsNotExist(err) {

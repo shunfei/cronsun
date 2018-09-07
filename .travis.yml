@@ -1,20 +1,16 @@
 language: go
 go:
-- 1.9
+- 1.11.x
+env:
+- GO111MODULE=on
 install:
-- go get -u github.com/coreos/etcd/clientv3
-- go get github.com/rogpeppe/fastuuid
-- go get gopkg.in/mgo.v2
-- go get github.com/fsnotify/fsnotify
-- go get github.com/go-gomail/gomail
-- go get go.uber.org/zap
-- go get github.com/cockroachdb/cmux
-- go get github.com/gorilla/mux
-- go get github.com/smartystreets/goconvey/convey
-- go get github.com/spf13/cobra
-- go get github.com/satori/go.uuid
+- go mod vendor
 
 before_script:
-- go vet -x ./...
-script:
-- go test -v -race ./...
+- go vet -v $(go list ./... | grep -v vendor)
+
+matrix:
+  include:
+  - go: "1.11.x"
+    script: go test -v -race -mod=vendor ./...
+
