@@ -104,15 +104,15 @@ export default {
     },
 
     killProc(proc, index) {
-      if (confirm(this.$L("whether to kill the process"))) {
-        var id = proc.nodeId + "." + proc.group + "." + proc.jobId + "." + proc.id;
-        this.$rest.DELETE('job/executing/' + id)
-        .onsucceed(200, (resp) => {
-          this.executings.splice(index, 1);
-        })
-        .onfailed((resp)=>{vm.$bus.$emit('error', resp)})
-        .do();
-      }
+      if (!confirm(this.$L("whether to kill the process"))) return;
+      
+      var id = proc.nodeId + "." + proc.group + "." + proc.jobId + "." + proc.id;
+      this.$rest.DELETE('job/executing/' + id)
+      .onsucceed(200, (resp) => {
+        this.executings.splice(index, 1);
+      })
+      .onfailed((resp) => vm.$bus.$emit('error', resp))
+      .do();
     },
 
     buildQuery(){

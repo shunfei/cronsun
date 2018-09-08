@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/gorilla/mux"
@@ -354,7 +353,6 @@ func (j *Job) GetExecutingJob(ctx *Context) {
 		val := string(gresp.Kvs[i].Value)
 		var p cronsun.Process
 		json.Unmarshal([]byte(val), &p)
-		proc.Time, _ = time.Parse(time.RFC3339, p.Time)
 
 		list = append(list, proc)
 	}

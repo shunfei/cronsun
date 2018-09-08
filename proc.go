@@ -1,6 +1,7 @@
 package cronsun
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -8,8 +9,6 @@ import (
 	"time"
 
 	client "github.com/coreos/etcd/clientv3"
-
-	"encoding/json"
 
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/log"
