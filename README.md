@@ -67,6 +67,7 @@ We encourage you to try it, it's easy to use, see how it works for you. We belie
 Install from binary [latest release](https://github.com/shunfei/cronsun/releases/latest)
 
 Or build from source, require `go >= 1.11+`.
+> NOTE: The branch `master` is not in stable, using Cronsun for production please checkout corresponding tags.
 
 ```
 go get -u github.com/shunfei/cronsun
