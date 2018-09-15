@@ -476,11 +476,12 @@ func (n *Node) watchExcutingProc() {
 				}
 
 				val := string(ev.Kv.Value)
-				err = json.Unmarshal([]byte(val), process)
+				pv := &cronsun.ProcessVal{}
+				err = json.Unmarshal([]byte(val), pv)
 				if err != nil {
 					continue
 				}
-
+				process.ProcessVal = *pv
 				if process.Killed {
 					n.KillExcutingProc(process)
 				}

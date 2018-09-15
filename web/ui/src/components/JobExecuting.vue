@@ -105,9 +105,13 @@ export default {
 
     killProc(proc, index) {
       if (!confirm(this.$L("whether to kill the process"))) return;
-      
-      var id = proc.nodeId + "." + proc.group + "." + proc.jobId + "." + proc.id;
-      this.$rest.DELETE('job/executing/' + id)
+      var vm = this
+      var params = []
+      params.push('node='+proc.nodeId)
+      params.push('group='+proc.group)
+      params.push('job='+proc.jobId)
+      params.push('pid='+proc.id)
+      this.$rest.DELETE('job/executing?' + params.join('&'))
       .onsucceed(200, (resp) => {
         this.executings.splice(index, 1);
       })

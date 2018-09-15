@@ -78,7 +78,7 @@ func initRouters() (s *http.Server, err error) {
 
 	// kill an executing job
 	h = NewAuthHandler(jobHandler.KillExecutingJob, cronsun.Developer)
-	subrouter.Handle("/job/executing/{id}", h).Methods("DELETE")
+	subrouter.Handle("/job/executing", h).Methods("DELETE")
 
 	// get job log list
 	h = NewAuthHandler(jobLogHandler.GetList, cronsun.Reporter)

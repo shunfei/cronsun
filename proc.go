@@ -128,17 +128,23 @@ func (l *leaseID) keepAlive() {
 // value: 开始执行时间
 // key 会自动过期，防止进程意外退出后没有清除相关 key，过期时间可配置
 type Process struct {
-	ID     string    `json:"id"` // pid
-	JobID  string    `json:"jobId"`
-	Group  string    `json:"group"`
-	NodeID string    `json:"nodeId"`
-	Time   time.Time `json:"time"`   // 开始执行时间
-	Killed bool      `json:"killed"` // 是否强制杀死
+	// parse from key path
+	ID     string `json:"id"` // pid
+	JobID  string `json:"jobId"`
+	Group  string `json:"group"`
+	NodeID string `json:"nodeId"`
+	// parse from value
+	ProcessVal
 
 	running int32
 	hasPut  int32
 	wg      sync.WaitGroup
 	done    chan struct{}
+}
+
+type ProcessVal struct {
+	Time   time.Time `json:"time"`   // 开始执行时间
+	Killed bool      `json:"killed"` // 是否强制杀死
 }
 
 func GetProcFromKey(key string) (proc *Process, err error) {
@@ -163,16 +169,15 @@ func (p *Process) Key() string {
 }
 
 func (p *Process) Val() (string, error) {
-	val := struct {
-		Time   string `json:"time"`
-		Killed bool   `json:"killed"`
-	}{p.Time.Format(time.RFC3339), p.Killed}
+	b, err := json.Marshal(&p.ProcessVal)
+	if err != nil {
+		return "", err
+	}
 
-	str, err := json.Marshal(val)
-	return string(str), err
+	return string(b), nil
 }
 
-// 获取结点正在执行任务的数量
+// 获取节点正在执行任务的数量
 func (j *Job) CountRunning() (int64, error) {
 	resp, err := DefalutClient.Get(conf.Config.Proc+j.runOn+"/"+j.Group+"/"+j.ID, client.WithPrefix(), client.WithCountOnly())
 	if err != nil {

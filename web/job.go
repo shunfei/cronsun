@@ -351,9 +351,13 @@ func (j *Job) GetExecutingJob(ctx *Context) {
 		}
 
 		val := string(gresp.Kvs[i].Value)
-		var p cronsun.Process
-		json.Unmarshal([]byte(val), &p)
-
+		var pv = &cronsun.ProcessVal{}
+		err = json.Unmarshal([]byte(val), pv)
+		if err != nil {
+			log.Errorf("Failed to unmarshal ProcessVal from val: %s", err.Error())
+			continue
+		}
+		proc.ProcessVal = *pv
 		list = append(list, proc)
 	}
 
@@ -362,45 +366,56 @@ func (j *Job) GetExecutingJob(ctx *Context) {
 }
 
 func (j *Job) KillExecutingJob(ctx *Context) {
-	vars := mux.Vars(ctx.R)
-	id := strings.TrimSpace(vars["id"])
-	id = strings.Replace(id, ".", "/", -1)
+	proc := &cronsun.Process{
+		ID:     getStringVal("pid", ctx.R),
+		JobID:  getStringVal("job", ctx.R),
+		Group:  getStringVal("group", ctx.R),
+		NodeID: getStringVal("node", ctx.R),
+	}
 
-	procKey := conf.Config.Proc + id
+	if proc.ID == "" || proc.JobID == "" || proc.Group == "" || proc.NodeID == "" {
+		outJSONWithCode(ctx.W, http.StatusBadRequest, "Invalid process info.")
+		return
+	}
+
+	procKey := proc.Key()
 	resp, err := cronsun.DefalutClient.Get(procKey)
-
 	if err != nil {
 		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	if len(resp.Kvs) < 1 {
-		outJSONWithCode(ctx.W, http.StatusInternalServerError, nil)
+		outJSONWithCode(ctx.W, http.StatusNotFound, "Porcess not found")
 		return
 	}
 
-	var procVal cronsun.Process
+	var procVal = &cronsun.ProcessVal{}
 	err = json.Unmarshal(resp.Kvs[0].Value, &procVal)
-
 	if err != nil {
 		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if procVal.Killed {
+		outJSONWithCode(ctx.W, http.StatusOK, "Killing process")
 		return
 	}
 
 	procVal.Killed = true
-	newVal, err := json.Marshal(procVal)
+	proc.ProcessVal = *procVal
+	str, err := proc.Val()
 	if err != nil {
 		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	_, err = cronsun.DefalutClient.Put(procKey, string(newVal))
+	_, err = cronsun.DefalutClient.Put(procKey, str)
 	if err != nil {
 		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	outJSONWithCode(ctx.W, http.StatusOK, "杀死进程成功")
+	outJSONWithCode(ctx.W, http.StatusOK, "Killing process")
 }
 
 type ProcFetchOptions struct {

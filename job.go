@@ -452,7 +452,9 @@ func (j *Job) Run() bool {
 		JobID:  j.ID,
 		Group:  j.Group,
 		NodeID: j.runOn,
-		Time:   t,
+		ProcessVal: ProcessVal{
+			Time: t,
+		},
 	}
 	proc.Start()
 	defer proc.Stop()
