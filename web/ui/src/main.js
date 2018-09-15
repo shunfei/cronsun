@@ -133,14 +133,19 @@ var initConf = new Promise((resolve) => {
       Vue.use((Vue) => Vue.prototype.$appConfig = resp);
       bus.$emit('conf_loaded', resp);
 
-      restApi.GET('nodes').onsucceed(200, (resp) => {
-        var nodes = {};
-        for (var i in resp) {
-          nodes[resp[i].id] = resp[i];
-        }
-        store.commit('setNodes', nodes);
-        resolve();
-      }).do();
+      var loadNodes = function() {
+        restApi.GET('nodes').onsucceed(200, (resp) => {
+          var nodes = {};
+          for (var i in resp) {
+            nodes[resp[i].id] = resp[i];
+          }
+          store.commit('setNodes', nodes);
+          resolve();
+        }).do();
+      }
+      loadNodes();
+      setInterval(loadNodes, 60*1000);
+
     }).onfailed((data, xhr) => {
       bus.$emit('error', data ? data : xhr.status + ' ' + xhr.statusText);
       resolve();
