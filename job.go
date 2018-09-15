@@ -422,12 +422,10 @@ func (j *Job) Run() bool {
 
 	t := time.Now()
 
-	if len(j.User) > 0 {
-		sysProcAttr, err = j.CreateCmdAttr()
-		if err != nil {
-			j.Fail(t, err.Error())
-			return false
-		}
+	sysProcAttr, err = j.CreateCmdAttr()
+	if err != nil {
+		j.Fail(t, err.Error())
+		return false
 	}
 
 	// 超时控制
@@ -438,6 +436,7 @@ func (j *Job) Run() bool {
 	} else {
 		cmd = exec.Command(j.cmd[0], j.cmd[1:]...)
 	}
+
 	cmd.SysProcAttr = sysProcAttr
 	var b bytes.Buffer
 	cmd.Stdout = &b
@@ -713,7 +712,13 @@ func (j *Job) ShortName() string {
 }
 
 func (j *Job) CreateCmdAttr() (*syscall.SysProcAttr, error) {
-	var sysProcAttr *syscall.SysProcAttr
+	sysProcAttr := &syscall.SysProcAttr{
+		Setpgid: true,
+	}
+
+	if len(j.User) == 0 {
+		return sysProcAttr, nil
+	}
 
 	u, err := user.Lookup(j.User)
 	if err != nil {
@@ -724,15 +729,15 @@ func (j *Job) CreateCmdAttr() (*syscall.SysProcAttr, error) {
 	if err != nil {
 		return nil, errors.New("not support run with user on windows")
 	}
+
 	if uid != _Uid {
 		gid, _ := strconv.Atoi(u.Gid)
-		sysProcAttr = &syscall.SysProcAttr{
-			Credential: &syscall.Credential{
-				Uid: uint32(uid),
-				Gid: uint32(gid),
-			},
+		sysProcAttr.Credential = &syscall.Credential{
+			Uid: uint32(uid),
+			Gid: uint32(gid),
 		}
 	}
+
 
 	return sysProcAttr, nil
 }

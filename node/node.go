@@ -423,7 +423,7 @@ func (n *Node) groupRmNode(g, og *cronsun.Group) {
 
 func (n *Node) KillExcutingProc(process *cronsun.Process) {
 	pid, _ := strconv.Atoi(process.ID)
-	if err := syscall.Kill(pid, syscall.SIGKILL); err != nil {
+	if err := syscall.Kill(-pid, syscall.SIGKILL); err != nil {
 		log.Warnf("process:[%d] force kill failed, error:[%s]\n", pid, err)
 		return
 	}
