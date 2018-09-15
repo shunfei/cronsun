@@ -69,6 +69,7 @@ Install from binary [latest release](https://github.com/shunfei/cronsun/releases
 Or build from source, require `go >= 1.11+`.
 
 ```
+export GO111MODULE=on
 go get -u github.com/shunfei/cronsun
 cd $GOPATH/src/github.com/shunfei/cronsun
 go mod vendor
