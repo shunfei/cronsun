@@ -12,7 +12,7 @@ The goal of this project is to make it much easier to manage jobs on lots of mac
 ## Features
 
 - Easy manage jobs on multiple machines
-- Managemant panel
+- Management panel
 - Mail service
 - Multi-language support
 - Simple authentication and accounts manager(default administrator email and password: admin@admin.com/admin)
@@ -67,6 +67,7 @@ We encourage you to try it, it's easy to use, see how it works for you. We belie
 Install from binary [latest release](https://github.com/shunfei/cronsun/releases/latest)
 
 Or build from source, require `go >= 1.11+`.
+> NOTE: The branch `master` is not in stable, using Cronsun for production please checkout corresponding tags.
 
 ```
 export GO111MODULE=on
