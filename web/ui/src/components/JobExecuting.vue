@@ -104,7 +104,7 @@ export default {
     },
 
     killProc(proc, index) {
-      if (!confirm(this.$L("whether to kill the process"))) return;
+      if (!confirm(this.$L('whether to kill the process'))) return;
       var vm = this
       var params = []
       params.push('node='+proc.nodeId)
@@ -112,9 +112,7 @@ export default {
       params.push('job='+proc.jobId)
       params.push('pid='+proc.id)
       this.$rest.DELETE('job/executing?' + params.join('&'))
-      .onsucceed(200, (resp) => {
-        this.executings.splice(index, 1);
-      })
+      .onsucceed(200, (resp) => vm.$bus.$emit('success', vm.$L('command has been sent to the node')))
       .onfailed((resp) => vm.$bus.$emit('error', resp))
       .do();
     },

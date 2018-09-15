@@ -56,6 +56,8 @@ var language = {
   'starting time': '开始时间',
   'process ID': '进程ID',
   'kill process': '杀死进程',
+  'whether to kill the process': '是否杀死该进程',
+  'command has been sent to the node': '命令已经发送到节点',
 
   'group filter': '分组过滤',
   'node filter': '节点过滤',
@@ -86,7 +88,6 @@ var language = {
   'job type': '任务类型',
   'common job': '普通任务',
   'single node single process': '单机单进程',
-  'whether to kill the process': '是否杀死该进程',
   'group level common': '组级别普通任务',
   'group level common help': '暂时没想到好名字，一个比较简单的说明是，把所有选中的节点视为一个大节点，那么该类型的任务就相当于在单个节点上的普通任务',
   'warning on': '开启报警',
