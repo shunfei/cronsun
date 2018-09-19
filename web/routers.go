@@ -87,7 +87,7 @@ func initRouters() (s *http.Server, err error) {
 	h = NewAuthHandler(jobLogHandler.GetDetail, cronsun.Developer)
 	subrouter.Handle("/log/{id}", h).Methods("GET")
 
-	h = NewAuthHandler(nodeHandler.GetNodes, cronsun.Developer)
+	h = NewAuthHandler(nodeHandler.GetNodes, cronsun.Reporter)
 	subrouter.Handle("/nodes", h).Methods("GET")
 	h = NewAuthHandler(nodeHandler.DeleteNode, cronsun.Developer)
 	subrouter.Handle("/node/{ip}", h).Methods("DELETE")
