@@ -72,6 +72,7 @@ sh build.sh
 3. 修改 `conf` 相关的配置
 4. 在任务结点启动 `./cronnode -conf conf/base.json`，在管理结点启动 `./cronweb -conf conf/base.json`
 5. 访问管理界面 `http://127.0.0.1:7079/ui/`
+6. 使用用户名 `admin@admin.com` 和密码 `admin` 进行登录
 
 ### 关于后台权限
 

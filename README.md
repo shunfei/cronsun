@@ -84,6 +84,7 @@ sh build.sh
 3. Open and update Etcd(`conf/etcd.json`) and MongoDB(`conf/db.json`) configurations
 4. Start cronnode: `./cronnode -conf conf/base.json`, start cronweb: `./cronweb -conf conf/base.json`
 5. Open `http://127.0.0.1:7079` in browser
+6. Login with username `admin@admin.com` and password `admin`
 
 ## Screenshot
 

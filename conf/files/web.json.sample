@@ -2,7 +2,7 @@
     "BindAddr": ":7079",
     "Auth": {
         "#Enabled": "set to true to open auth. default username and password is admin@admin.com/admin",
-		"Enabled": false
+		"Enabled": true
 	},
     "Session": {
         "StorePrefixPath": "/cronsun/sess/",
