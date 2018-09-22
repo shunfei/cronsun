@@ -29,7 +29,7 @@
     <table class="ui hover blue table" v-if="executings.length > 0">
       <thead>
         <tr>
-          <th class="center aligned">{{$L('job ID')}}</th>
+          <th class="center aligned">{{$L('job name')}}</th>
           <th width="200px" class="center aligned">{{$L('job group')}}</th>
           <th class="center aligned">{{$L('node')}}</th>
           <th class="center aligned">{{$L('process ID')}}</th>
@@ -39,7 +39,7 @@
       </thead>
       <tbody>
         <tr v-for="(proc, index) in executings">
-          <td class="center aligned"><router-link :to="'/job/edit/'+proc.group+'/'+proc.jobId">{{proc.jobId}}</router-link></td>
+          <td class="center aligned"><router-link :to="'/job/edit/'+proc.group+'/'+proc.jobId">{{proc.jobName}}</router-link></td>
           <td class="center aligned">{{proc.group}}</td>
           <td class="center aligned">{{$store.getters.hostshows(proc.nodeId)}}</td>
           <td class="center aligned">{{proc.id}}</td>
