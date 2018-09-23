@@ -338,7 +338,7 @@ func (j *Job) GetExecutingJob(ctx *Context) {
 		return
 	}
 
-	var list = make([]*cronsun.Process, 0, 8)
+	var list = make([]*processInfo, 0, 8)
 	for i := range gresp.Kvs {
 		proc, err := cronsun.GetProcFromKey(string(gresp.Kvs[i].Key))
 		if err != nil {
@@ -358,7 +358,16 @@ func (j *Job) GetExecutingJob(ctx *Context) {
 			continue
 		}
 		proc.ProcessVal = *pv
-		list = append(list, proc)
+		procInfo := &processInfo{
+			Process: proc,
+		}
+		job, err := cronsun.GetJob(proc.Group, proc.JobID)
+		if err == nil && job != nil {
+			procInfo.JobName = job.Name
+		} else {
+			procInfo.JobName = proc.JobID
+		}
+		list = append(list, procInfo)
 	}
 
 	sort.Sort(ByProcTime(list))
@@ -441,7 +450,12 @@ func (opt *ProcFetchOptions) Match(proc *cronsun.Process) bool {
 	return true
 }
 
-type ByProcTime []*cronsun.Process
+type processInfo struct {
+	*cronsun.Process
+	JobName string `json:"jobName"`
+}
+
+type ByProcTime []*processInfo
 
 func (a ByProcTime) Len() int           { return len(a) }
 func (a ByProcTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
