@@ -2,6 +2,7 @@ package conf
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -178,12 +179,12 @@ func (c *Conf) genUUID() (string, error) {
 
 	uuidDir := path.Dir(c.UUIDFile)
 	if err := os.MkdirAll(uuidDir, 0755); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to write UUID to file: %s. you can change UUIDFile config in base.json", err)
 	}
 
 	err = ioutil.WriteFile(c.UUIDFile, []byte(u.String()), 0600)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to write UUID to file: %s. you can change UUIDFile config in base.json", err)
 	}
 
 	return u.String(), nil

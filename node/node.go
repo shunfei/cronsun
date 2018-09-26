@@ -121,14 +121,14 @@ func (n *Node) writePIDFile() {
 	dir := path.Dir(n.PIDFile)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
-		log.Errorf("Failed to write pid file: %s", err)
+		log.Errorf("Failed to write pid file: %s. you can change PIDFile config in base.json", err)
 		return
 	}
 
 	n.PIDFile = path.Join(dir, filename)
 	err = ioutil.WriteFile(n.PIDFile, []byte(n.PID), 0644)
 	if err != nil {
-		log.Errorf("Failed to write pid file: %s", err)
+		log.Errorf("Failed to write pid file: %s. you can change PIDFile config in base.json", err)
 		return
 	}
 }
