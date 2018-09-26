@@ -21,6 +21,7 @@
 - 任务日志查看
 - 任务失败邮件告警（也支持自定义http告警接口）
 - 用户验证与授权 (默认账号密码: admin@admin.com / admin)
+- [可靠性说明](https://github.com/shunfei/cronsun/wiki/%E5%8F%AF%E9%9D%A0%E6%80%A7%E8%AF%B4%E6%98%8E)
 
 
 ## 架构
