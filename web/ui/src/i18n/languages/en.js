@@ -75,6 +75,7 @@ var language = {
   'all groups': 'All groups',
   'all nodes': 'All nodes',
   'on {node} took {times}, {begin ~ end}': 'On {0} took {1}, {2}',
+  'next will run on {nextTime}': 'Next will run at {0}',
   'create job': 'Create job',
   'update job': 'Update job',
   'output': 'Output',
@@ -106,7 +107,10 @@ var language = {
   'timeout(in seconds, 0 for no limits)': 'Timeout(in seconds, 0 for no limits)',
   'log expiration(log expired after N days, 0 will use default setting: {n} days)': 'Log expiration(log expired after N days, 0 will use default setting: {0} days)',
   '0 * * * * *, rules see the 「?」on the right': '0 * * * * *, rules see the 「?」on the right',
-  '<sec> <min> <hr> <day> <month> <week>, rules is same with Cron': '<sec> <min> <hr> <day> <month> <week>, rules is same with Cron',
+  '<sec> <min> <hr> <day> <month> <week>, rules is same with Cron': '&lt;sec&gt; &lt;min&gt; &lt;hour&gt; &lt;day&gt; &lt;month&gt; &lt;week&gt;, rules is same with Cron.' + 
+                                                                    '<br/>If want run job once at special time (like Linux\'s "at" command), you can use "@at 2006-01-02 15:04:05" to set it.' + 
+                                                                    '<br/>You may use one of several pre-defined schedules in place of a cron expression. "@hourly" run once an hour, beginning of hour.' + 
+                                                                    '<br/>More detail please visit the wiki.',
   'and please running on those nodes': 'And please running on those nodes',
   'do not running on those nodes': 'Do not running on those nodes',
   'the job dose not have a timer currently, please click the button below to add a timer': 'The job dose not have a timer currently, please click the button below to add a timer',

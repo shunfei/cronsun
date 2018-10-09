@@ -76,6 +76,7 @@ var language = {
   'all groups': '所有分组',
   'all nodes': '所有节点',
   'on {node} took {times}, {begin ~ end}': '于 {0} 耗时 {1}, {2}',
+  'next will run on {nextTime}': '下次将运行于 {0}',
   'create job': '新建任务',
   'update job': '更新任务',
   'output': '输出',
@@ -107,7 +108,10 @@ var language = {
   'timeout(in seconds, 0 for no limits)': '超时设置（单位“秒”，0 表示不限制）',
   'log expiration(log expired after N days, 0 will use default setting: {n} days)': '日志过期（日志保存天数，0 表示使用默认设置：{0} 天）',
   '0 * * * * *, rules see the 「?」on the right': '0 * * * * *, 规则参考右边的「?」',
-  '<sec> <min> <hr> <day> <month> <week>, rules is same with Cron': '<秒> <分> <时> <日> <月> <周>，规则与 Cron 一样',
+  '<sec> <min> <hr> <day> <month> <week>, rules is same with Cron': '<秒> <分> <时> <日> <月> <周>，规则与 Cron 一样。' + 
+                                                                    '<br/>如果要指定只在某个时间点执行一次（类似Linux系统的at命令），可以使用 "@at 2006-01-02 15:04:05" 这样来设定。' + 
+                                                                    '<br/>也支持一些简写，例如 @daily 表示每天执行一次。' + 
+                                                                    '<br/>更多请参考wiki。',
   'and please running on those nodes': '同时在这些节点上面运行',
   'do not running on those nodes': '不要在这些节点上面运行',
   'the job dose not have a timer currently, please click the button below to add a timer': '当前任务没有定时器，点击下面按钮来添加定时器',

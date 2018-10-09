@@ -66,6 +66,8 @@
           <td>
             <span v-if="!job.latestStatus">-</span>
             <span v-else>{{formatLatest(job.latestStatus)}}</span>
+            <br/>
+            <span>{{formatNextRunTime(job.nextRunTime)}}</span>
           </td>
           <td :class="{error: job.latestStatus && !job.latestStatus.success}">
             <span v-if="!job.latestStatus">-</span>
@@ -184,6 +186,10 @@ export default {
 
     formatLatest: function(latest){
       return this.$L('on {node} took {times}, {begin ~ end}', this.$store.getters.hostshowsWithoutTip(latest.node), formatDuration(latest.beginTime, latest.endTime), formatTime(latest.beginTime, latest.endTime));
+    },
+
+    formatNextRunTime: function(nextRunTime){
+      return this.$L('next will run on {nextTime}', nextRunTime);
     },
 
     showExecuteJobModal: function(jobName, jobGroup, jobId){
