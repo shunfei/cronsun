@@ -35,7 +35,7 @@
         <tr>
           <th class="collapsing center aligned">{{$L('operation')}}</th>
           <th class="collapsing center aligned">{{$L('status')}}</th>
-          <th width="200px" class="center aligned">{{$L('group')}}</th>
+          <th class="center aligned">{{$L('group')}}</th>
           <th class="center aligned">{{$L('user')}}</th>
           <th class="center aligned">{{$L('name')}}</th>
           <th class="center aligned">{{$L('latest executed')}}</th>
