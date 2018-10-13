@@ -76,7 +76,7 @@ var language = {
   'all groups': '所有分组',
   'all nodes': '所有节点',
   'on {node} took {times}, {begin ~ end}': '于 {0} 耗时 {1}, {2}',
-  'next will run on {nextTime}': '下次将运行于 {0}',
+  'next schedule: {nextTime}': '下个调度: {0}',
   'create job': '新建任务',
   'update job': '更新任务',
   'output': '输出',

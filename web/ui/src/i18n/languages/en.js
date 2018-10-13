@@ -75,7 +75,7 @@ var language = {
   'all groups': 'All groups',
   'all nodes': 'All nodes',
   'on {node} took {times}, {begin ~ end}': 'On {0} took {1}, {2}',
-  'next will run on {nextTime}': 'Next will run at {0}',
+  'next schedule: {nextTime}': 'Next schedule: {0}',
   'create job': 'Create job',
   'update job': 'Update job',
   'output': 'Output',

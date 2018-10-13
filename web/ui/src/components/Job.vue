@@ -189,7 +189,7 @@ export default {
     },
 
     formatNextRunTime: function(nextRunTime){
-      return this.$L('next will run on {nextTime}', nextRunTime);
+      return this.$L('next schedule: {nextTime}', nextRunTime);
     },
 
     showExecuteJobModal: function(jobName, jobGroup, jobId){

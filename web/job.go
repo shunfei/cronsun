@@ -265,11 +265,11 @@ func (j *Job) GetList(ctx *Context) {
 		for i := range jobList {
 			jobList[i].LatestStatus = m[jobList[i].ID]
 			nt := jobList[i].GetNextRunTime()
-			// if nt.IsZero() {
-			// 	jobList[i].NextRunTime = "Never run"
-			// } else {
-			jobList[i].NextRunTime = nt.Format("2006-01-02 15:04:05")
-			// }
+			if nt.IsZero() {
+				jobList[i].NextRunTime = "NO!!"
+			} else {
+				jobList[i].NextRunTime = nt.Format("2006-01-02 15:04:05")
+			}
 		}
 	}
 
