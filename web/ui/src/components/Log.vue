@@ -121,8 +121,8 @@ export default {
       this.begin = this.$route.query.begin || '';
       this.end = this.$route.query.end || '';
       this.page = this.$route.query.page || 1;
-      this.latest = this.$route.query.latest == 'true' ? true : false;
-      this.failedOnly = this.$route.query.failedOnly == 'true' ? true : false;
+      this.latest = this.$route.query.latest === 'true' || this.$route.query.latest === true;
+      this.failedOnly = this.$route.query.failedOnly === 'true' || this.$route.query.failedOnly === true;
     },
 
     fetchList(query){
