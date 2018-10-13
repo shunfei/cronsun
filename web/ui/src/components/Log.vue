@@ -89,7 +89,7 @@ export default {
       begin: '',
       end: '',
       latest: false,
-      failedOnly: '',
+      failedOnly: false,
       list: [],
       total: 0,
       page: 1
@@ -101,10 +101,8 @@ export default {
       this.fetchList(this.buildQuery());
 
       var vm = this;
-      $(this.$refs.latest).checkbox({'onChange': ()=>{
-      }});
-      $(this.$refs.failedOnly).checkbox({'onChange': ()=>{
-      }});
+      $(this.$refs.latest).checkbox();
+      $(this.$refs.failedOnly).checkbox();
   },
 
   watch: {
@@ -123,8 +121,8 @@ export default {
       this.begin = this.$route.query.begin || '';
       this.end = this.$route.query.end || '';
       this.page = this.$route.query.page || 1;
-      this.latest = (this.$route.query.latest == 'true' || this.$route.query.latest === true) ? true : false;
-      this.failedOnly = this.$route.query.failedOnly ? true : false;
+      this.latest = this.$route.query.latest == 'true' ? true : false;
+      this.failedOnly = this.$route.query.failedOnly == 'true' ? true : false;
     },
 
     fetchList(query){
