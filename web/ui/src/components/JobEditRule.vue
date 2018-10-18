@@ -5,7 +5,7 @@
     <div class="field">
       <div class="ui icon input">
         <input type="text" v-bind:value="rule.timer" v-on:input="change('timer', $event.target.value)" :placeholder="$L('0 * * * * *, rules see the 「?」on the right')"/>
-        <i ref="ruletip" class="large help circle link icon" data-position="top right" :data-content="$L('<sec> <min> <hr> <day> <month> <week>, rules is same with Cron')" data-variation="wide"></i>
+        <i ref="ruletip" class="large help circle link icon" data-position="top right" :data-html="$L('<sec> <min> <hr> <day> <month> <week>, rules is same with Cron')" data-variation="wide"></i>
       </div>
     </div>
     <div class="field">

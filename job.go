@@ -411,6 +411,26 @@ func (j *Job) String() string {
 	return string(data)
 }
 
+// GetNextRunTime return the job's next run time by now,
+// will return zero time if job will not run.
+func (j *Job) GetNextRunTime() time.Time {
+	nextTime := time.Time{}
+	if len(j.Rules) < 1 {
+		return nextTime
+	}
+	for i, r := range j.Rules {
+		sch, err := cron.Parse(r.Timer)
+		if err != nil {
+			return nextTime
+		}
+		t := sch.Next(time.Now())
+		if i == 0 || t.UnixNano() < nextTime.UnixNano() {
+			nextTime = t
+		}
+	}
+	return nextTime
+}
+
 // Run 执行任务
 func (j *Job) Run() bool {
 	var (
@@ -737,7 +757,6 @@ func (j *Job) CreateCmdAttr() (*syscall.SysProcAttr, error) {
 			Gid: uint32(gid),
 		}
 	}
-
 
 	return sysProcAttr, nil
 }

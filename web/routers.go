@@ -148,8 +148,8 @@ func (s *embeddedFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	fp += s.IndexFile
 
-	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-	w.Header().Set("Expires", "0")
+	// w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	// w.Header().Set("Expires", "0")
 
 	b, err = Asset(fp)
 	if err == nil {
