@@ -76,6 +76,10 @@ func initRouters() (s *http.Server, err error) {
 	h = NewAuthHandler(jobHandler.GetExecutingJob, cronsun.Reporter)
 	subrouter.Handle("/job/executing", h).Methods("GET")
 
+	// kill an executing job
+	h = NewAuthHandler(jobHandler.KillExecutingJob, cronsun.Developer)
+	subrouter.Handle("/job/executing", h).Methods("DELETE")
+
 	// get job log list
 	h = NewAuthHandler(jobLogHandler.GetList, cronsun.Reporter)
 	subrouter.Handle("/logs", h).Methods("GET")
@@ -83,7 +87,7 @@ func initRouters() (s *http.Server, err error) {
 	h = NewAuthHandler(jobLogHandler.GetDetail, cronsun.Developer)
 	subrouter.Handle("/log/{id}", h).Methods("GET")
 
-	h = NewAuthHandler(nodeHandler.GetNodes, cronsun.Developer)
+	h = NewAuthHandler(nodeHandler.GetNodes, cronsun.Reporter)
 	subrouter.Handle("/nodes", h).Methods("GET")
 	h = NewAuthHandler(nodeHandler.DeleteNode, cronsun.Developer)
 	subrouter.Handle("/node/{ip}", h).Methods("DELETE")
@@ -144,8 +148,8 @@ func (s *embeddedFileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	fp += s.IndexFile
 
-	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-	w.Header().Set("Expires", "0")
+	// w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	// w.Header().Set("Expires", "0")
 
 	b, err = Asset(fp)
 	if err == nil {

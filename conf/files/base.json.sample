@@ -24,6 +24,6 @@
     "Security": "@extend:security.json",
     "#comment": "PIDFile and UUIDFile just work for cronnode",
     "#PIDFile": "Given a none-empty string to write a pid file to the specialed path, or leave it empty to do nothing",
-    "PIDFile": "/tmp/cronsun/cronnode_pid",
+    "PIDFile": "/var/run/cronsun/cronnode.pid",
     "UUIDFile": "/etc/cronsun/CRONSUN_UUID"
 }

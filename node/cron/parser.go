@@ -373,5 +373,21 @@ func parseDescriptor(descriptor string) (Schedule, error) {
 		return Every(duration), nil
 	}
 
+	const at = "@at "
+	if strings.HasPrefix(descriptor, at) {
+		tss := strings.Split(descriptor[len(at):], ",")
+		atls := make([]time.Time, 0, len(tss))
+		for _, ts := range tss {
+			ts = strings.TrimSpace(ts)
+			att, err := time.ParseInLocation("2006-01-02 15:04:05", ts, time.Local)
+			if err != nil {
+				return nil, fmt.Errorf("Failed to parse time %s: %s", descriptor, err)
+			}
+			atls = append(atls, att)
+		}
+
+		return At(atls), nil
+	}
+
 	return nil, fmt.Errorf("Unrecognized descriptor: %s", descriptor)
 }

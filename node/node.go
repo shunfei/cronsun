@@ -1,16 +1,17 @@
 package node
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	client "github.com/coreos/etcd/clientv3"
-
 	"github.com/shunfei/cronsun"
 	"github.com/shunfei/cronsun/conf"
 	"github.com/shunfei/cronsun/log"
@@ -120,14 +121,14 @@ func (n *Node) writePIDFile() {
 	dir := path.Dir(n.PIDFile)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
-		log.Errorf("Failed to write pid file: %s", err)
+		log.Errorf("Failed to write pid file: %s. you can change PIDFile config in base.json", err)
 		return
 	}
 
 	n.PIDFile = path.Join(dir, filename)
 	err = ioutil.WriteFile(n.PIDFile, []byte(n.PID), 0644)
 	if err != nil {
-		log.Errorf("Failed to write pid file: %s", err)
+		log.Errorf("Failed to write pid file: %s. you can change PIDFile config in base.json", err)
 		return
 	}
 }
@@ -420,6 +421,14 @@ func (n *Node) groupRmNode(g, og *cronsun.Group) {
 	n.groups[g.ID] = g
 }
 
+func (n *Node) KillExcutingProc(process *cronsun.Process) {
+	pid, _ := strconv.Atoi(process.ID)
+	if err := syscall.Kill(-pid, syscall.SIGKILL); err != nil {
+		log.Warnf("process:[%d] force kill failed, error:[%s]\n", pid, err)
+		return
+	}
+}
+
 func (n *Node) watchJobs() {
 	rch := cronsun.WatchJobs()
 	for wresp := range rch {
@@ -447,6 +456,35 @@ func (n *Node) watchJobs() {
 				n.delJob(cronsun.GetIDFromKey(string(ev.Kv.Key)))
 			default:
 				log.Warnf("unknown event type[%v] from job[%s]", ev.Type, string(ev.Kv.Key))
+			}
+		}
+	}
+}
+
+func (n *Node) watchExcutingProc() {
+	rch := cronsun.WatchProcs(n.ID)
+
+	for wresp := range rch {
+		for _, ev := range wresp.Events {
+			switch {
+			case ev.IsModify():
+				key := string(ev.Kv.Key)
+				process, err := cronsun.GetProcFromKey(key)
+				if err != nil {
+					log.Warnf("err: %s, kv: %s", err.Error(), ev.Kv.String())
+					continue
+				}
+
+				val := string(ev.Kv.Value)
+				pv := &cronsun.ProcessVal{}
+				err = json.Unmarshal([]byte(val), pv)
+				if err != nil {
+					continue
+				}
+				process.ProcessVal = *pv
+				if process.Killed {
+					n.KillExcutingProc(process)
+				}
 			}
 		}
 	}
@@ -531,6 +569,7 @@ func (n *Node) Run() (err error) {
 
 	n.Cron.Start()
 	go n.watchJobs()
+	go n.watchExcutingProc()
 	go n.watchGroups()
 	go n.watchOnce()
 	go n.watchCsctl()

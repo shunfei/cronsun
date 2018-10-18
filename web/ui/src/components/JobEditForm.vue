@@ -211,7 +211,7 @@ export default {
             }
           }
         }).
-        onfailed((msg)=> vm.$bus.$emit('error', data)).
+        onfailed((msg)=> vm.$bus.$emit('error', msg)).
         do();
     }
 

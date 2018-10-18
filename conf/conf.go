@@ -2,6 +2,7 @@ package conf
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -11,7 +12,7 @@ import (
 	client "github.com/coreos/etcd/clientv3"
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-gomail/gomail"
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 
 	"github.com/shunfei/cronsun/db"
 	"github.com/shunfei/cronsun/event"
@@ -159,7 +160,8 @@ func (c *Conf) UUID() (string, error) {
 		if len(b) == 0 {
 			return c.genUUID()
 		}
-		return string(b), nil
+		suid := strings.Join(strings.Fields(string(b)), "")
+		return suid, nil
 	}
 
 	if !os.IsNotExist(err) {
@@ -177,12 +179,12 @@ func (c *Conf) genUUID() (string, error) {
 
 	uuidDir := path.Dir(c.UUIDFile)
 	if err := os.MkdirAll(uuidDir, 0755); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to write UUID to file: %s. you can change UUIDFile config in base.json", err)
 	}
 
 	err = ioutil.WriteFile(c.UUIDFile, []byte(u.String()), 0600)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to write UUID to file: %s. you can change UUIDFile config in base.json", err)
 	}
 
 	return u.String(), nil

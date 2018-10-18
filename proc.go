@@ -1,6 +1,7 @@
 package cronsun
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -127,16 +128,23 @@ func (l *leaseID) keepAlive() {
 // value: 开始执行时间
 // key 会自动过期，防止进程意外退出后没有清除相关 key，过期时间可配置
 type Process struct {
-	ID     string    `json:"id"` // pid
-	JobID  string    `json:"jobId"`
-	Group  string    `json:"group"`
-	NodeID string    `json:"nodeId"`
-	Time   time.Time `json:"time"` // 开始执行时间
+	// parse from key path
+	ID     string `json:"id"` // pid
+	JobID  string `json:"jobId"`
+	Group  string `json:"group"`
+	NodeID string `json:"nodeId"`
+	// parse from value
+	ProcessVal
 
 	running int32
 	hasPut  int32
 	wg      sync.WaitGroup
 	done    chan struct{}
+}
+
+type ProcessVal struct {
+	Time   time.Time `json:"time"`   // 开始执行时间
+	Killed bool      `json:"killed"` // 是否强制杀死
 }
 
 func GetProcFromKey(key string) (proc *Process, err error) {
@@ -160,11 +168,16 @@ func (p *Process) Key() string {
 	return conf.Config.Proc + p.NodeID + "/" + p.Group + "/" + p.JobID + "/" + p.ID
 }
 
-func (p *Process) Val() string {
-	return p.Time.Format(time.RFC3339)
+func (p *Process) Val() (string, error) {
+	b, err := json.Marshal(&p.ProcessVal)
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
 }
 
-// 获取结点正在执行任务的数量
+// 获取节点正在执行任务的数量
 func (j *Job) CountRunning() (int64, error) {
 	resp, err := DefalutClient.Get(conf.Config.Proc+j.runOn+"/"+j.Group+"/"+j.ID, client.WithPrefix(), client.WithCountOnly())
 	if err != nil {
@@ -187,13 +200,17 @@ func (p *Process) put() (err error) {
 	}
 
 	id := lID.get()
+	val, err := p.Val()
+	if err != nil {
+		return err
+	}
 	if id < 0 {
-		if _, err = DefalutClient.Put(p.Key(), p.Val()); err != nil {
+		if _, err = DefalutClient.Put(p.Key(), val); err != nil {
 			return
 		}
 	}
 
-	_, err = DefalutClient.Put(p.Key(), p.Val(), client.WithLease(id))
+	_, err = DefalutClient.Put(p.Key(), val, client.WithLease(id))
 	return
 }
 
@@ -253,4 +270,8 @@ func (p *Process) Stop() {
 	if err := p.del(); err != nil {
 		log.Warnf("proc del[%s] err: %s", p.Key(), err.Error())
 	}
+}
+
+func WatchProcs(nid string) client.WatchChan {
+	return DefalutClient.Watch(conf.Config.Proc+nid, client.WithPrefix())
 }

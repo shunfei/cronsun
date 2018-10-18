@@ -1,5 +1,6 @@
 <style scope>
   .clearfix:after {content:""; clear:both; display:table;}
+  .kill-proc-btn { color:red;cursor: pointer;}
 </style>
 <template>
   <div>
@@ -28,20 +29,22 @@
     <table class="ui hover blue table" v-if="executings.length > 0">
       <thead>
         <tr>
-          <th class="center aligned">{{$L('job ID')}}</th>
+          <th class="center aligned">{{$L('job name')}}</th>
           <th width="200px" class="center aligned">{{$L('job group')}}</th>
           <th class="center aligned">{{$L('node')}}</th>
           <th class="center aligned">{{$L('process ID')}}</th>
           <th class="center aligned">{{$L('starting time')}}</th>
+          <th class="center aligned">{{$L('operation')}}</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(proc, index) in executings">
-          <td class="center aligned"><router-link :to="'/job/edit/'+proc.group+'/'+proc.jobId">{{proc.jobId}}</router-link></td>
+          <td class="center aligned"><router-link :to="'/job/edit/'+proc.group+'/'+proc.jobId">{{proc.jobName}}</router-link></td>
           <td class="center aligned">{{proc.group}}</td>
           <td class="center aligned">{{$store.getters.hostshows(proc.nodeId)}}</td>
           <td class="center aligned">{{proc.id}}</td>
           <td class="center aligned">{{proc.time}}</td>
+          <td class="center aligned"><a class="kill-proc-btn" v-on:click="killProc(proc, index)">{{$L('kill process')}}</a></td>
         </tr>
       </tbody>
     </table>
@@ -98,6 +101,20 @@ export default {
 
     submit(){
       this.$router.push('/job/executing?'+this.buildQuery());
+    },
+
+    killProc(proc, index) {
+      if (!confirm(this.$L('whether to kill the process'))) return;
+      var vm = this
+      var params = []
+      params.push('node='+proc.nodeId)
+      params.push('group='+proc.group)
+      params.push('job='+proc.jobId)
+      params.push('pid='+proc.id)
+      this.$rest.DELETE('job/executing?' + params.join('&'))
+      .onsucceed(200, (resp) => vm.$bus.$emit('success', vm.$L('command has been sent to the node')))
+      .onfailed((resp) => vm.$bus.$emit('error', resp))
+      .do();
     },
 
     buildQuery(){

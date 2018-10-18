@@ -10,6 +10,20 @@
 
 `cronsun`已经在线上几百台规模的服务器上面稳定运行了一年多了，虽然目前版本不是正式版，但是我们认为是完全可以用于生产环境的。强烈建议你试用下，因为它非常简单易用，同时感受下他的强大，相信你会喜欢上这个工具的。
 
+
+## 特性
+
+- 方便对多台服务器上面的定时任务进行集中式管理
+- 任务调度时间粒度支持到`秒`级别
+- 任务失败自动重试
+- 任务可靠性保障（从N个节点里面挑一个可用节点来执行任务）
+- 简洁易用的管理后台，支持多语言
+- 任务日志查看
+- 任务失败邮件告警（也支持自定义http告警接口）
+- 用户验证与授权 (默认账号密码: admin@admin.com / admin)
+- [可靠性说明](https://github.com/shunfei/cronsun/wiki/%E5%8F%AF%E9%9D%A0%E6%80%A7%E8%AF%B4%E6%98%8E)
+
+
 ## 架构
 
 ```
@@ -55,11 +69,13 @@
 
 直接下载执行文件 [latest release](https://github.com/shunfei/cronsun/releases/latest)。
 
-如果你熟悉 `Go`，也可以从源码编译, 要求 `go >= 1.9+`
+如果你熟悉 `Go`，也可以从源码编译, 要求 `go >= 1.11+`
 
 ```
 go get -u github.com/shunfei/cronsun
 cd $GOPATH/src/github.com/shunfei/cronsun
+go mod vendor
+# 如果 go mod vendor 下载失败，请尝试 https://goproxy.io
 sh build.sh
 ```
 
@@ -70,6 +86,7 @@ sh build.sh
 3. 修改 `conf` 相关的配置
 4. 在任务结点启动 `./cronnode -conf conf/base.json`，在管理结点启动 `./cronweb -conf conf/base.json`
 5. 访问管理界面 `http://127.0.0.1:7079/ui/`
+6. 使用用户名 `admin@admin.com` 和密码 `admin` 进行登录
 
 ### 关于后台权限
 

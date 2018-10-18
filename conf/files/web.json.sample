@@ -1,11 +1,12 @@
 {
     "BindAddr": ":7079",
     "Auth": {
-		"Enabled": false
+        "#Enabled": "set to true to open auth. default username and password is admin@admin.com/admin",
+		"Enabled": true
 	},
     "Session": {
         "StorePrefixPath": "/cronsun/sess/",
-        "CookieName": "uid",
+        "CookieName": "cronsun_uid",
         "Expiration": 8640000
     },
     "#comment": "Delete the expired log (which store in mongodb) periodically",

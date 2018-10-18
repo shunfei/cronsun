@@ -186,9 +186,10 @@ func monitorNodes(n Noticer) {
 
 				if node.Alived {
 					n.Send(&Message{
-						Subject: fmt.Sprintf("Node[%s] break away cluster at %s", node.Hostname, time.Now().Format(time.RFC3339)),
-						Body:    fmt.Sprintf("Node breaked away cluster, this might happened when node crash or network problems.\nUUID: %s\nHostname: %s\nIP: %s\n", id, node.Hostname, node.IP),
-						To:      conf.Config.Mail.To,
+						Subject: fmt.Sprintf("[Cronsun Warning] Node[%s] break away cluster at %s",
+							node.Hostname, time.Now().Format(time.RFC3339)),
+						Body: fmt.Sprintf("Cronsun Node breaked away cluster, this might happened when node crash or network problems.\nUUID: %s\nHostname: %s\nIP: %s\n", id, node.Hostname, node.IP),
+						To:   conf.Config.Mail.To,
 					})
 				}
 			}

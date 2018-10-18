@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/gorilla/mux"
@@ -220,6 +219,7 @@ func (j *Job) GetList(ctx *Context) {
 	type jobStatus struct {
 		*cronsun.Job
 		LatestStatus *cronsun.JobLatestLog `json:"latestStatus"`
+		NextRunTime  string                `json:"nextRunTime"`
 	}
 
 	resp, err := cronsun.DefalutClient.Get(prefix, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
@@ -264,6 +264,12 @@ func (j *Job) GetList(ctx *Context) {
 	} else {
 		for i := range jobList {
 			jobList[i].LatestStatus = m[jobList[i].ID]
+			nt := jobList[i].GetNextRunTime()
+			if nt.IsZero() {
+				jobList[i].NextRunTime = "NO!!"
+			} else {
+				jobList[i].NextRunTime = nt.Format("2006-01-02 15:04:05")
+			}
 		}
 	}
 
@@ -339,7 +345,7 @@ func (j *Job) GetExecutingJob(ctx *Context) {
 		return
 	}
 
-	var list = make([]*cronsun.Process, 0, 8)
+	var list = make([]*processInfo, 0, 8)
 	for i := range gresp.Kvs {
 		proc, err := cronsun.GetProcFromKey(string(gresp.Kvs[i].Key))
 		if err != nil {
@@ -350,12 +356,82 @@ func (j *Job) GetExecutingJob(ctx *Context) {
 		if !opt.Match(proc) {
 			continue
 		}
-		proc.Time, _ = time.Parse(time.RFC3339, string(gresp.Kvs[i].Value))
-		list = append(list, proc)
+
+		val := string(gresp.Kvs[i].Value)
+		var pv = &cronsun.ProcessVal{}
+		err = json.Unmarshal([]byte(val), pv)
+		if err != nil {
+			log.Errorf("Failed to unmarshal ProcessVal from val: %s", err.Error())
+			continue
+		}
+		proc.ProcessVal = *pv
+		procInfo := &processInfo{
+			Process: proc,
+		}
+		job, err := cronsun.GetJob(proc.Group, proc.JobID)
+		if err == nil && job != nil {
+			procInfo.JobName = job.Name
+		} else {
+			procInfo.JobName = proc.JobID
+		}
+		list = append(list, procInfo)
 	}
 
 	sort.Sort(ByProcTime(list))
 	outJSON(ctx.W, list)
+}
+
+func (j *Job) KillExecutingJob(ctx *Context) {
+	proc := &cronsun.Process{
+		ID:     getStringVal("pid", ctx.R),
+		JobID:  getStringVal("job", ctx.R),
+		Group:  getStringVal("group", ctx.R),
+		NodeID: getStringVal("node", ctx.R),
+	}
+
+	if proc.ID == "" || proc.JobID == "" || proc.Group == "" || proc.NodeID == "" {
+		outJSONWithCode(ctx.W, http.StatusBadRequest, "Invalid process info.")
+		return
+	}
+
+	procKey := proc.Key()
+	resp, err := cronsun.DefalutClient.Get(procKey)
+	if err != nil {
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(resp.Kvs) < 1 {
+		outJSONWithCode(ctx.W, http.StatusNotFound, "Porcess not found")
+		return
+	}
+
+	var procVal = &cronsun.ProcessVal{}
+	err = json.Unmarshal(resp.Kvs[0].Value, &procVal)
+	if err != nil {
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if procVal.Killed {
+		outJSONWithCode(ctx.W, http.StatusOK, "Killing process")
+		return
+	}
+
+	procVal.Killed = true
+	proc.ProcessVal = *procVal
+	str, err := proc.Val()
+	if err != nil {
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	_, err = cronsun.DefalutClient.Put(procKey, str)
+	if err != nil {
+		outJSONWithCode(ctx.W, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	outJSONWithCode(ctx.W, http.StatusOK, "Killing process")
 }
 
 type ProcFetchOptions struct {
@@ -381,7 +457,12 @@ func (opt *ProcFetchOptions) Match(proc *cronsun.Process) bool {
 	return true
 }
 
-type ByProcTime []*cronsun.Process
+type processInfo struct {
+	*cronsun.Process
+	JobName string `json:"jobName"`
+}
+
+type ByProcTime []*processInfo
 
 func (a ByProcTime) Len() int           { return len(a) }
 func (a ByProcTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
