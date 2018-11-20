@@ -5,7 +5,7 @@
   "Database": "cronsun",
   "#AuthSource": "AuthSource Specify the database name associated with the user’s credentials.",
   "#AuthSource": "AuthSource defaults to the cronsun's Database.",
-  "#AuthSource": "If connect mongodb like './bin/mongo mytest -u "test" -p "123" --authenticationDatabase admin' ,",
+  "#AuthSource": "If connect mongodb like './bin/mongo mytest -u test -p 123 --authenticationDatabase admin' ",
   "#AuthSource": "the AuthSource is 'admin'. ",
   "AuthSource": "",
   "UserName": "",
