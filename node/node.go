@@ -304,23 +304,32 @@ func (n *Node) addGroup(g *cronsun.Group) {
 }
 
 func (n *Node) delGroup(id string) {
-	delete(n.groups, id)
-	n.link.delGroup(id)
+	// delete job first
+	defer n.link.delGroup(id)
+	defer delete(n.groups, id)
 
-	job, ok := n.jobs[id]
-	// 之前此任务没有在当前结点执行
-	if !ok {
+	jobLinks := n.link[id]
+	if len(jobLinks) == 0 {
 		return
 	}
 
-	cmds := job.Cmds(n.ID, n.groups)
-	if len(cmds) == 0 {
-		return
+	for jID := range jobLinks {
+		job, ok := n.jobs[jID]
+		// 之前此任务没有在当前结点执行
+		if !ok {
+			continue
+		}
+
+		cmds := job.Cmds(n.ID, n.groups)
+		if len(cmds) == 0 {
+			continue
+		}
+
+		for _, cmd := range cmds {
+			n.delCmd(cmd)
+		}
 	}
 
-	for _, cmd := range cmds {
-		n.delCmd(cmd)
-	}
 	return
 }
 

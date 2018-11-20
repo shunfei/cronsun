@@ -1,6 +1,7 @@
 package db
 
 import (
+	"net/url"
 	"strings"
 	"time"
 
@@ -9,11 +10,14 @@ import (
 )
 
 type Config struct {
-	Hosts    []string
-	UserName string
-	Password string
-	Database string
-	Timeout  time.Duration // second
+	Hosts []string
+	// AuthSource Specify the database name associated with the user’s credentials.
+	// authSource defaults to the database specified in the connection string.
+	AuthSource string
+	UserName   string
+	Password   string
+	Database   string
+	Timeout    time.Duration // second
 }
 
 type Mdb struct {
@@ -29,17 +33,22 @@ func NewMdb(c *Config) (*Mdb, error) {
 }
 
 func (m *Mdb) connect() error {
-	// url: [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]
-	url := strings.Join(m.Config.Hosts, ",")
+	// connectionString: [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]
+	// via: https://docs.mongodb.com/manual/reference/connection-string/
+	connectionString := strings.Join(m.Config.Hosts, ",")
 	if len(m.Config.UserName) > 0 && len(m.Config.Password) > 0 {
-		url = m.Config.UserName + ":" + m.Config.Password + "@" + url
+		connectionString = m.Config.UserName + ":" + url.QueryEscape(m.Config.Password) + "@" + connectionString
 	}
 
 	if len(m.Config.Database) > 0 {
-		url += "/" + m.Config.Database
+		connectionString += "/" + m.Config.Database
 	}
 
-	session, err := mgo.DialWithTimeout(url, m.Config.Timeout)
+	if len(m.Config.AuthSource) > 0 {
+		connectionString += "?authSource=" + m.Config.AuthSource
+	}
+
+	session, err := mgo.DialWithTimeout(connectionString, m.Config.Timeout)
 	if err != nil {
 		return err
 	}
