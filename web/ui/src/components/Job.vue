@@ -48,7 +48,7 @@
             <div class="ui icon dropdown" v-show="!batched">
               <i class="content icon"></i>
               <div class="menu">
-                <div class="item" v-on:click="$router.push('/job/edit/'+job.group+'/'+job.id)">{{$L('edit')}}</div>
+                <div class="item" v-on:click="editJob(job.group, job.id)">{{$L('edit')}}</div>
                 <div class="item" v-if="job.pause" v-on:click="changeStatus(job.group, job.id, index, !job.pause)">{{$L('open')}}</div>
                 <div class="item" v-if="!job.pause" v-on:click="changeStatus(job.group, job.id, index, !job.pause)">{{$L('pause')}}</div>
                 <div class="divider"></div>
@@ -62,7 +62,7 @@
           <td class="center aligned"><i class="icon" v-bind:class="{pause: job.pause, play: !job.pause, green: !job.pause}"></i></td>
           <td>{{job.group}}</td>
           <td>{{job.user && job.user.length > 0 ? job.user : '-'}}</td>
-          <td><router-link :to="'/job/edit/'+job.group+'/'+job.id">{{job.name}}</router-link></td>
+          <td><router-link :to="toJob(job.group, job.id)">{{job.name}}</router-link></td>
           <td>
             <span v-if="!job.latestStatus">-</span>
             <span v-else>{{formatLatest(job.latestStatus)}}</span>
@@ -163,6 +163,24 @@ export default {
 
     refresh: function(){
       this.fetchList(this.buildQuery());
+    },
+
+    editJob: function(group, id){
+        var query = this.buildQuery();
+        if(query == ''){
+            this.$router.push('/job/edit/'+group+'/'+id)
+        }else{
+            this.$router.push('/job/edit/'+group+'/'+id + '?'+query)
+        }
+    },
+
+    toJob: function(group, id){
+        var query = this.buildQuery();
+        if(query == ''){
+            return '/job/edit/'+group+'/'+id;
+        }else{
+            return '/job/edit/'+group+'/'+id+ '?'+query;
+        }
     },
 
     removeJob: function(group, id, index){
