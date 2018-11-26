@@ -46,6 +46,17 @@ var restApi = new Rest('/v1/', (msg) => {
     bus.$emit('goLogin')
   }
 });
+var loadNodes = function() {
+    restApi.GET('nodes').onsucceed(200, (resp) => {
+        var nodes = {};
+        for (var i in resp) {
+            nodes[resp[i].id] = resp[i];
+        }
+        store.commit('setNodes', nodes);
+        resolve();
+    }).do();
+}
+
 Vue.use((Vue, options) => {
   Vue.prototype.$rest = restApi;
 }, null);
@@ -60,6 +71,8 @@ Vue.use((Vue) => {
       }
       Vue.use(Config);
       bus.$emit('conf_loaded', resp);
+      loadNodes();
+
     }).onfailed((data, xhr) => {
       var msg = data ? data : xhr.status + ' ' + xhr.statusText;
       bus.$emit('error', msg);
@@ -132,17 +145,6 @@ var initConf = new Promise((resolve) => {
     restApi.GET('configurations').onsucceed(200, (resp) => {
       Vue.use((Vue) => Vue.prototype.$appConfig = resp);
       bus.$emit('conf_loaded', resp);
-
-      var loadNodes = function() {
-        restApi.GET('nodes').onsucceed(200, (resp) => {
-          var nodes = {};
-          for (var i in resp) {
-            nodes[resp[i].id] = resp[i];
-          }
-          store.commit('setNodes', nodes);
-          resolve();
-        }).do();
-      }
       loadNodes();
       setInterval(loadNodes, 60*1000);
 
