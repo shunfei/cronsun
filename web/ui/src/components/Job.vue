@@ -62,7 +62,7 @@
           <td class="center aligned"><i class="icon" v-bind:class="{pause: job.pause, play: !job.pause, green: !job.pause}"></i></td>
           <td>{{job.group}}</td>
           <td>{{job.user && job.user.length > 0 ? job.user : '-'}}</td>
-          <td><router-link :to="toJob(job.group, job.id)">{{job.name}}</router-link></td>
+          <td><router-link :to="buildEditJobURL(job.group, job.id)">{{job.name}}</router-link></td>
           <td>
             <span v-if="!job.latestStatus">-</span>
             <span v-else>{{formatLatest(job.latestStatus)}}</span>
@@ -166,15 +166,10 @@ export default {
     },
 
     editJob: function(group, id){
-        var query = this.buildQuery();
-        if(query == ''){
-            this.$router.push('/job/edit/'+group+'/'+id)
-        }else{
-            this.$router.push('/job/edit/'+group+'/'+id + '?'+query)
-        }
+        this.$router.push( this.buildEditJobURL(group, id) );
     },
 
-    toJob: function(group, id){
+    buildEditJobURL: function(group, id){
         var query = this.buildQuery();
         if(query == ''){
             return '/job/edit/'+group+'/'+id;
