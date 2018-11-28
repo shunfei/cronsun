@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	client "go.etcd.io/etcd/clientv3"
+	client "github.com/coreos/etcd/clientv3"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
