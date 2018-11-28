@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"go.etcd.io/etcd/clientv3"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/gorilla/mux"
 
 	"github.com/shunfei/cronsun"

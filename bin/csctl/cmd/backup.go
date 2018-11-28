@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"go.etcd.io/etcd/clientv3"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/spf13/cobra"
 
 	"github.com/shunfei/cronsun"

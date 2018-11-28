@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"go.etcd.io/etcd/clientv3"
+	"github.com/coreos/etcd/clientv3"
 	"github.com/spf13/cobra"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"

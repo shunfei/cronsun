@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	client "go.etcd.io/etcd/clientv3"
+	client "github.com/coreos/etcd/clientv3"
 	"github.com/go-gomail/gomail"
 
 	"github.com/shunfei/cronsun/conf"
