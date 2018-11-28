@@ -174,7 +174,7 @@ export default {
       this.loading = true;
       var vm = this;
       this.$rest.PUT('job', this.job)
-        .onsucceed(exceptCode, ()=>{vm.$router.push('/job')})
+        .onsucceed(exceptCode, ()=>{vm.$router.push('/job',{query:vm.$route.query})})
         .onfailed((resp)=>{vm.$bus.$emit('error', resp)})
         .onend(()=>{vm.loading=false})
         .do();
