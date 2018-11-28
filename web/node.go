@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	v3 "github.com/coreos/etcd/clientv3"
+	v3 "go.etcd.io/etcd/clientv3"
 	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2/bson"
 

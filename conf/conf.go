@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	client "github.com/coreos/etcd/clientv3"
+	client "go.etcd.io/etcd/clientv3"
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-gomail/gomail"
 	"github.com/gofrs/uuid"
