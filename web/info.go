@@ -3,7 +3,7 @@ package web
 import (
 	"time"
 
-	v3 "github.com/coreos/etcd/clientv3"
+	v3 "go.etcd.io/etcd/clientv3"
 
 	"github.com/shunfei/cronsun"
 	"github.com/shunfei/cronsun/conf"
