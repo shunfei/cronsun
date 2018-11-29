@@ -173,8 +173,9 @@ export default {
       var exceptCode = this.action == 'CREATE' ? 201 : 200;
       this.loading = true;
       var vm = this;
+      console.log(vm.$route.query);
       this.$rest.PUT('job', this.job)
-        .onsucceed(exceptCode, ()=>{vm.$router.push('/job',{query:vm.$route.query})})
+        .onsucceed(exceptCode, ()=>{vm.$router.push({path:'/job',query:vm.$route.query})})
         .onfailed((resp)=>{vm.$bus.$emit('error', resp)})
         .onend(()=>{vm.loading=false})
         .do();
