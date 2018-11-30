@@ -387,6 +387,7 @@ func (n *Node) groupAddNode(g *cronsun.Group) {
 			}
 
 			job.Init(n.ID, n.Hostname, n.IP)
+			n.jobs[jid] = job
 		}
 
 		cmds := job.Cmds(n.ID, n.groups)
