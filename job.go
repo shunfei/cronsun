@@ -452,9 +452,9 @@ func (j *Job) Run() bool {
 	if j.Timeout > 0 {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(j.Timeout)*time.Second)
 		defer cancel()
-		cmd = exec.CommandContext(ctx, j.cmd[0], j.cmd[1:]...)
+		cmd = exec.CommandContext(ctx, "bash", "-c", j.Command)
 	} else {
-		cmd = exec.Command(j.cmd[0], j.cmd[1:]...)
+		cmd = exec.Command("bash", "-c", j.Command)
 	}
 
 	cmd.SysProcAttr = sysProcAttr
