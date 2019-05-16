@@ -66,7 +66,7 @@ export default {
 
   created: function() {
     this.locale = window.$.cookie('locale');
-    this.$store.commit('setShowWithHostname', window.$.cookie('hostshows') === 'hostname');
+    this.$store.commit('setShowWithHostname', !(window.$.cookie('hostshows') === 'ip'));
   },
 
   computed: {
