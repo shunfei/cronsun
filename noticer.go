@@ -83,7 +83,7 @@ func (m *Mail) Serve() {
 			}
 
 			sm.Reset()
-			sm.SetHeader("From", m.cf.Username)
+			sm.SetHeader("From", m.cf.FromEmail)
 			sm.SetHeader("To", msg.To...)
 			sm.SetHeader("Subject", msg.Subject)
 			sm.SetBody("text/plain", msg.Body)
