@@ -12,4 +12,3 @@ web/ui/dist
 .vscode
 *npm-debug.log
 vendor
-.idea
