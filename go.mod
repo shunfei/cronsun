@@ -58,3 +58,5 @@ require (
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
 )
+
+replace github.com/coreos/etcd v3.3.9+incompatible => go.etcd.io/etcd v3.3.9+incompatible
