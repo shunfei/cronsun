@@ -4,6 +4,9 @@
 
 [简体中文](README_ZH.md)
 
+## 新增支持
+- 通过ssl证书访问etcd
+
 ## Purpose
 
 The goal of this project is to make it much easier to manage jobs on lots of machines and provides high availability.
