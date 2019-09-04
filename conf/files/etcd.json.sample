@@ -4,6 +4,9 @@
     ],
     "Username":"",
     "Password":"",
-    "#DialTimeout":"单位秒",
+    "CertFile":"",
+    "KeyFile":"m",
+    "TrustedCAFile":"",    
+   "#DialTimeout":"单位秒",
     "DialTimeout": 2
 }
