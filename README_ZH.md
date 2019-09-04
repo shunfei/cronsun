@@ -1,7 +1,5 @@
 # cronsun [![Build Status](https://travis-ci.org/shunfei/cronsun.svg?branch=master)](https://travis-ci.org/shunfei/cronsun)
 
-## 新增支持
-- 通过ssl证书访问etcd
 
 `cronsun` 是一个分布式任务系统，单个结点和 `*nix` 机器上的 `crontab` 近似。支持界面管理机器上的任务，支持任务失败邮件提醒，安装简单，使用方便，是替换 `crontab` 一个不错的选择。
 
@@ -15,7 +13,7 @@
 
 
 ## 特性
-
+- 新增通过ssl证书访问etcd
 - 方便对多台服务器上面的定时任务进行集中式管理
 - 任务调度时间粒度支持到`秒`级别
 - 任务失败自动重试
