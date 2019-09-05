@@ -58,7 +58,7 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 	n = &Node{
 		Client: cronsun.DefalutClient,
 		Node: &cronsun.Node{
-			ID:       uuid,
+			ID:       hostname,
 			PID:      strconv.Itoa(os.Getpid()),
 			PIDFile:  strings.TrimSpace(cfg.PIDFile),
 			IP:       ip.String(),

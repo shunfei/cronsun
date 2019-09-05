@@ -1,4 +1,0 @@
-#! /bin/bash
-
-scp ./server_linux  root@k8s-master:/k8s/kubernets/data/soft/cronsun-v0.3.5/server
-scp ./node_linux  root@k8s-master:/k8s/kubernets/data/soft/cronsun-v0.3.5/node
