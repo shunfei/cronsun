@@ -6,6 +6,7 @@
 
 ## 新增支持
 - 通过ssl证书访问etcd
+- 支持将节点作为kubernetes pod动态上下线
 
 ## Purpose
 
