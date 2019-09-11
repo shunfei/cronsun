@@ -4,6 +4,10 @@
 
 [简体中文](README_ZH.md)
 
+## 新增支持
+- 通过ssl证书访问etcd
+- 支持将节点作为kubernetes pod动态上下线
+
 ## Purpose
 
 The goal of this project is to make it much easier to manage jobs on lots of machines and provides high availability.

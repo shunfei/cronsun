@@ -15,5 +15,5 @@ func initID() (err error) {
 
 func NextID() string {
 	id := generator.Next()
-	return hex.EncodeToString(id[:4])
+	return hex.EncodeToString(id[:])
 }

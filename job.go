@@ -155,7 +155,7 @@ func (c *Cmd) Run() {
 		return
 	}
 
-	for i := 0; i < c.Job.Retry; i++ {
+	for i := 0; i <= c.Job.Retry; i++ {
 		if c.Job.Run() {
 			return
 		}

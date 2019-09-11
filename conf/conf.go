@@ -3,6 +3,7 @@ package conf
 import (
 	"errors"
 	"fmt"
+	"github.com/coreos/etcd/pkg/transport"
 	"io/ioutil"
 	"os"
 	"path"
@@ -81,9 +82,14 @@ type Conf struct {
 }
 
 type etcdConfig struct {
-	Endpoints   []string
-	Username    string
-	Password    string
+	Endpoints []string
+	Username  string
+	Password  string
+
+	CertFile      string
+	KeyFile       string
+	TrustedCAFile string
+
 	DialTimeout int64 // 单位秒
 
 	conf client.Config
@@ -202,6 +208,14 @@ func (c *Conf) parse(confFile string) error {
 	c.Etcd.conf.Username = c.Etcd.Username
 	c.Etcd.conf.Password = c.Etcd.Password
 	c.Etcd.conf.Endpoints = c.Etcd.Endpoints
+	if c.Etcd.CertFile != "" && c.Etcd.TrustedCAFile != "" && c.Etcd.KeyFile != "" {
+		tlsInfo := transport.TLSInfo{
+			CertFile:      c.Etcd.CertFile,
+			KeyFile:       c.Etcd.KeyFile,
+			TrustedCAFile: c.Etcd.TrustedCAFile,
+		}
+		c.Etcd.conf.TLS, _ = tlsInfo.ClientConfig()
+	}
 
 	if c.Ttl <= 0 {
 		c.Ttl = 10

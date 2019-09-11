@@ -58,7 +58,7 @@ func NewNode(cfg *conf.Conf) (n *Node, err error) {
 	n = &Node{
 		Client: cronsun.DefalutClient,
 		Node: &cronsun.Node{
-			ID:       uuid,
+			ID:       hostname,
 			PID:      strconv.Itoa(os.Getpid()),
 			PIDFile:  strings.TrimSpace(cfg.PIDFile),
 			IP:       ip.String(),
@@ -387,6 +387,7 @@ func (n *Node) groupAddNode(g *cronsun.Group) {
 			}
 
 			job.Init(n.ID, n.Hostname, n.IP)
+			n.jobs[jid] = job
 		}
 
 		cmds := job.Cmds(n.ID, n.groups)
