@@ -13,6 +13,7 @@ import (
 const (
 	Coll_JobLog       = "job_log"
 	Coll_JobLatestLog = "job_latest_log"
+	Coll_Daily_Stat   = "daily_stat"
 	Coll_Stat         = "stat"
 )
 
@@ -139,7 +140,7 @@ func CreateJobLog(j *Job, t time.Time, rs string, success bool) {
 		inc["failed"] = 1
 	}
 
-	err := mgoDB.Upsert(Coll_Stat, bson.M{"name": "job-day", "date": time.Now().Format("2006-01-02")}, bson.M{"$inc": inc})
+	err := mgoDB.Upsert(Coll_Daily_Stat, bson.M{"name": "job-day", "date": time.Now().Format("2006-01-02")}, bson.M{"$inc": inc})
 	if err != nil {
 		log.Errorf("increase stat.job %s", err.Error())
 	}
@@ -163,7 +164,7 @@ func JobLogStat() (s *StatExecuted, err error) {
 
 func JobLogDailyStat(begin, end time.Time) (ls []*StatExecuted, err error) {
 	const oneDay = time.Hour * 24
-	err = mgoDB.WithC(Coll_Stat, func(c *mgo.Collection) error {
+	err = mgoDB.WithC(Coll_Daily_Stat, func(c *mgo.Collection) error {
 		dateList := make([]string, 0, 8)
 
 		cur := begin
