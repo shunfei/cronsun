@@ -26,7 +26,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&confFile, "conf", "c", "conf/files/base.json", "base.json file path.")
-	rootCmd.AddCommand(subcmd.BackupCmd, subcmd.RestoreCmd, subcmd.UpgradeCmd, subcmd.NodeCmd)
+	rootCmd.AddCommand(subcmd.BackupCmd, subcmd.RestoreCmd, subcmd.UpgradeCmd, subcmd.NodeCmd, subcmd.ImportCmd, subcmd.LsCmd)
 }
 
 func main() {
