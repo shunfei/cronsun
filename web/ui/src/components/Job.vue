@@ -1,6 +1,8 @@
 <style scope>
   .clearfix:after {content:""; clear:both; display:table;}
   .ui.fitted.checkbox {min-height: 15px;}
+  .table tbody .cmd-box td {padding: 0.2em 0 0.2em 1em !important ;background:black;color:#06f902;}
+  .table tbody .cmd-box{padding: 0.2em 0 0.2em 1em !important ;background:black;color:#06f902;}
 </style>
 <template>
   <div>
@@ -43,39 +45,42 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(job, index) in jobs">
-          <td class="center aligned">
-            <div class="ui icon dropdown" v-show="!batched">
-              <i class="content icon"></i>
-              <div class="menu">
-                <div class="item" v-on:click="editJob(job.group, job.id)">{{$L('edit')}}</div>
-                <div class="item" v-if="job.pause" v-on:click="changeStatus(job.group, job.id, index, !job.pause)">{{$L('open')}}</div>
-                <div class="item" v-if="!job.pause" v-on:click="changeStatus(job.group, job.id, index, !job.pause)">{{$L('pause')}}</div>
-                <div class="divider"></div>
-                <div class="item" style="color:red;" v-on:click="removeJob(job.group, job.id, index)">{{$L('delete')}}</div>
+        <template v-for="(job, index) in jobs">
+          <tr>
+            <td class="center aligned">
+              <div class="ui icon dropdown" v-show="!batched">
+                <i class="content icon"></i>
+                <div class="menu">
+                  <div class="item" v-on:click="editJob(job.group, job.id)">{{$L('edit')}}</div>
+                  <div class="item" v-if="job.pause" v-on:click="changeStatus(job.group, job.id, index, !job.pause)">{{$L('open')}}</div>
+                  <div class="item" v-if="!job.pause" v-on:click="changeStatus(job.group, job.id, index, !job.pause)">{{$L('pause')}}</div>
+                  <div class="divider"></div>
+                  <div class="item" style="color:red;" v-on:click="removeJob(job.group, job.id, index)">{{$L('delete')}}</div>
+                </div>
               </div>
-            </div>
-            <div class="ui fitted checkbox" v-show="batched">
-              <input type="checkbox" :value="job.group+'/'+job.id" v-model="batchIds"><label></label>
-            </div>
-          </td>
-          <td class="center aligned"><i class="icon" v-bind:class="{pause: job.pause, play: !job.pause, green: !job.pause}"></i></td>
-          <td>{{job.group}}</td>
-          <td>{{job.user && job.user.length > 0 ? job.user : '-'}}</td>
-          <td><router-link :to="buildEditJobURL(job.group, job.id)">{{job.name}}</router-link></td>
-          <td>
-            <span v-if="!job.latestStatus">-</span>
-            <span v-else>{{formatLatest(job.latestStatus)}}</span>
-            <br/>
-            <span>{{formatNextRunTime(job.nextRunTime)}}</span>
-          </td>
-          <td :class="{error: job.latestStatus && !job.latestStatus.success}">
-            <span v-if="!job.latestStatus">-</span>
-            <router-link v-else :to="'/log/'+job.latestStatus.refLogId">{{$L(job.latestStatus.success ? 'successed' : 'failed')}}</router-link> |
-            <router-link :to="{path: 'log', query: {latest:true, ids: job.id}}">latest</router-link> |
-            <a href="#" :title="$L('click to select a node and re-execute job')" v-on:click.prevent="showExecuteJobModal(job.name, job.group, job.id)"><i class="icon repeat"></i></a>
-          </td>
-        </tr>
+              <div class="ui fitted checkbox" v-show="batched">
+                <input type="checkbox" :value="job.group+'/'+job.id" v-model="batchIds"><label></label>
+              </div>
+            </td>
+            <td class="center aligned"><i ref="ruletip" :data-html="showTimer(job.rules)" class="icon" v-bind:class="{pause: job.pause, play: !job.pause, green: !job.pause}"></i></td>
+            <td>{{job.group}}</td>
+            <td>{{job.user && job.user.length > 0 ? job.user : '-'}}</td>
+            <td><router-link :to="buildEditJobURL(job.group, job.id)">{{job.name}}</router-link></td>
+            <td>
+              <span v-if="!job.latestStatus">-</span>
+              <span v-else>{{formatLatest(job.latestStatus)}}</span>
+              <br/>
+              <span>{{formatNextRunTime(job.nextRunTime)}}</span>
+            </td>
+            <td :class="{error: job.latestStatus && !job.latestStatus.success}">
+              <span v-if="!job.latestStatus">-</span>
+              <router-link v-else :to="'/log/'+job.latestStatus.refLogId">{{$L(job.latestStatus.success ? 'successed' : 'failed')}}</router-link> |
+              <router-link :to="{path: 'log', query: {latest:true, ids: job.id}}">latest</router-link> |
+              <a href="#" :title="$L('click to select a node and re-execute job')" v-on:click.prevent="showExecuteJobModal(job.name, job.group, job.id)"><i class="icon repeat"></i></a>
+            </td>
+          </tr>
+          <tr class="cmd-box" ><td colspan="7">{{job.cmd}}</td></tr>
+        </template>
       </tbody>
     </table>
     <ExecuteJob ref="executeJobModal"/>
@@ -100,7 +105,7 @@ export default {
       jobs: []
     }
   },
-  
+
   mounted: function(){
     this.fillParams();
     var vm = this;
@@ -157,6 +162,7 @@ export default {
         vm.jobs = resp;
         vm.$nextTick(()=>{
           $(vm.$el).find('table .ui.dropdown').dropdown();
+          $(vm.$refs.ruletip).popup();
         });
       }).do();
     },
@@ -194,7 +200,7 @@ export default {
 
     formatExecResult: function(st){
       if (!st) return '-';
-      return 
+      return
     },
 
     formatLatest: function(latest){
@@ -207,6 +213,13 @@ export default {
 
     showExecuteJobModal: function(jobName, jobGroup, jobId){
       this.$refs.executeJobModal.show(jobName, jobGroup, jobId);
+    },
+
+    showTimer: function(rules){
+      var timers = rules.map(function (rule) {
+        return rule.timer;
+      });
+      return timers.join("\n");
     },
 
     batch: function(op){
