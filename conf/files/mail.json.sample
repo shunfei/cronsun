@@ -11,5 +11,7 @@
     "Password": "nbhh",
     "SSL": false,
     "#LocalName": "LocalName is the hostname sent to the SMTP server with the HELO command. By default, 'localhost' is sent.",
-    "LocalName": "localhost"
+    "LocalName": "localhost",
+    "#FromEmail": "FromEmail is the email address of warning email sent from when warning email is enabled.",
+    "FromEmail": "no-reply@local.com"
 }

@@ -118,6 +118,8 @@ type MailConf struct {
 	HttpAPI string
 	// 如果此时间段内没有邮件发送，则关闭 SMTP 连接，单位/秒
 	Keepalive int64
+	// sender email of warning email.
+	FromEmail string
 	*gomail.Dialer
 }
 
