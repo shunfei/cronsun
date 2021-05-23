@@ -103,6 +103,13 @@ export default {
       var vm = this;
       $(this.$refs.latest).checkbox();
       $(this.$refs.failedOnly).checkbox();
+
+      // 挂载时，初始化日期选择为当前日志，防止大数据量的时候，用户无差别请求导致的io超时
+      const time = new Date();
+      const day = ("0" + time.getDate()).slice(-2);
+      const month = ("0" + (time.getMonth() + 1)).slice(-2);
+      const today = time.getFullYear() + "-" + (month) + "-" + (day);
+      this.begin = this.end = today;
   },
 
   watch: {
