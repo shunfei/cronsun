@@ -174,7 +174,9 @@ func (j *Job) limit() bool {
 	count := atomic.AddInt64(j.Count, 1)
 	if j.Parallels < count {
 		atomic.AddInt64(j.Count, -1)
-		j.Fail(time.Now(), fmt.Sprintf("job[%s] running on[%s] running:[%d]", j.Key(), j.runOn, count))
+		// see https://github.com/shunfei/cronsun/issues/105
+		log.Warnf("job[%s] running on[%s] running:[%d]", j.Key(), j.runOn, count)
+		//j.Fail(time.Now(), fmt.Sprintf("job[%s] running on[%s] running:[%d]", j.Key(), j.runOn, count))
 		return true
 	}
 
