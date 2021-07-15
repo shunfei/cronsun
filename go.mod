@@ -1,5 +1,7 @@
 module github.com/shunfei/cronsun
 
+go 1.16
+
 require (
 	github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973 // indirect
 	github.com/boltdb/bolt v1.3.1 // indirect
