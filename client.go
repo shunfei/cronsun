@@ -38,14 +38,14 @@ func NewClient(cfg *conf.Conf) (c *Client, err error) {
 }
 
 func (c *Client) Put(key, val string, opts ...client.OpOption) (*client.PutResponse, error) {
-	log.Infof("Put key:%s, val:%s", key, val)
+	log.Infof("Put key:%s", key)
 	ctx, cancel := NewEtcdTimeoutContext(c)
 	defer cancel()
 	return c.Client.Put(ctx, key, val, opts...)
 }
 
 func (c *Client) PutWithModRev(key, val string, rev int64) (*client.PutResponse, error) {
-	log.Infof("PutWithModRev key:%s, val:%s, rev:%d", key, val, rev)
+	log.Infof("PutWithModRev key:%s, rev:%d", key, rev)
 	if rev == 0 {
 		return c.Put(key, val)
 	}
@@ -95,21 +95,21 @@ func (c *Client) Grant(ttl int64) (*client.LeaseGrantResponse, error) {
 }
 
 func (c *Client) Revoke(id client.LeaseID) (*client.LeaseRevokeResponse, error) {
-	log.Infof("Revoke id:%+v", id)
+	log.Infof("Revoke id:%d", id)
 	ctx, cancel := context.WithTimeout(context.Background(), c.reqTimeout)
 	defer cancel()
 	return c.Client.Revoke(ctx, id)
 }
 
 func (c *Client) KeepAliveOnce(id client.LeaseID) (*client.LeaseKeepAliveResponse, error) {
-	log.Infof("KeepAliveOnce id:%+v", id)
+	log.Infof("KeepAliveOnce id:%d", id)
 	ctx, cancel := NewEtcdTimeoutContext(c)
 	defer cancel()
 	return c.Client.KeepAliveOnce(ctx, id)
 }
 
 func (c *Client) GetLock(key string, id client.LeaseID) (bool, error) {
-	log.Infof("GetLock key:%s, id:%+v", key, id)
+	log.Infof("GetLock key:%s, id:%d", key, id)
 	key = conf.Config.Lock + key
 	ctx, cancel := NewEtcdTimeoutContext(c)
 	resp, err := DefalutClient.Txn(ctx).
