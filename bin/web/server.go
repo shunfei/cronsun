@@ -28,8 +28,8 @@ func main() {
 
 	lcf := zap.NewDevelopmentConfig()
 	lcf.Level.SetLevel(zapcore.Level(*level))
-	lcf.Development = false
-	logger, err := lcf.Build(zap.AddCallerSkip(1))
+	logger, err := lcf.Build(zap.AddCaller(), zap.AddCallerSkip(1))
+	// logger, err := zap.NewDevelopment()
 	if err != nil {
 		slog.Fatalln("new log err:", err.Error())
 	}
