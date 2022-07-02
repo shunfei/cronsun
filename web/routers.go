@@ -111,7 +111,7 @@ func initRouters() (s *http.Server, err error) {
 	subrouter.Handle("/configurations", h).Methods("GET")
 
 	//r.PathPrefix("/ui/").Handler(http.StripPrefix("/ui/", newEmbeddedFileServer("", "index.html")))
-	r.NotFoundHandler = NewBaseHandler(notFoundHandler)
+	//r.NotFoundHandler = NewBaseHandler(notFoundHandler)
 
 	s = &http.Server{
 		Handler: r,
