@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"net/http"
 	"path"
 	"strings"
@@ -24,6 +25,7 @@ func initRouters() (s *http.Server, err error) {
 	adminHandler := &Administrator{}
 
 	r := mux.NewRouter()
+	r.HandleFunc("/", IndexHandler)
 	subrouter := r.PathPrefix("/v1").Subrouter()
 	subrouter.Handle("/version", NewBaseHandler(GetVersion)).Methods("GET")
 
@@ -109,7 +111,6 @@ func initRouters() (s *http.Server, err error) {
 
 	h = NewAuthHandler(configHandler.Configuratios, cronsun.Reporter)
 	subrouter.Handle("/configurations", h).Methods("GET")
-	subrouter.Handle("/", h).Methods("GET")
 
 	//r.PathPrefix("/ui/").Handler(http.StripPrefix("/ui/", newEmbeddedFileServer("", "index.html")))
 	//r.NotFoundHandler = NewBaseHandler(notFoundHandler)
@@ -118,6 +119,11 @@ func initRouters() (s *http.Server, err error) {
 		Handler: r,
 	}
 	return s, nil
+}
+
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "hello world")
 }
 
 type embeddedFileServer struct {
