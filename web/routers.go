@@ -113,7 +113,7 @@ func initRouters() (s *http.Server, err error) {
 	h = NewAuthHandler(configHandler.Configuratios, cronsun.Reporter)
 	subrouter.Handle("/configurations", h).Methods("GET")
 
-	//r.PathPrefix("/ui/").Handler(http.StripPrefix("/ui/", newEmbeddedFileServer("", "index.html")))
+	r.PathPrefix("/ui/").Handler(http.StripPrefix("/ui/", newEmbeddedFileServer("", "index.html")))
 	//r.NotFoundHandler = NewBaseHandler(notFoundHandler)
 
 	s = &http.Server{
