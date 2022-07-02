@@ -24,7 +24,7 @@ func initRouters() (s *http.Server, err error) {
 	adminHandler := &Administrator{}
 
 	r := mux.NewRouter()
-	subrouter := r.PathPrefix("/").Subrouter()
+	subrouter := r.PathPrefix("/v1").Subrouter()
 	subrouter.Handle("/version", NewBaseHandler(GetVersion)).Methods("GET")
 
 	h := NewBaseHandler(authHandler.GetAuthSession)
