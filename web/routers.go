@@ -26,6 +26,7 @@ func initRouters() (s *http.Server, err error) {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", IndexHandler)
+	r.HandleFunc("", IndexHandler)
 	subrouter := r.PathPrefix("/v1").Subrouter()
 	subrouter.Handle("/version", NewBaseHandler(GetVersion)).Methods("GET")
 
