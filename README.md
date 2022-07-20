@@ -6,7 +6,7 @@
 
 ## Purpose
 
-The goal of this project is to make it much easier to manage jobs on lots of machines and provides high availability.
+The goal of this project is to make it much easier to manage jobs on lots of machines and provide high availability.
 `cronsun` is different from [Azkaban](https://azkaban.github.io/), [Chronos](https://mesos.github.io/chronos/), [Airflow](https://airflow.incubator.apache.org/).
 
 ## Features
